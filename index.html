@@ -5,16 +5,6 @@
     <title>Cantus Mirabilis – Kalendarium</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!--
-      Opis zmian dodanych w tym pliku (2026-01-21):
-      - Dodano sekcję administracyjną z logowaniem (nazwa użytkownika: "Cantus", hasło: "mirabilis#2026").
-      - Po poprawnym zalogowaniu wyświetlany jest formularz dodawania wydarzeń (data, tytuł, miejsce, czas, typ).
-      - Nowe wydarzenia są dodawane do kalendarza w czasie rzeczywistym i zapisywane w localStorage (klucz: "cm_events_custom").
-      - Eventy z localStorage są łączone z listą wbudowaną w skrypt (pole `events`) przy ładowaniu strony.
-      - UI minimalnie zmienione (sekcja admin pod kalendarzem). Autoryzacja jest realizowana po stronie klienta (JS) — to wystarczy dla prostego, statycznego repozytorium GitHub Pages.
-      Uwaga: ponieważ strona jest statyczna, autoryzacja po stronie klienta nie jest bezpieczna dla poufnych danych — służy tu jako prosty mechanizm dostępu.
-    -->
-
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
@@ -181,6 +171,11 @@
             gap:.6rem;
         }
 
+        .admin .small {
+            font-size: .9rem;
+            opacity: .8;
+        }
+
         footer {
             text-align: center;
             padding: 2rem;
@@ -192,6 +187,10 @@
             font-size:.95rem;
             margin-top:.5rem;
         }
+
+        .event-controls { margin-top:.4rem; }
+
+        .admin button.small { padding:.3rem .5rem; font-size:.9rem; }
     </style>
 </head>
 
@@ -238,7 +237,7 @@
                     <button type="submit">Zaloguj</button>
                     <button type="button" onclick="logout()" style="background:transparent;border:1px solid rgba(255,255,255,0.06);">Wyloguj</button>
                 </div>
-                <div class="hint">Dostęp do formularza jest zahasłowany. Nazwa użytkownika: <strong>Cantus</strong>, hasło: <strong>mirabilis#2026</strong></div>
+                <div class="hint">Panel dostępowy — dane logowania nie są wyświetlane publicznie na stronie.</div>
             </form>
         </div>
 
@@ -256,14 +255,16 @@
                         <option value="koncert">koncert</option>
                         <option value="inne">inne</option>
                     </select>
-                    <button type="submit">Dodaj wydarzenie</button>
+                    <button id="addBtn" type="submit">Dodaj wydarzenie</button>
                 </div>
-                <div class="hint">Nowe wydarzenia zostaną zapisane lokalnie (localStorage) i po dodaniu będą widoczne w kalendarzu.</div>
+                <div class="hint">Nowe wydarzenia zostaną zapisane lokalnie (localStorage) lub w tzw. "edytowalnej przestrzeni". Aby wprowadzić zmiany publicznie, wyeksportuj JSON i zaktualizuj plik <code>/events.json</code> w repo.</div>
             </form>
 
-            <div style="margin-top:.8rem;">
-                <button onclick="exportCustomEvents()" style="padding:.5rem .8rem;border-radius:8px;border:1px solid rgba(255,255,255,.06);">Eksportuj wydarzenia (JSON)</button>
-                <button onclick="clearCustomEvents()" style="padding:.5rem .8rem;border-radius:8px;border:1px solid rgba(255,255,255,.06);margin-left:.5rem;">Usuń zapisane wydarzenia</button>
+            <div style="margin-top:.8rem; display:flex; gap:.5rem; align-items:center;">
+                <button onclick="createEditableWorkspace()" class="small">Utwórz edytowalną przestrzeń (lokalnie)</button>
+                <button onclick="exportEditableEvents()" class="small">Eksportuj (JSON)</button>
+                <button onclick="clearEditableEvents()" class="small">Usuń lokalne zmiany</button>
+                <div class="small" style="margin-left:8px; opacity:.8">Strona pobiera domyślne wydarzenia z <code>/events.json</code>. Edytuj lokalnie, eksportuj i dodaj plik do repo, aby zmiany były publiczne.</div>
             </div>
         </div>
     </section>
@@ -275,78 +276,103 @@
 </footer>
 
 <script>
-    /* ===== EVENTS DATA ===== */
-    const defaultEvents = {
-        "2026-01-25":[{title:"Niedziela", place:"Katedra", time:"18:30", type:"liturgia"}],
-        "2026-02-01":[{title:"Koncert Kolęd", place:"Katedra", time:"16:30", type:"koncert"}],
-        "2026-02-15":[{title:"Niedziela", place:"Katedra", time:"10:00", type:"liturgia"}],
-        "2026-03-08":[{title:"Niedziela", place:"Katedra", time:"13:00", type:"liturgia"}],
-        "2026-03-29":[{title:"Niedziela Palmowa", place:"Katedra", time:"10:00", type:"liturgia"}],
-        "2026-04-02":[{title:"Wielki Czwartek – Msza Krzyżma", place:"Katedra", time:"10:00", type:"liturgia"}],
-        "2026-04-03":[{title:"Wielki Piątek", place:"Katedra", time:"18:30", type:"liturgia"}],
-        "2026-05-10":[{title:"Niedziela", place:"Katedra", time:"13:00", type:"liturgia"}],
-        "2026-05-24":[{title:"Niedziela", place:"Katedra", time:"18:30", type:"liturgia"}],
-        "2026-06-04":[{title:"Boże Ciało Czwartek", place:"Katedra", time:"10:00", type:"liturgia"}],
-        "2026-06-28":[{title:"Niedziela, Wigilia odpustu Katedry", place:"Katedra", time:"18:30", type:"liturgia"}],
-        "2026-09-19":[{title:"Wigilia Poświęcenia Kościoła św Ap. Piotra i Pawła", place:"Katedra", time:"18:30", type:"liturgia"}],
+    /* ===== CONFIG ===== */
+    const EVENTS_JSON_PATH = '/events.json';
+    const STORAGE_KEY_CUSTOM = 'cm_events_custom';
+    const STORAGE_KEY_EDITABLE = 'cm_events_editable';
+
+    /* ===== DEFAULT (fallback) ===== */
+    const embeddedDefaultEvents = {
+        "2026-01-25":[{"title":"Niedziela","place":"Katedra","time":"18:30","type":"liturgia"}],
+        "2026-02-01":[{"title":"Koncert Kolęd","place":"Katedra","time":"16:30","type":"koncert"}],
+        "2026-02-15":[{"title":"Niedziela","place":"Katedra","time":"10:00","type":"liturgia"}],
+        "2026-03-08":[{"title":"Niedziela","place":"Katedra","time":"13:00","type":"liturgia"}],
+        "2026-03-29":[{"title":"Niedziela Palmowa","place":"Katedra","time":"10:00","type":"liturgia"}],
+        "2026-04-02":[{"title":"Wielki Czwartek – Msza Krzyżma","place":"Katedra","time":"10:00","type":"liturgia"}],
+        "2026-04-03":[{"title":"Wielki Piątek","place":"Katedra","time":"18:30","type":"liturgia"}],
+        "2026-05-10":[{"title":"Niedziela","place":"Katedra","time":"13:00","type":"liturgia"}],
+        "2026-05-24":[{"title":"Niedziela","place":"Katedra","time":"18:30","type":"liturgia"}],
+        "2026-06-04":[{"title":"Boże Ciało Czwartek","place":"Katedra","time":"10:00","type":"liturgia"}],
+        "2026-06-28":[{"title":"Niedziela, Wigilia odpustu Katedry","place":"Katedra","time":"18:30","type":"liturgia"}],
+        "2026-09-19":[{"title":"Wigilia Poświęcenia Kościoła św Ap. Piotra i Pawła","place":"Katedra","time":"18:30","type":"liturgia"}]
     };
 
-    // Klucz localStorage dla wydarzeń dodanych przez admina
-    const STORAGE_KEY = "cm_events_custom";
-
-    // Połączone eventy (domyślne + custom)
-    let events = {};
+    // runtime events: either loaded from events.json (repo) or fallback
+    let repoEvents = {};
+    let events = {}; // merged view (repoEvents overlaid by custom / editable)
 
     /* ===== CALENDAR ===== */
     let currentDate = new Date();
 
-    function mergeEvents() {
-        // Klonujemy domyślne wydarzenia
-        events = JSON.parse(JSON.stringify(defaultEvents));
-
-        // Ładuj custom z localStorage
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw){
-            try {
-                const custom = JSON.parse(raw);
-                for(const k in custom){
-                    if(!events[k]) events[k] = [];
-                    // upewnij się, że to tablica
-                    if(Array.isArray(custom[k])) events[k] = events[k].concat(custom[k]);
-                }
-            } catch(e) {
-                console.warn("Błąd parsowania custom events:", e);
-            }
+    async function loadRepoEvents(){
+        try{
+            const res = await fetch(EVENTS_JSON_PATH + '?_=' + Date.now());
+            if(!res.ok) throw new Error('fetch failed');
+            const data = await res.json();
+            repoEvents = data || {};
+        }catch(e){
+            console.warn('Nie udało się pobrać events.json, używam danych wbudowanych.', e);
+            repoEvents = embeddedDefaultEvents;
         }
     }
 
-    function renderCalendar() {
+    function getEditable(){
+        const raw = localStorage.getItem(STORAGE_KEY_EDITABLE);
+        if(!raw) return null;
+        try{ return JSON.parse(raw); }catch(e){ return null; }
+    }
+
+    function getCustom(){
+        const raw = localStorage.getItem(STORAGE_KEY_CUSTOM);
+        if(!raw) return {};
+        try{ return JSON.parse(raw); }catch(e){ return {}; }
+    }
+
+    function mergeEvents(){
+        // If editable workspace exists, use it as authoritative
+        const editable = getEditable();
+        if(editable){
+            events = JSON.parse(JSON.stringify(editable));
+            return;
+        }
+
+        // Start from repoEvents, then merge custom local additions
+        events = JSON.parse(JSON.stringify(repoEvents || {}));
+
+        const custom = getCustom();
+        for(const k in custom){
+            if(!events[k]) events[k] = [];
+            if(Array.isArray(custom[k])) events[k] = events[k].concat(custom[k]);
+        }
+    }
+
+    function renderCalendar(){
         mergeEvents();
 
-        const daysEl = document.getElementById("days");
-        daysEl.innerHTML = "";
+        const daysEl = document.getElementById('days');
+        daysEl.innerHTML = '';
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
 
-        document.getElementById("monthYear").textContent =
-                currentDate.toLocaleString("pl-PL",{month:"long",year:"numeric"});
+        document.getElementById('monthYear').textContent =
+                currentDate.toLocaleString('pl-PL',{month:'long',year:'numeric'});
 
         let firstDay = new Date(year, month, 1).getDay() || 7;
         let daysInMonth = new Date(year, month+1, 0).getDate();
 
-        for(let i=1;i<firstDay;i++) daysEl.appendChild(document.createElement("div"));
+        for(let i=1;i<firstDay;i++) daysEl.appendChild(document.createElement('div'));
 
         for(let d=1;d<=daysInMonth;d++){
-            const key = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-            const div = document.createElement("div");
+            const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const div = document.createElement('div');
             div.textContent = d;
-            div.className = "day";
-            if(events[key]) div.classList.add("has-event");
+            div.className = 'day';
+            if(events[key]) div.classList.add('has-event');
 
             // oznacz dzisiejszą datę
             const today = new Date();
             if(today.getFullYear() === year && today.getMonth() === month && today.getDate() === d){
-                div.classList.add("today");
+                div.classList.add('today');
             }
 
             div.onclick = ()=>showEvents(key);
@@ -355,18 +381,22 @@
     }
 
     function showEvents(key){
-        const list = document.getElementById("eventList");
-        const label = new Date(key).toLocaleDateString("pl-PL", {year:'numeric',month:'long',day:'numeric'});
+        mergeEvents();
+        const list = document.getElementById('eventList');
+        const label = new Date(key).toLocaleDateString('pl-PL', {year:'numeric',month:'long',day:'numeric'});
         list.innerHTML = `<h3>${label}</h3>`;
         if(!events[key]){
-            list.innerHTML += "<p>Brak wydarzeń</p>";
+            list.innerHTML += '<p>Brak wydarzeń</p>';
             return;
         }
-        events[key].forEach(e=>{
+        events[key].forEach((e, idx)=>{
             list.innerHTML += `
       <div class="event ${e.type}">
         <strong>${e.title}</strong><br>
         <span>${e.place} • ${e.time}</span>
+        <div class="event-controls">` +
+                (isLogged ? `<button onclick="editEvent('${key}', ${idx})">Edytuj</button> <button onclick="deleteEvent('${key}', ${idx})">Usuń</button>` : '') +
+                `</div>
       </div>`;
         });
     }
@@ -377,102 +407,213 @@
     }
 
     /* ===== ADMIN (client-side) ===== */
-    const ADMIN_USER = "Cantus";
-    const ADMIN_PASS = "mirabilis#2026";
+    const ADMIN_USER = 'Cantus';
+    const ADMIN_PASS = 'mirabilis#2026';
     let isLogged = false;
 
     function tryLogin(){
-        const user = document.getElementById("username").value || "";
-        const pass = document.getElementById("password").value || "";
+        const user = document.getElementById('username').value || '';
+        const pass = document.getElementById('password').value || '';
         if(user === ADMIN_USER && pass === ADMIN_PASS){
             isLogged = true;
-            document.getElementById("loginArea").style.display = "none";
-            document.getElementById("adminFormArea").style.display = "block";
-            alert("Zalogowano poprawnie.");
+            document.getElementById('loginArea').style.display = 'none';
+            document.getElementById('adminFormArea').style.display = 'block';
+            alert('Zalogowano poprawnie.');
+            renderCalendar();
         } else {
-            alert("Błędna nazwa użytkownika lub hasło.");
+            alert('Błędna nazwa użytkownika lub hasło.');
         }
     }
 
     function logout(){
         isLogged = false;
-        document.getElementById("loginArea").style.display = "block";
-        document.getElementById("adminFormArea").style.display = "none";
-        document.getElementById("loginForm").reset();
-    }
-
-    function addEventFromForm(){
-        const date = document.getElementById("evDate").value;
-        const time = document.getElementById("evTime").value;
-        const title = document.getElementById("evTitle").value.trim();
-        const place = document.getElementById("evPlace").value.trim();
-        const type = document.getElementById("evType").value;
-
-        if(!date || !title || !place || !time) {
-            alert("Wypełnij wszystkie pola.");
-            return;
-        }
-
-        // data w formacie YYYY-MM-DD
-        const key = date;
-
-        const newEvent = { title, place, time, type };
-
-        // Zapis do localStorage: najpierw odczytaj istniejące custom
-        const raw = localStorage.getItem(STORAGE_KEY);
-        let custom = {};
-        if(raw){
-            try { custom = JSON.parse(raw) || {}; } catch(e) { custom = {}; }
-        }
-
-        if(!custom[key]) custom[key] = [];
-        custom[key].push(newEvent);
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(custom));
-
-        // Zaktualizuj widok
+        document.getElementById('loginArea').style.display = 'block';
+        document.getElementById('adminFormArea').style.display = 'none';
+        document.getElementById('loginForm').reset();
         renderCalendar();
-        // pokaż events dla tej daty
-        showEvents(key);
-
-        // wyczyść formularz częściowo
-        document.getElementById("addEventForm").reset();
-        alert("Wydarzenie dodane i zapisane lokalnie.");
     }
 
-    function exportCustomEvents(){
-        const raw = localStorage.getItem(STORAGE_KEY) || "{}";
-        // Pobierz jako plik JSON
-        const blob = new Blob([raw], {type: "application/json;charset=utf-8"});
+    // Editable workspace helpers
+    function createEditableWorkspace(){
+        // copy merged events into editable local storage
+        mergeEvents();
+        localStorage.setItem(STORAGE_KEY_EDITABLE, JSON.stringify(events));
+        alert('Utworzono lokalną edytowalną przestrzeń. Teraz wszystkie zmiany będą zapisywane lokalnie w tej przestrzeni.');
+        renderCalendar();
+    }
+
+    function clearEditableEvents(){
+        if(!confirm('Czy na pewno usunąć edytowalną lokalną przestrzeń?')) return;
+        localStorage.removeItem(STORAGE_KEY_EDITABLE);
+        renderCalendar();
+        alert('Lokalne zmiany usunięte. Strona ponownie użyje events.json oraz lokalnych dodatków.');
+    }
+
+    function exportEditableEvents(){
+        // export either editable workspace (if exists) or merged events
+        const editable = getEditable();
+        const payload = editable || (function(){ mergeEvents(); return events; })();
+        const raw = JSON.stringify(payload, null, 2);
+        const blob = new Blob([raw], {type: 'application/json;charset=utf-8'});
         const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
+        const a = document.createElement('a');
         a.href = url;
-        a.download = "cantus_custom_events.json";
+        a.download = 'cantus_events_export.json';
         document.body.appendChild(a);
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
     }
 
-    function clearCustomEvents(){
-        if(!confirm("Czy na pewno usunąć wszystkie zapisane wydarzenia (localStorage)?")) return;
-        localStorage.removeItem(STORAGE_KEY);
+    /* Add / Edit / Delete events inside editable workspace if present, otherwise fall back to custom additions */
+    let editingContext = null; // {date, index} when editing existing event
+
+    function addEventFromForm(){
+        const date = document.getElementById('evDate').value;
+        const time = document.getElementById('evTime').value;
+        const title = document.getElementById('evTitle').value.trim();
+        const place = document.getElementById('evPlace').value.trim();
+        const type = document.getElementById('evType').value;
+
+        if(!date || !title || !place || !time) { alert('Wypełnij wszystkie pola.'); return; }
+
+        const newEvent = { title, place, time, type };
+
+        // If editable workspace exists, write there
+        let editable = getEditable();
+        if(editable){
+            if(!editable[date]) editable[date] = [];
+            if(editingContext && editingContext.date === date && typeof editingContext.index === 'number'){
+                // replace
+                editable[date][editingContext.index] = newEvent;
+                editingContext = null;
+                document.getElementById('addBtn').textContent = 'Dodaj wydarzenie';
+            } else {
+                editable[date].push(newEvent);
+            }
+            localStorage.setItem(STORAGE_KEY_EDITABLE, JSON.stringify(editable));
+            renderCalendar();
+            showEvents(date);
+            document.getElementById('addEventForm').reset();
+            alert('Wydarzenie zapisane w edytowalnej przestrzeni lokalnej. Eksportuj plik, aby wprowadzić zmiany do repozytorium.');
+            return;
+        }
+
+        // Otherwise save to custom additions
+        const raw = localStorage.getItem(STORAGE_KEY_CUSTOM);
+        let custom = {};
+        if(raw){ try { custom = JSON.parse(raw) || {}; } catch(e){ custom = {}; } }
+
+        if(!custom[date]) custom[date] = [];
+
+        if(editingContext && editingContext.date === date && typeof editingContext.index === 'number'){
+            // If editing and the original was part of custom, replace there
+            custom[date][editingContext.index] = newEvent;
+            editingContext = null;
+            document.getElementById('addBtn').textContent = 'Dodaj wydarzenie';
+        } else {
+            custom[date].push(newEvent);
+        }
+
+        localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(custom));
         renderCalendar();
-        document.getElementById("eventList").innerHTML = "<h3>Wydarzenia</h3><p>Wybierz dzień w kalendarzu</p>";
-        alert("Zapisane wydarzenia usunięte.");
+        showEvents(date);
+        document.getElementById('addEventForm').reset();
+        alert('Wydarzenie dodane i zapisane lokalnie.');
+    }
+
+    function editEvent(date, idx){
+        // Locate event in editable workspace first, then in merged view (we'll map to editable if possible)
+        const editable = getEditable();
+        if(editable && editable[date] && editable[date][idx]){
+            const ev = editable[date][idx];
+            document.getElementById('evDate').value = date;
+            document.getElementById('evTime').value = ev.time;
+            document.getElementById('evTitle').value = ev.title;
+            document.getElementById('evPlace').value = ev.place;
+            document.getElementById('evType').value = ev.type;
+            editingContext = {date, index: idx};
+            document.getElementById('addBtn').textContent = 'Zapisz zmiany';
+            return;
+        }
+
+        // Otherwise, try to map the merged event into editable workspace (create editable if needed)
+        const merged = JSON.parse(JSON.stringify(events));
+        if(!merged[date] || !merged[date][idx]){ alert('Nie znaleziono wydarzenia do edycji.'); return; }
+        createEditableWorkspace();
+        const ed = getEditable();
+        // ensure date exists
+        if(!ed[date]) ed[date] = [];
+        // keep order: copy all from merged to editable for that date
+        ed[date] = merged[date].slice();
+        localStorage.setItem(STORAGE_KEY_EDITABLE, JSON.stringify(ed));
+        // now open the same index
+        const ev = ed[date][idx];
+        document.getElementById('evDate').value = date;
+        document.getElementById('evTime').value = ev.time;
+        document.getElementById('evTitle').value = ev.title;
+        document.getElementById('evPlace').value = ev.place;
+        document.getElementById('evType').value = ev.type;
+        editingContext = {date, index: idx};
+        document.getElementById('addBtn').textContent = 'Zapisz zmiany';
+        renderCalendar();
+    }
+
+    function deleteEvent(date, idx){
+        if(!confirm('Czy na pewno usunąć to wydarzenie?')) return;
+        const editable = getEditable();
+        if(editable && editable[date] && typeof editable[date][idx] !== 'undefined'){
+            editable[date].splice(idx,1);
+            if(editable[date].length === 0) delete editable[date];
+            localStorage.setItem(STORAGE_KEY_EDITABLE, JSON.stringify(editable));
+            renderCalendar();
+            showEvents(date);
+            alert('Wydarzenie usunięte w lokalnej edytowalnej przestrzeni.');
+            return;
+        }
+
+        // Otherwise delete from custom additions if present
+        const raw = localStorage.getItem(STORAGE_KEY_CUSTOM);
+        let custom = {};
+        if(raw){ try{ custom = JSON.parse(raw) || {}; } catch(e){ custom = {}; } }
+        if(custom[date] && typeof custom[date][idx] !== 'undefined'){
+            custom[date].splice(idx,1);
+            if(custom[date].length === 0) delete custom[date];
+            localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(custom));
+            renderCalendar();
+            showEvents(date);
+            alert('Wydarzenie usunięte.');
+            return;
+        }
+
+        // As fallback, create editable workspace and remove the event there
+        createEditableWorkspace();
+        const ed = getEditable();
+        if(ed[date] && typeof ed[date][idx] !== 'undefined'){
+            ed[date].splice(idx,1);
+            if(ed[date].length === 0) delete ed[date];
+            localStorage.setItem(STORAGE_KEY_EDITABLE, JSON.stringify(ed));
+            renderCalendar();
+            showEvents(date);
+            alert('Wydarzenie usunięte w lokalnej edytowalnej przestrzeni.');
+            return;
+        }
+
+        alert('Nie udało się usunąć wydarzenia.');
     }
 
     /* ===== FADE-IN OBSERVER ===== */
     const observer = new IntersectionObserver(entries=>{
-        entries.forEach(e=>{
-            if(e.isIntersecting) e.target.classList.add("visible");
-        });
+        entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
     },{threshold:0.15});
 
-    document.querySelectorAll(".fade").forEach(el=>observer.observe(el));
+    document.querySelectorAll('.fade').forEach(el=>observer.observe(el));
 
-    // inicjalizacja: załaduj custom events i renderuj
-    renderCalendar();
+    // inicjalizacja: załaduj events.json i renderuj
+    (async function init(){
+        await loadRepoEvents();
+        renderCalendar();
+    })();
 </script>
 
 </body>
