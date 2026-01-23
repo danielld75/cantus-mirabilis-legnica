@@ -60,7 +60,7 @@ function toast(msg){
 }
 
 async function getFileSha(token){
-  const r=await fetch(`https://api.github.com/repos/YOUR_GITHUB/YOUR_REPO/contents/${EVENTS_PATH}`,{
+  const r=await fetch(`https://api.github.com/repos/danielld75/cantus-mirabilis-legnica/contents/${EVENTS_PATH}`,{
     headers:{Authorization:`Bearer ${token}`,Accept:'application/vnd.github+json'}
   });
   const d=await r.json(); return d.sha;
