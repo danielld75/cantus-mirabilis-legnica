@@ -373,8 +373,8 @@
         <strong>${e.title}</strong><br>
         <span>${e.place} • ${e.time}</span>
         <div class="event-controls">` +
-                (isLogged ? `<button onclick="editEvent('${key}', ${idx})">Edytuj</button> <button onclick="deleteEvent('${key}', ${idx})">Usuń</button>` : '') +
-                `</div>
+                    (isLogged ? `<button onclick="editEvent('${key}', ${idx})">Edytuj</button> <button onclick="deleteEvent('${key}', ${idx})">Usuń</button>` : '') +
+                    `</div>
       </div>`;
         });
     }
