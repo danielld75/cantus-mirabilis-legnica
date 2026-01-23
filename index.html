@@ -341,7 +341,7 @@
         for(let i=1;i<firstDay;i++) daysEl.appendChild(document.createElement('div'));
 
         for(let d=1;d<=daysInMonth;d++){
-            const key = ${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')};
+            const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             const div = document.createElement('div');
             div.textContent = d;
             div.className = 'day';
@@ -362,20 +362,20 @@
         mergeEvents();
         const list = document.getElementById('eventList');
         const label = new Date(key).toLocaleDateString('pl-PL', {year:'numeric',month:'long',day:'numeric'});
-        list.innerHTML = <h3>${label}</h3>;
+        list.innerHTML = `<h3>${label}</h3>`;
         if(!events[key]){
             list.innerHTML += '<p>Brak wydarzeń</p>';
             return;
         }
         events[key].forEach((e, idx)=>{
-            list.innerHTML += 
+            list.innerHTML += `
       <div class="event ${e.type}">
         <strong>${e.title}</strong><br>
         <span>${e.place} • ${e.time}</span>
-        <div class="event-controls"> +
-                (isLogged ? <button onclick="editEvent('${key}', ${idx})">Edytuj</button> <button onclick="deleteEvent('${key}', ${idx})">Usuń</button> : '') +
-                </div>
-      </div>;
+        <div class="event-controls">` +
+                (isLogged ? `<button onclick="editEvent('${key}', ${idx})">Edytuj</button> <button onclick="deleteEvent('${key}', ${idx})">Usuń</button>` : '') +
+                `</div>
+      </div>`;
         });
     }
 
