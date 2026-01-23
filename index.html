@@ -1,49 +1,50 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <title>Cantus Mirabilis – Kalendarium</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Cantus Mirabilis – Kalendarium</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
 <header class="fade">
-    <h1>CANTUS MIRABILIS</h1>
-    <p>Kalendarium chóru</p>
+  <h1>CANTUS MIRABILIS</h1>
+  <p>Kalendarium chóru</p>
 </header>
 
 <main>
 
-    <section class="calendar fade">
-        <div class="calendar-header">
-            <button onclick="changeMonth(-1)">◀</button>
-            <h2 id="monthYear"></h2>
-            <button onclick="changeMonth(1)">▶</button>
-        </div>
+<section class="calendar fade">
+  <div class="calendar-header">
+    <button onclick="changeMonth(-1)">◀</button>
+    <h2 id="monthYear"></h2>
+    <button onclick="changeMonth(1)">▶</button>
+  </div>
 
-        <div class="weekdays">
-            <div>Pn</div><div>Wt</div><div>Śr</div><div>Cz</div>
-            <div>Pt</div><div>Sb</div><div>Nd</div>
-        </div>
+  <div class="weekdays">
+    <div>Pn</div><div>Wt</div><div>Śr</div><div>Cz</div>
+    <div>Pt</div><div>Sb</div><div>Nd</div>
+  </div>
 
-        <div class="days" id="days"></div>
-    </section>
+  <div class="days" id="days"></div>
+</section>
 
-    <section class="events fade" id="eventList">
-        <h3>Wydarzenia</h3>
-        <p>Wybierz dzień</p>
-    </section>
+<section class="events fade" id="eventList">
+  <h3>Wydarzenia</h3>
+  <p>Wybierz dzień w kalendarzu</p>
+</section>
 
-    <section class="admin fade">
-        <h3>Panel administratora</h3>
+<section class="admin fade">
+  <h3>Panel administratora</h3>
 
-        <button onclick="githubLogin()">🔐 Zaloguj przez GitHub</button>
-        <button onclick="commitToGitHub()">💾 Zapisz i opublikuj</button>
-    </section>
+  <div>
+    <input type="password" id="ghToken" placeholder="Wklej token GitHub">
+    <button onclick="commitEventsToGitHub()">💾 Zapisz i opublikuj</button>
+  </div>
+</section>
 
 </main>
 
