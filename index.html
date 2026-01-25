@@ -220,9 +220,6 @@
 
     <section class="events fade" id="eventList">
         <h3>Wydarzenia</h3>
-        <div style="margin-top:.6rem;">
-            <button onclick="downloadRepoEvents()" class="small">Pobierz wydarzenia (JSON)</button>
-        </div>
         <p>Wybierz dzień w kalendarzu</p>
     </section>
 
@@ -260,13 +257,14 @@
                     </select>
                     <button id="addBtn" type="submit">Dodaj wydarzenie</button>
                 </div>
-                <div class="hint">Domyślny plik z wydarzeniami pobierany jest z <code>/cantus_events_export.json</code>. Zmiany są zapisywane wyłącznie w pamięci i można je wyeksportować jako J[...]            </form>
+                <div class="hint">Domyślny plik z wydarzeniami pobierany jest z <code>/cantus_events_export.json</code>. Zmiany są zapisywane wyłącznie w pamięci i można je wyeksportować jako J[...]  
+            </form>
 
             <div style="margin-top:.8rem; display:flex; gap:.5rem; align-items:center;">
                 <button onclick="reloadFromRepoFile()" class="small">Przeładuj z pliku (repo)</button>
                 <button onclick="exportEditableEvents()" class="small">Eksportuj (JSON)</button>
                 <button onclick="restoreDefaults()" class="small">Przywróć domyślne</button>
-                <div class="small" style="margin-left:8px; opacity:.8">Edytuj tutaj, a następnie pobierz zaktualizowany plik JSON i umieść go w repo, jeśli chcesz wprowadzić zmiany publicznie.</div>
+                <div class="small" style="margin-left:8px; opacity:.8">Edytuj tutaj, a następnie pobierz zaktualizowany plik JSON i umieść go w repo, jeśli chcesz wprowadzić zmiany publicznie.</d[...]  
             </div>
         </div>
     </section>
@@ -284,7 +282,7 @@
 
     /* ===== DEFAULT (fallback) ===== */
     const embeddedDefaultEvents = {
-        "2026-01-25":[{"title":"Msza św. Repertuar: Alleluja Werbicki, Szukajcie wpierw Królestwa Bożego Dziuda, Sicut Cervus Palestrina lub Witaj Pokarmie Bębenek, Zaśnij Dziecino Uruski","place[...]} 
+        "2026-01-25":[{"title":"Msza św. Repertuar: Alleluja Werbicki, Szukajcie wpierw Królestwa Bożego Dziuda, Sicut Cervus Palestrina lub Witaj Pokarmie Bębenek, Zaśnij Dziecino Uruski","place[...]
         "2026-02-01":[{"title":"Koncert Kolęd","place":"Katedra","time":"16:30","type":"koncert"}],
         "2026-02-15":[{"title":"Niedziela","place":"Katedra","time":"10:00","type":"liturgia"}],
         "2026-03-08":[{"title":"Niedziela","place":"Katedra","time":"13:00","type":"liturgia"}],
@@ -342,7 +340,7 @@
 
         for(let i=1;i<firstDay;i++) daysEl.appendChild(document.createElement('div'));
 
-        for(let d=1;d<=daysInMonth;d++){ 
+        for(let d=1;d<=daysInMonth;d++){  
             const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             const div = document.createElement('div');
             div.textContent = d;
@@ -441,23 +439,6 @@
         a.href = url;
         // suggest a filename; user can rename before adding to repo
         a.download = 'cantus_events_export.json';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-    }
-
-    // Public download: allow any visitor to download the currently loaded repository events (or fallback)
-    function downloadRepoEvents(){
-        const payload = repoEvents && Object.keys(repoEvents).length ? repoEvents : embeddedDefaultEvents;
-        const raw = JSON.stringify(payload, null, 2);
-        const blob = new Blob([raw], {type: 'application/json;charset=utf-8'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const now = new Date();
-        const stamp = now.toISOString().slice(0,10);
-        a.download = `cantus_events_${stamp}.json`;
         document.body.appendChild(a);
         a.click();
         a.remove();
