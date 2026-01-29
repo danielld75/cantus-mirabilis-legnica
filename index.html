@@ -180,40 +180,72 @@
         setupObserver();
     }
 
-    function renderCalendar() {
-        const daysEl = document.getElementById('days');
-        daysEl.innerHTML = '';
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        document.getElementById('monthYear').textContent = currentDate.toLocaleString('pl-PL', {month:'long', year:'numeric'});
 
-        let firstDay = new Date(year, month, 1).getDay() || 7;
-        let daysInMonth = new Date(year, month+1, 0).getDate();
-
-        for(let i=1; i<firstDay; i++) daysEl.appendChild(document.createElement('div'));
-
-        for(let d=1; d<=daysInMonth; d++) {
-            const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const dayDiv = document.createElement('div');
-            dayDiv.className = 'day';
-            dayDiv.textContent = d;
-
-            if(events[key]) {
-                const types = [...new Set(events[key].map(ev => ev.type))];
-                if (types.length > 1) {
-                    dayDiv.classList.add('has-multiple');
-                } else if (types.length === 1) {
-                    dayDiv.classList.add(`has-${types[0]}`);
-                }
-            }
-
-            const today = new Date();
-            if(today.getFullYear()===year && today.getMonth()===month && today.getDate()===d) dayDiv.classList.add('today');
-
-            dayDiv.onclick = () => showEvents(key);
-            daysEl.appendChild(dayDiv);
-        }
+function renderCalendar() {
+    const daysEl = document.getElementById('days');
+    daysEl.innerHTML = '';
+    
+    // Ustawiamy datę na pierwszy dzień miesiąca, aby uniknąć błędów przy zmianie miesięcy
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const firstDayOfMonth = new Date(year, month, 1);
+    
+    document.getElementById('monthYear').textContent = 
+        firstDayOfMonth.toLocaleString('pl-PL', {month:'long', year:'numeric'});
+    
+    // Pobieramy dzień tygodnia (1-Pn, ..., 7-Nd)
+    let firstDayIndex = firstDayOfMonth.getDay(); 
+    if (firstDayIndex === 0) firstDayIndex = 7; // Korekta dla Niedzieli
+    
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    // Puste pola dla dni z poprzedniego miesiąca
+    for(let i = 1; i < firstDayIndex; i++) {
+        daysEl.appendChild(document.createElement('div'));
     }
+    
+    for(let d = 1; d <= daysInMonth; d++) {
+        const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'day';
+        
+        const numDiv = document.createElement('div');
+        numDiv.className = 'day-number';
+        numDiv.textContent = d;
+        dayDiv.appendChild(numDiv);
+
+        if(holidays[key]) {
+            dayDiv.classList.add('is-holiday');
+            const holDiv = document.createElement('div');
+            holDiv.className = 'holiday-name';
+            holDiv.textContent = holidays[key];
+            dayDiv.appendChild(holDiv);
+        }
+
+        if(events[key]) {
+            const types = [...new Set(events[key].map(ev => ev.type))];
+            if (types.length > 1) dayDiv.classList.add('has-multiple');
+            else if (types.length === 1) dayDiv.classList.add(`has-${types[0]}`);
+        }
+        
+        const today = new Date();
+        if(today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) {
+            dayDiv.classList.add('today');
+        }
+        
+        dayDiv.onclick = () => showEvents(key);
+        daysEl.appendChild(dayDiv);
+    }
+}
+
+// POPRAWIONA FUNKCJA ZMIANY MIESIĄCA
+function changeMonth(n) {
+    // Ustawienie na 1. dzień zapobiega przeskakiwaniu (np. z 31 stycznia na 3 marca)
+    currentDate.setDate(1); 
+    currentDate.setMonth(currentDate.getMonth() + n);
+    renderCalendar();
+}
+
 
     function showEvents(key) {
         const list = document.getElementById('eventList');
