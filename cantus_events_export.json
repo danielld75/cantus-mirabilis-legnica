@@ -94,5 +94,13 @@
       "time": "18:30",
       "type": "liturgia"
     }
+  ],
+  "2026-01-30": [
+    {
+      "title": "Próba do koncertu",
+      "place": "Instytut",
+      "time": "19:40",
+      "type": "proba"
+    }
   ]
 }
