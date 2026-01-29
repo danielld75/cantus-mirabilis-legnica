@@ -1,8 +1,8 @@
 {
   "2026-01-25": [
     {
-      "title": "Msza św. Repertuar: * Alleluja Werbicki, * Szukajcie wpierw Królestwa Bożego Dziuda, * Sicut Cervus Palestrina lub * Witaj Pokarmie Bębenek, * Zaśnij Dziecino Uruski",
-      "place": "Katedra Legnicka",
+      "title": "Msza św. Repertuar: Alleluja Werbicki, Szukajcie wpierw Królestwa Bożego Dziuda, Sicut Cervus Palestrina lub Witaj Pokarmie Bębenek, Zaśnij Dziecino Uruski. SPOTYKAMY SIĘ NA PLEBANII O 18.00.",
+      "place": "Katedra",
       "time": "18:30",
       "type": "liturgia"
     }
@@ -67,7 +67,7 @@
     {
       "title": "Niedziela",
       "place": "Katedra",
-      "time": "18:30",
+      "time": "10:00",
       "type": "liturgia"
     }
   ],
