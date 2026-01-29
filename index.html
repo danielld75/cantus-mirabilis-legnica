@@ -82,20 +82,25 @@
         /* EVENTS LIST */
         .events { background: var(--panel); border-radius: 20px; padding: 1.5rem; margin-bottom: 3rem; }
         .events h3 { font-family: 'Playfair Display', serif; color: var(--gold); margin-top: 0; }
-        .event { margin-top: 1rem; padding: 1rem; border-left: 5px solid var(--gold); background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; }
+        .event { margin-top: 1rem; padding: 1.2rem; border-left: 5px solid var(--gold); background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; }
         .event.liturgia { border-color: var(--color-liturgia); }
         .event.koncert { border-color: var(--color-koncert); }
         .event.proba { border-color: var(--color-proba); }
         .event.inne { border-color: var(--color-inne); }
         
-        .event-controls { margin-top: 10px; display: flex; gap: 10px; }
+        /* Styl listy utworów w wydarzeniu */
+        .repertoire-list { margin-top: 12px; padding-left: 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; font-size: 0.95rem; }
+        .repertoire-list li { margin-bottom: 4px; opacity: 0.9; }
+
+        .event-controls { margin-top: 15px; display: flex; gap: 10px; }
         .event-controls button { padding: 4px 10px; font-size: 0.8rem; cursor: pointer; border-radius: 5px; border: 1px solid #555; background: transparent; color: white; }
 
         /* FOOTER & LOGIN */
         footer { background: #0e0e0e; padding: 3rem 1rem; border-top: 1px solid rgba(201,162,77,0.2); }
         .admin-container { max-width: 800px; margin: auto; }
         .admin { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; }
-        .admin input, .admin select, .admin button { padding: .6rem .8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #222; color: var(--text); font-family: inherit; }
+        .admin input, .admin select, .admin button, .admin textarea { padding: .6rem .8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #222; color: var(--text); font-family: inherit; }
+        .admin textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 80px; margin-bottom: 10px; }
         .admin button { background: var(--gold); color: black; font-weight: bold; cursor: pointer; border: none; }
         .row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
         
@@ -132,7 +137,7 @@
 <footer>
     <div class="admin-container fade">
         <div class="admin" id="adminSection">
-            <h3 style="color:var(--gold); margin: 0 0 1rem 0; font-family: 'Playfair Display', serif;">Panel logowania</h3>
+            <h3 style="color:var(--gold); margin: 0 0 1rem 0; font-family: 'Playfair Display', serif;">Panel administracyjny</h3>
             <div id="loginArea">
                 <div class="row">
                     <input id="username" placeholder="Użytkownik" style="flex:1">
@@ -153,9 +158,10 @@
                         </select>
                     </div>
                     <div class="row">
-                        <input id="evTitle" placeholder="Tytuł wydarzenia" required style="flex:2;">
-                        <input id="evPlace" placeholder="Miejsce" required style="flex:1;">
+                        <input id="evTitle" placeholder="Tytuł wydarzenia (np. Msza św. o pokój)" required style="flex:2;">
+                        <input id="evPlace" placeholder="Miejsce (np. Katedra)" required style="flex:1;">
                     </div>
+                    <textarea id="evRepertoire" placeholder="Repertuar / utwory (wpisz każdy utwór w nowej linii)"></textarea>
                     <button id="addBtn" type="submit" style="width:100%">Dodaj / Zaktualizuj w pamięci</button>
                 </form>
                 <div class="row" style="margin-top:15px;">
@@ -205,7 +211,7 @@
         try {
             const response = await fetch('./cantus_events_export.json?t=' + Date.now());
             if (response.ok) events = await response.json();
-        } catch (e) { console.log("Ładowanie bazy..."); }
+        } catch (e) { console.log("Brak bazy danych JSON."); }
         renderCalendar();
         setupObserver();
     }
@@ -213,23 +219,17 @@
     function renderCalendar() {
         const daysEl = document.getElementById('days');
         daysEl.innerHTML = '';
-        
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
-        
-        // Zawsze ustawiamy na 1 dzień miesiąca do obliczeń nagłówka
         const firstDayOfMonth = new Date(year, month, 1);
         document.getElementById('monthYear').textContent = 
             firstDayOfMonth.toLocaleString('pl-PL', {month:'long', year:'numeric'});
         
         let firstDayIndex = firstDayOfMonth.getDay(); 
         if (firstDayIndex === 0) firstDayIndex = 7; 
-        
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         
-        for(let i = 1; i < firstDayIndex; i++) {
-            daysEl.appendChild(document.createElement('div'));
-        }
+        for(let i = 1; i < firstDayIndex; i++) daysEl.appendChild(document.createElement('div'));
         
         for(let d = 1; d <= daysInMonth; d++) {
             const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -256,9 +256,7 @@
             }
             
             const today = new Date();
-            if(today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) {
-                dayDiv.classList.add('today');
-            }
+            if(today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) dayDiv.classList.add('today');
             
             dayDiv.onclick = () => showEvents(key);
             daysEl.appendChild(dayDiv);
@@ -266,7 +264,6 @@
     }
 
     function changeMonth(n) {
-        // Kluczowa poprawka: ustawiamy dzień na 1 przed zmianą miesiąca
         currentDate.setDate(1);
         currentDate.setMonth(currentDate.getMonth() + n);
         renderCalendar();
@@ -286,9 +283,18 @@
             events[key].forEach((ev, idx) => {
                 const div = document.createElement('div');
                 div.className = `event ${ev.type}`;
+                
+                // Budowanie sekcji repertuaru
+                let repertoireHTML = '';
+                if(ev.repertoire && ev.repertoire.trim() !== '') {
+                    const tracks = ev.repertoire.split('\n').filter(line => line.trim() !== '');
+                    repertoireHTML = '<ol class="repertoire-list">' + tracks.map(t => `<li>${t}</li>`).join('') + '</ol>';
+                }
+
                 div.innerHTML = `
                     <strong>${ev.time} - ${ev.title}</strong><br>
                     <span>📍 ${ev.place}</span>
+                    ${repertoireHTML}
                     ${isLogged ? `
                         <div class="event-controls">
                             <button onclick="prepareEdit('${key}', ${idx})">Edytuj</button>
@@ -299,7 +305,6 @@
                 list.appendChild(div);
             });
         }
-        // Przewijanie do listy wydarzeń na telefonach
         if (window.innerWidth < 768) list.scrollIntoView({behavior: 'smooth'});
     }
 
@@ -309,7 +314,7 @@
             document.getElementById('loginArea').style.display = 'none';
             document.getElementById('adminFormArea').style.display = 'block';
             renderCalendar();
-        } else alert("Błąd logowania!");
+        } else alert("Błąd!");
     }
 
     function logout() { location.reload(); }
@@ -320,7 +325,8 @@
             title: document.getElementById('evTitle').value,
             place: document.getElementById('evPlace').value,
             time: document.getElementById('evTime').value,
-            type: document.getElementById('evType').value
+            type: document.getElementById('evType').value,
+            repertoire: document.getElementById('evRepertoire').value // Pobieranie nowej listy
         };
         if(editingContext) {
             events[editingContext.date].splice(editingContext.index, 1);
@@ -343,13 +349,14 @@
         document.getElementById('evTitle').value = ev.title;
         document.getElementById('evPlace').value = ev.place;
         document.getElementById('evType').value = ev.type;
+        document.getElementById('evRepertoire').value = ev.repertoire || ''; // Wypełnianie pola edycji
         editingContext = {date: key, index: idx};
         document.getElementById('addBtn').textContent = "Zapisz zmiany w pamięci";
         document.getElementById('adminSection').scrollIntoView({behavior: 'smooth'});
     }
 
     function deleteEvent(key, idx) {
-        if(confirm("Usunąć to wydarzenie?")) {
+        if(confirm("Usunąć?")) {
             events[key].splice(idx, 1);
             if(events[key].length === 0) delete events[key];
             renderCalendar();
