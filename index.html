@@ -12,11 +12,11 @@
             --dark: #0b0b0b;
             --panel: #171717;
             --text: #eaeaea;
-            /* Kolory ramek i typów */
             --color-liturgia: #6b8e23;
             --color-koncert: #8b0000;
-            --color-proba: #00bfff; /* jasnoniebieski */
+            --color-proba: #00bfff;
             --color-inne: #4682b4;
+            --holiday-bg: #2a2a2a;
         }
 
         body {
@@ -38,30 +38,45 @@
         /* CALENDAR */
         .calendar { background: var(--panel); border-radius: 20px; padding: 1.5rem; box-shadow: 0 0 60px rgba(201,162,77,.15); margin-bottom: 3rem; }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .calendar-header h2 { font-family: 'Playfair Display', serif; color: var(--gold); margin: 0; }
+        .calendar-header h2 { font-family: 'Playfair Display', serif; color: var(--gold); margin: 0; text-transform: capitalize; }
         .calendar-header button { background: none; border: 1px solid var(--gold); color: var(--gold); padding: .4rem .9rem; border-radius: 10px; cursor: pointer; }
 
         .weekdays, .days { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
         .weekdays div { opacity: .5; padding: .6rem 0; font-size: 0.8rem; text-transform: uppercase; }
-
-        .day {
-            padding: 1rem 0;
-            cursor: pointer;
-            border-radius: 12px;
-            transition: 0.2s;
-            border: 2px solid transparent; /* Domyślna przeźroczysta ramka */
+        
+        .day { 
+            padding: 0.5rem 0; 
+            cursor: pointer; 
+            border-radius: 12px; 
+            transition: 0.2s; 
+            border: 2px solid transparent;
             margin: 2px;
-            font-weight: 400;
+            min-height: 75px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
         }
         .day:hover { background: rgba(255,255,255,0.05); }
-        .day.today { background: rgba(255,255,255,0.08); font-weight: bold; }
+        .day.today { background: rgba(255,255,255,0.05); border: 2px dashed rgba(201,162,77,0.5); }
+        
+        .day.is-holiday { background-color: var(--holiday-bg); }
+        .holiday-name { 
+            font-size: 0.6rem; 
+            line-height: 1.1; 
+            margin-top: 4px; 
+            padding: 0 4px;
+            opacity: 0.7;
+            font-weight: 300;
+        }
 
-        /* Kolorowe ramki dla typów wydarzeń */
+        .day-number { font-size: 1.1rem; font-weight: 600; }
+
+        /* RAMKI WYDARZEŃ */
         .day.has-liturgia { border-color: var(--color-liturgia); }
         .day.has-koncert { border-color: var(--color-koncert); }
         .day.has-proba { border-color: var(--color-proba); }
         .day.has-inne { border-color: var(--color-inne); }
-        /* Jeśli jest wiele wydarzeń naraz, ramka złota */
         .day.has-multiple { border-color: var(--gold); border-style: double; }
 
         /* EVENTS LIST */
@@ -72,21 +87,18 @@
         .event.koncert { border-color: var(--color-koncert); }
         .event.proba { border-color: var(--color-proba); }
         .event.inne { border-color: var(--color-inne); }
-
+        
         .event-controls { margin-top: 10px; display: flex; gap: 10px; }
         .event-controls button { padding: 4px 10px; font-size: 0.8rem; cursor: pointer; border-radius: 5px; border: 1px solid #555; background: transparent; color: white; }
 
-        /* LOGIN PANEL */
+        /* FOOTER & LOGIN */
         footer { background: #0e0e0e; padding: 3rem 1rem; border-top: 1px solid rgba(201,162,77,0.2); }
         .admin-container { max-width: 800px; margin: auto; }
         .admin { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; }
         .admin input, .admin select, .admin button { padding: .6rem .8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #222; color: var(--text); font-family: inherit; }
-        .admin button { background: var(--gold); color: black; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
-        .admin button:hover { opacity: 0.9; transform: translateY(-1px); }
-        .admin button.alt { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
+        .admin button { background: var(--gold); color: black; font-weight: bold; cursor: pointer; border: none; }
         .row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-        .hint { font-size: 0.85rem; opacity: 0.5; margin-top: 15px; text-align: center; }
-
+        
         .fade { opacity: 0; transform: translateY(30px); transition: 1s ease; }
         .fade.visible { opacity: 1; transform: translateY(0); }
     </style>
@@ -121,7 +133,6 @@
     <div class="admin-container fade">
         <div class="admin" id="adminSection">
             <h3 style="color:var(--gold); margin: 0 0 1rem 0; font-family: 'Playfair Display', serif;">Panel logowania</h3>
-
             <div id="loginArea">
                 <div class="row">
                     <input id="username" placeholder="Użytkownik" style="flex:1">
@@ -129,7 +140,6 @@
                     <button onclick="tryLogin()">Zaloguj</button>
                 </div>
             </div>
-
             <div id="adminFormArea" style="display:none;">
                 <form id="addEventForm" onsubmit="event.preventDefault(); addEventFromForm();">
                     <div class="row">
@@ -148,16 +158,13 @@
                     </div>
                     <button id="addBtn" type="submit" style="width:100%">Dodaj / Zaktualizuj w pamięci</button>
                 </form>
-
-                <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
-                    <div class="row">
-                        <button onclick="exportJSON()" style="flex:2; background:#6b8e23; color:white;">POBIERZ PLIK JSON (EKSPORT)</button>
-                        <button onclick="logout()" class="alt">Wyloguj</button>
-                    </div>
+                <div class="row" style="margin-top:15px;">
+                    <button onclick="exportJSON()" style="flex:2; background:#6b8e23; color:white;">POBIERZ PLIK JSON (EKSPORT)</button>
+                    <button onclick="logout()" style="background:#444; color:white;">Wyloguj</button>
                 </div>
             </div>
-            <p class="hint">Obramowanie: Zielone (Liturgia), Czerwone (Koncert), Jasnoniebieskie (Próba), Niebieskie (Inne).</p>
         </div>
+        <p style="text-align:center; opacity:0.3; font-size:0.8rem; margin-top:20px;">© 2026 Cantus Mirabilis</p>
     </div>
 </footer>
 
@@ -167,109 +174,133 @@
     let isLogged = false;
     let editingContext = null;
 
+    const holidays = {
+        "2026-01-01": "Nowy Rok / Św. Bożej Rodzicielki",
+        "2026-01-06": "Trzech Króli",
+        "2026-02-02": "MB Gromnicznej",
+        "2026-02-18": "Środa Popielcowa",
+        "2026-03-29": "Niedziela Palmowa",
+        "2026-04-02": "Wielki Czwartek",
+        "2026-04-03": "Wielki Piątek",
+        "2026-04-04": "Wielka Sobota",
+        "2026-04-05": "Wielkanoc",
+        "2026-04-06": "Poniedziałek Wielkanocny",
+        "2026-05-01": "Święto Pracy",
+        "2026-05-03": "Konstytucji 3 Maja",
+        "2026-05-17": "Wniebowstąpienie",
+        "2026-05-24": "Zielone Świątki",
+        "2026-05-25": "NMP Matki Kościoła",
+        "2026-06-04": "Boże Ciało",
+        "2026-08-15": "Wniebowzięcie NMP",
+        "2026-11-01": "Wszystkich Świętych",
+        "2026-11-02": "Dzień Zaduszny",
+        "2026-11-11": "Święto Niepodległości",
+        "2026-12-08": "Niepokalane Poczęcie NMP",
+        "2026-12-24": "Wigilia",
+        "2026-12-25": "Boże Narodzenie",
+        "2026-12-26": "Św. Szczepana"
+    };
+
     async function init() {
         try {
             const response = await fetch('./cantus_events_export.json?t=' + Date.now());
-            if (response.ok) {
-                events = await response.json();
-            }
-        } catch (e) {
-            console.log("Błąd ładowania JSON.");
-        }
+            if (response.ok) events = await response.json();
+        } catch (e) { console.log("Ładowanie bazy..."); }
         renderCalendar();
         setupObserver();
     }
 
+    function renderCalendar() {
+        const daysEl = document.getElementById('days');
+        daysEl.innerHTML = '';
+        
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        // Zawsze ustawiamy na 1 dzień miesiąca do obliczeń nagłówka
+        const firstDayOfMonth = new Date(year, month, 1);
+        document.getElementById('monthYear').textContent = 
+            firstDayOfMonth.toLocaleString('pl-PL', {month:'long', year:'numeric'});
+        
+        let firstDayIndex = firstDayOfMonth.getDay(); 
+        if (firstDayIndex === 0) firstDayIndex = 7; 
+        
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        for(let i = 1; i < firstDayIndex; i++) {
+            daysEl.appendChild(document.createElement('div'));
+        }
+        
+        for(let d = 1; d <= daysInMonth; d++) {
+            const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day';
+            
+            const numDiv = document.createElement('div');
+            numDiv.className = 'day-number';
+            numDiv.textContent = d;
+            dayDiv.appendChild(numDiv);
 
-function renderCalendar() {
-    const daysEl = document.getElementById('days');
-    daysEl.innerHTML = '';
-    
-    // Ustawiamy datę na pierwszy dzień miesiąca, aby uniknąć błędów przy zmianie miesięcy
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const firstDayOfMonth = new Date(year, month, 1);
-    
-    document.getElementById('monthYear').textContent = 
-        firstDayOfMonth.toLocaleString('pl-PL', {month:'long', year:'numeric'});
-    
-    // Pobieramy dzień tygodnia (1-Pn, ..., 7-Nd)
-    let firstDayIndex = firstDayOfMonth.getDay(); 
-    if (firstDayIndex === 0) firstDayIndex = 7; // Korekta dla Niedzieli
-    
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
-    // Puste pola dla dni z poprzedniego miesiąca
-    for(let i = 1; i < firstDayIndex; i++) {
-        daysEl.appendChild(document.createElement('div'));
+            if(holidays[key]) {
+                dayDiv.classList.add('is-holiday');
+                const holDiv = document.createElement('div');
+                holDiv.className = 'holiday-name';
+                holDiv.textContent = holidays[key];
+                dayDiv.appendChild(holDiv);
+            }
+
+            if(events[key]) {
+                const types = [...new Set(events[key].map(ev => ev.type))];
+                if (types.length > 1) dayDiv.classList.add('has-multiple');
+                else if (types.length === 1) dayDiv.classList.add(`has-${types[0]}`);
+            }
+            
+            const today = new Date();
+            if(today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) {
+                dayDiv.classList.add('today');
+            }
+            
+            dayDiv.onclick = () => showEvents(key);
+            daysEl.appendChild(dayDiv);
+        }
     }
-    
-    for(let d = 1; d <= daysInMonth; d++) {
-        const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const dayDiv = document.createElement('div');
-        dayDiv.className = 'day';
-        
-        const numDiv = document.createElement('div');
-        numDiv.className = 'day-number';
-        numDiv.textContent = d;
-        dayDiv.appendChild(numDiv);
 
-        if(holidays[key]) {
-            dayDiv.classList.add('is-holiday');
-            const holDiv = document.createElement('div');
-            holDiv.className = 'holiday-name';
-            holDiv.textContent = holidays[key];
-            dayDiv.appendChild(holDiv);
-        }
-
-        if(events[key]) {
-            const types = [...new Set(events[key].map(ev => ev.type))];
-            if (types.length > 1) dayDiv.classList.add('has-multiple');
-            else if (types.length === 1) dayDiv.classList.add(`has-${types[0]}`);
-        }
-        
-        const today = new Date();
-        if(today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) {
-            dayDiv.classList.add('today');
-        }
-        
-        dayDiv.onclick = () => showEvents(key);
-        daysEl.appendChild(dayDiv);
+    function changeMonth(n) {
+        // Kluczowa poprawka: ustawiamy dzień na 1 przed zmianą miesiąca
+        currentDate.setDate(1);
+        currentDate.setMonth(currentDate.getMonth() + n);
+        renderCalendar();
     }
-}
-
-// POPRAWIONA FUNKCJA ZMIANY MIESIĄCA
-function changeMonth(n) {
-    // Ustawienie na 1. dzień zapobiega przeskakiwaniu (np. z 31 stycznia na 3 marca)
-    currentDate.setDate(1); 
-    currentDate.setMonth(currentDate.getMonth() + n);
-    renderCalendar();
-}
-
 
     function showEvents(key) {
         const list = document.getElementById('eventList');
         const dateLabel = new Date(key).toLocaleDateString('pl-PL', {day:'numeric', month:'long', year:'numeric'});
-        list.innerHTML = `<h3>${dateLabel}</h3>`;
+        let html = `<h3>${dateLabel}</h3>`;
+        if(holidays[key]) html += `<p style="color:var(--gold); font-size:0.9rem; margin-top:-10px;">✨ ${holidays[key]}</p>`;
+        
         if(!events[key] || events[key].length === 0) {
-            list.innerHTML += '<p>Brak wydarzeń.</p>';
-            return;
+            html += '<p>Brak wydarzeń chóru.</p>';
+            list.innerHTML = html;
+        } else {
+            list.innerHTML = html;
+            events[key].forEach((ev, idx) => {
+                const div = document.createElement('div');
+                div.className = `event ${ev.type}`;
+                div.innerHTML = `
+                    <strong>${ev.time} - ${ev.title}</strong><br>
+                    <span>📍 ${ev.place}</span>
+                    ${isLogged ? `
+                        <div class="event-controls">
+                            <button onclick="prepareEdit('${key}', ${idx})">Edytuj</button>
+                            <button onclick="deleteEvent('${key}', ${idx})">Usuń</button>
+                        </div>
+                    ` : ''}
+                `;
+                list.appendChild(div);
+            });
         }
-        events[key].forEach((ev, idx) => {
-            const div = document.createElement('div');
-            div.className = `event ${ev.type}`;
-            div.innerHTML = `
-                <strong>${ev.time} - ${ev.title}</strong><br>
-                <span>📍 ${ev.place}</span>
-                ${isLogged ? `
-                    <div class="event-controls">
-                        <button onclick="prepareEdit('${key}', ${idx})">Edytuj</button>
-                        <button onclick="deleteEvent('${key}', ${idx})">Usuń</button>
-                    </div>
-                ` : ''}
-            `;
-            list.appendChild(div);
-        });
+        // Przewijanie do listy wydarzeń na telefonach
+        if (window.innerWidth < 768) list.scrollIntoView({behavior: 'smooth'});
     }
 
     function tryLogin() {
@@ -278,7 +309,7 @@ function changeMonth(n) {
             document.getElementById('loginArea').style.display = 'none';
             document.getElementById('adminFormArea').style.display = 'block';
             renderCalendar();
-        } else { alert("Błędne dane."); }
+        } else alert("Błąd logowania!");
     }
 
     function logout() { location.reload(); }
@@ -318,7 +349,7 @@ function changeMonth(n) {
     }
 
     function deleteEvent(key, idx) {
-        if(confirm("Usunąć?")) {
+        if(confirm("Usunąć to wydarzenie?")) {
             events[key].splice(idx, 1);
             if(events[key].length === 0) delete events[key];
             renderCalendar();
@@ -327,16 +358,12 @@ function changeMonth(n) {
     }
 
     function exportJSON() {
-        const dataStr = JSON.stringify(events, null, 2);
-        const blob = new Blob([dataStr], {type: "application/json"});
-        const url = URL.createObjectURL(blob);
+        const blob = new Blob([JSON.stringify(events, null, 2)], {type: "application/json"});
         const a = document.createElement('a');
-        a.href = url;
+        a.href = URL.createObjectURL(blob);
         a.download = 'cantus_events_export.json';
         a.click();
     }
-
-    function changeMonth(n) { currentDate.setMonth(currentDate.getMonth() + n); renderCalendar(); }
 
     function setupObserver() {
         const observer = new IntersectionObserver(entries => {
