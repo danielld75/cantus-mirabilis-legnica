@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Cantus Mirabilis – Kalendarium</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
@@ -13,6 +12,11 @@
             --dark: #0b0b0b;
             --panel: #171717;
             --text: #eaeaea;
+            /* Kolory ramek i typów */
+            --color-liturgia: #6b8e23;
+            --color-koncert: #8b0000;
+            --color-proba: #00bfff; /* jasnoniebieski */
+            --color-inne: #4682b4;
         }
 
         body {
@@ -20,180 +24,73 @@
             background: radial-gradient(circle at top, #222, #000);
             color: var(--text);
             font-family: 'Inter', sans-serif;
-        }
-
-        section {
-            margin-bottom: 3rem;
-        }
-
-        /* ===== FADE-IN ===== */
-        .fade {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: opacity 1.2s ease, transform 1.2s ease;
-        }
-
-        .fade.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* ===== HEADER ===== */
-        header {
-            text-align: center;
-            padding: 4rem 1rem 3rem;
-        }
-
-        header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 3.2rem;
-            letter-spacing: 3px;
-            color: var(--gold);
-        }
-
-        header p {
-            opacity: 0.8;
-            font-size: 1.2rem;
-        }
-
-        /* ===== MAIN ===== */
-        main {
-            max-width: 1100px;
-            margin: auto;
-            padding: 2rem 1rem 4rem;
-        }
-
-        /* ===== CALENDAR ===== */
-        .calendar {
-            background: var(--panel);
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: 0 0 60px rgba(201,162,77,.15);
-        }
-
-        .calendar-header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
-        .calendar-header h2 {
-            font-family: 'Playfair Display', serif;
-            color: var(--gold);
-        }
+        main { max-width: 1100px; margin: auto; padding: 2rem 1rem 4rem; flex: 1; width: 100%; box-sizing: border-box; }
 
-        .calendar-header button {
-            background: none;
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            padding: .4rem .9rem;
-            border-radius: 10px;
+        header { text-align: center; padding: 4rem 1rem 3rem; }
+        header h1 { font-family: 'Playfair Display', serif; font-size: 3.2rem; letter-spacing: 3px; color: var(--gold); margin: 0; }
+        header p { opacity: 0.8; font-size: 1.2rem; }
+
+        /* CALENDAR */
+        .calendar { background: var(--panel); border-radius: 20px; padding: 1.5rem; box-shadow: 0 0 60px rgba(201,162,77,.15); margin-bottom: 3rem; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .calendar-header h2 { font-family: 'Playfair Display', serif; color: var(--gold); margin: 0; }
+        .calendar-header button { background: none; border: 1px solid var(--gold); color: var(--gold); padding: .4rem .9rem; border-radius: 10px; cursor: pointer; }
+
+        .weekdays, .days { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+        .weekdays div { opacity: .5; padding: .6rem 0; font-size: 0.8rem; text-transform: uppercase; }
+
+        .day {
+            padding: 1rem 0;
             cursor: pointer;
-        }
-
-        .weekdays, .days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-        }
-
-        .weekdays div {
-            opacity: .5;
-            padding: .6rem 0;
-        }
-
-        .days div {
-            padding: .9rem 0;
-            cursor: pointer;
-            border-radius: 10px;
-            transition: .2s;
-        }
-
-        .days div:hover {
-            background: rgba(201,162,77,.18);
-        }
-
-        .day.has-event {
-            border: 1px solid var(--gold);
-        }
-
-        .day.today {
-            box-shadow: inset 0 0 0 2px rgba(201,162,77,.12);
-        }
-
-        /* ===== EVENTS ===== */
-        .events {
-            background: var(--panel);
-            border-radius: 20px;
-            padding: 1.5rem;
-        }
-
-        .events h3 {
-            font-family: 'Playfair Display', serif;
-            color: var(--gold);
-        }
-
-        .event {
-            margin-top: 1rem;
-            padding-left: 1rem;
-            border-left: 4px solid var(--gold);
-        }
-
-        .event.liturgia { border-color: #6b8e23; }
-        .event.koncert { border-color: #8b0000; }
-        .event.inne { border-color: #4682b4; }
-
-        /* ===== ADMIN ===== */
-        .admin {
-            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
             border-radius: 12px;
-            padding: 1rem;
-            margin-top: 1rem;
-            border: 1px solid rgba(255,255,255,0.03);
+            transition: 0.2s;
+            border: 2px solid transparent; /* Domyślna przeźroczysta ramka */
+            margin: 2px;
+            font-weight: 400;
         }
+        .day:hover { background: rgba(255,255,255,0.05); }
+        .day.today { background: rgba(255,255,255,0.08); font-weight: bold; }
 
-        .admin form {
-            display: grid;
-            gap: .6rem;
-            grid-template-columns: 1fr;
-        }
+        /* Kolorowe ramki dla typów wydarzeń */
+        .day.has-liturgia { border-color: var(--color-liturgia); }
+        .day.has-koncert { border-color: var(--color-koncert); }
+        .day.has-proba { border-color: var(--color-proba); }
+        .day.has-inne { border-color: var(--color-inne); }
+        /* Jeśli jest wiele wydarzeń naraz, ramka złota */
+        .day.has-multiple { border-color: var(--gold); border-style: double; }
 
-        .admin input, .admin select, .admin button {
-            padding: .6rem .8rem;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.06);
-            background: transparent;
-            color: var(--text);
-        }
+        /* EVENTS LIST */
+        .events { background: var(--panel); border-radius: 20px; padding: 1.5rem; margin-bottom: 3rem; }
+        .events h3 { font-family: 'Playfair Display', serif; color: var(--gold); margin-top: 0; }
+        .event { margin-top: 1rem; padding: 1rem; border-left: 5px solid var(--gold); background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; }
+        .event.liturgia { border-color: var(--color-liturgia); }
+        .event.koncert { border-color: var(--color-koncert); }
+        .event.proba { border-color: var(--color-proba); }
+        .event.inne { border-color: var(--color-inne); }
 
-        .admin .row {
-            display:flex;
-            gap:.6rem;
-        }
+        .event-controls { margin-top: 10px; display: flex; gap: 10px; }
+        .event-controls button { padding: 4px 10px; font-size: 0.8rem; cursor: pointer; border-radius: 5px; border: 1px solid #555; background: transparent; color: white; }
 
-        .admin .small {
-            font-size: .9rem;
-            opacity: .8;
-        }
+        /* LOGIN PANEL */
+        footer { background: #0e0e0e; padding: 3rem 1rem; border-top: 1px solid rgba(201,162,77,0.2); }
+        .admin-container { max-width: 800px; margin: auto; }
+        .admin { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; }
+        .admin input, .admin select, .admin button { padding: .6rem .8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #222; color: var(--text); font-family: inherit; }
+        .admin button { background: var(--gold); color: black; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
+        .admin button:hover { opacity: 0.9; transform: translateY(-1px); }
+        .admin button.alt { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
+        .row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .hint { font-size: 0.85rem; opacity: 0.5; margin-top: 15px; text-align: center; }
 
-        footer {
-            text-align: center;
-            padding: 2rem;
-            opacity: .5;
-        }
-
-        .hint {
-            opacity:.7;
-            font-size:.95rem;
-            margin-top:.5rem;
-        }
-
-        .event-controls { margin-top:.4rem; }
-
-        .admin button.small { padding:.3rem .5rem; font-size:.9rem; }
+        .fade { opacity: 0; transform: translateY(30px); transition: 1s ease; }
+        .fade.visible { opacity: 1; transform: translateY(0); }
     </style>
 </head>
-
 <body>
 
 <header class="fade">
@@ -202,320 +99,221 @@
 </header>
 
 <main>
-
     <section class="calendar fade">
         <div class="calendar-header">
             <button onclick="changeMonth(-1)">◀</button>
             <h2 id="monthYear"></h2>
             <button onclick="changeMonth(1)">▶</button>
         </div>
-
         <div class="weekdays">
-            <div>Pn</div><div>Wt</div><div>Śr</div><div>Cz</div>
-            <div>Pt</div><div>Sb</div><div>Nd</div>
+            <div>Pn</div><div>Wt</div><div>Śr</div><div>Cz</div><div>Pt</div><div>Sb</div><div>Nd</div>
         </div>
-
-        <div class="days" id="days"></div>
+        <div id="days" class="days"></div>
     </section>
 
     <section class="events fade" id="eventList">
         <h3>Wydarzenia</h3>
-        <p>Wybierz dzień w kalendarzu</p>
+        <p>Wybierz dzień w kalendarzu, aby zobaczyć szczegóły.</p>
     </section>
-
-    <!-- ===== ADMIN: LOGIN + FORM ===== -->
-    <section class="admin fade" id="adminSection" aria-hidden="false">
-        <h3 style="color:var(--gold);margin:0 0 .5rem 0;font-family:'Playfair Display',serif;">Panel administratora</h3>
-
-        <div id="loginArea">
-            <form id="loginForm" onsubmit="event.preventDefault(); tryLogin();">
-                <div class="row">
-                    <input id="username" placeholder="Nazwa użytkownika" required value="">
-                    <input id="password" type="password" placeholder="Hasło" required value="">
-                </div>
-                <div class="row">
-                    <button type="submit">Zaloguj</button>
-                    <button type="button" onclick="logout()" style="background:transparent;border:1px solid rgba(255,255,255,0.06);">Wyloguj</button>
-                </div>
-                <div class="hint">Panel dostępowy — zmiany są wprowadzane w pamięci przeglądarki i można je pobrać jako plik JSON.</div>
-            </form>
-        </div>
-
-        <div id="adminFormArea" style="display:none;margin-top:1rem;">
-            <form id="addEventForm" onsubmit="event.preventDefault(); addEventFromForm();">
-                <div class="row">
-                    <input id="evDate" type="date" required>
-                    <input id="evTime" type="time" required>
-                </div>
-                <input id="evTitle" placeholder="Tytuł wydarzenia (np. Niedziela, Koncert Kolęd)" required>
-                <input id="evPlace" placeholder="Miejsce (np. Katedra)" required>
-                <div class="row">
-                    <select id="evType" required>
-                        <option value="liturgia">liturgia</option>
-                        <option value="koncert">koncert</option>
-                        <option value="inne">inne</option>
-                    </select>
-                    <button id="addBtn" type="submit">Dodaj wydarzenie</button>
-                </div>
-                <div class="hint">Domyślny plik z wydarzeniami pobierany jest z <code>/cantus_events_export.json</code>. Zmiany są zapisywane wyłącznie w pamięci i można je wyeksportować jako JSON (pobranie pliku) — nie używamy localStorage.</div>
-            </form>
-
-            <div style="margin-top:.8rem; display:flex; gap:.5rem; align-items:center;">
-                <button onclick="reloadFromRepoFile()" class="small">Przeładuj z pliku (repo)</button>
-                <button onclick="exportEditableEvents()" class="small">Eksportuj (JSON)</button>
-                <button onclick="restoreDefaults()" class="small">Przywróć domyślne</button>
-                <div class="small" style="margin-left:8px; opacity:.8">Edytuj tutaj, a następnie pobierz zaktualizowany plik JSON i umieść go w repo, jeśli chcesz wprowadzić zmiany publicznie.</div>
-            </div>
-        </div>
-    </section>
-
 </main>
 
 <footer>
-    © Cantus Mirabilis • GitHub Pages
+    <div class="admin-container fade">
+        <div class="admin" id="adminSection">
+            <h3 style="color:var(--gold); margin: 0 0 1rem 0; font-family: 'Playfair Display', serif;">Panel logowania</h3>
+
+            <div id="loginArea">
+                <div class="row">
+                    <input id="username" placeholder="Użytkownik" style="flex:1">
+                    <input id="password" type="password" placeholder="Hasło" style="flex:1">
+                    <button onclick="tryLogin()">Zaloguj</button>
+                </div>
+            </div>
+
+            <div id="adminFormArea" style="display:none;">
+                <form id="addEventForm" onsubmit="event.preventDefault(); addEventFromForm();">
+                    <div class="row">
+                        <input id="evDate" type="date" required>
+                        <input id="evTime" type="time" required>
+                        <select id="evType">
+                            <option value="liturgia">Liturgia</option>
+                            <option value="koncert">Koncert</option>
+                            <option value="proba">Próba</option>
+                            <option value="inne">Inne</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <input id="evTitle" placeholder="Tytuł wydarzenia" required style="flex:2;">
+                        <input id="evPlace" placeholder="Miejsce" required style="flex:1;">
+                    </div>
+                    <button id="addBtn" type="submit" style="width:100%">Dodaj / Zaktualizuj w pamięci</button>
+                </form>
+
+                <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
+                    <div class="row">
+                        <button onclick="exportJSON()" style="flex:2; background:#6b8e23; color:white;">POBIERZ PLIK JSON (EKSPORT)</button>
+                        <button onclick="logout()" class="alt">Wyloguj</button>
+                    </div>
+                </div>
+            </div>
+            <p class="hint">Obramowanie: Zielone (Liturgia), Czerwone (Koncert), Jasnoniebieskie (Próba), Niebieskie (Inne).</p>
+        </div>
+    </div>
 </footer>
 
 <script>
-    /* ===== CONFIG ===== */
-    // primary events file in the project (as requested)
-    const EVENTS_JSON_PATH = '/cantus_events_export.json';
-
-    /* ===== DEFAULT (fallback) ===== */
-    const embeddedDefaultEvents = {
-        "2026-01-25":[{"title":"Msza św. Repertuar: Alleluja Werbicki, Szukajcie wpierw Królestwa Bożego Dziuda, Sicut Cervus Palestrina lub Witaj Pokarmie Bębenek, Zaśnij Dziecino Uruski. SPOTYKAMY SIĘ NA PLEBANII O 18.00. NATALIIA POPROWADZI ROZGRZANIE :) CHÓRU","place":"Katedra","time":"18:30","type":"liturgia"}],
-        "2026-02-01":[{"title":"Koncert Kolęd","place":"Katedra","time":"16:30","type":"koncert"}],
-        "2026-02-15":[{"title":"Niedziela","place":"Katedra","time":"10:00","type":"liturgia"}],
-        "2026-03-08":[{"title":"Niedziela","place":"Katedra","time":"13:00","type":"liturgia"}],
-        "2026-03-29":[{"title":"Niedziela Palmowa","place":"Katedra","time":"10:00","type":"liturgia"}],
-        "2026-04-02":[{"title":"Wielki Czwartek – Msza Krzyżma","place":"Katedra","time":"10:00","type":"liturgia"}],
-        "2026-04-03":[{"title":"Wielki Piątek","place":"Katedra","time":"18:30","type":"liturgia"}],
-        "2026-05-10":[{"title":"Niedziela","place":"Katedra","time":"13:00","type":"liturgia"}],
-        "2026-05-24":[{"title":"Niedziela","place":"Katedra","time":"10:00","type":"liturgia"}],
-        "2026-06-04":[{"title":"Boże Ciało Czwartek","place":"Katedra","time":"10:00","type":"liturgia"}],
-        "2026-06-28":[{"title":"Niedziela, Wigilia odpustu Katedry","place":"Katedra","time":"18:30","type":"liturgia"}],
-        "2026-09-19":[{"title":"Wigilia Poświęcenia Kościoła św Ap. Piotra i Pawła","place":"Katedra","time":"18:30","type":"liturgia"}]
-    };
-
-    // runtime events: loaded from cantus_events_export.json (repo) or fallback,
-    // then kept in memory for editing. No localStorage is used.
-    let repoEvents = {};
-    let editableEvents = {}; // authoritative in-memory copy that admin can edit
-    let events = {}; // view (same as editableEvents)
-
-    /* ===== CALENDAR ===== */
+    let events = {};
     let currentDate = new Date();
+    let isLogged = false;
+    let editingContext = null;
 
-    async function loadRepoEvents(){
-        try{
-            const res = await fetch(EVENTS_JSON_PATH + '?_=' + Date.now());
-            if(!res.ok) throw new Error('fetch failed');
-            const data = await res.json();
-            repoEvents = data || {};
-        }catch(e){
-            console.warn('Nie udało się pobrać cantus_events_export.json, używam danych wbudowanych.', e);
-            repoEvents = embeddedDefaultEvents;
+    async function init() {
+        try {
+            const response = await fetch('./cantus_events_export.json?t=' + Date.now());
+            if (response.ok) {
+                events = await response.json();
+            }
+        } catch (e) {
+            console.log("Błąd ładowania JSON.");
         }
-        // Initialize editableEvents as a deep copy of repoEvents (in-memory)
-        editableEvents = JSON.parse(JSON.stringify(repoEvents || {}));
+        renderCalendar();
+        setupObserver();
     }
 
-    function mergeEvents(){
-        // in the new model editableEvents is authoritative
-        events = JSON.parse(JSON.stringify(editableEvents || {}));
-    }
-
-    function renderCalendar(){
-        mergeEvents();
-
+    function renderCalendar() {
         const daysEl = document.getElementById('days');
         daysEl.innerHTML = '';
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
-
-        document.getElementById('monthYear').textContent =
-                currentDate.toLocaleString('pl-PL',{month:'long',year:'numeric'});
+        document.getElementById('monthYear').textContent = currentDate.toLocaleString('pl-PL', {month:'long', year:'numeric'});
 
         let firstDay = new Date(year, month, 1).getDay() || 7;
         let daysInMonth = new Date(year, month+1, 0).getDate();
 
-        for(let i=1;i<firstDay;i++) daysEl.appendChild(document.createElement('div'));
+        for(let i=1; i<firstDay; i++) daysEl.appendChild(document.createElement('div'));
 
-        for(let d=1;d<=daysInMonth;d++){
+        for(let d=1; d<=daysInMonth; d++) {
             const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const div = document.createElement('div');
-            div.textContent = d;
-            div.className = 'day';
-            if(events[key]) div.classList.add('has-event');
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day';
+            dayDiv.textContent = d;
 
-            // oznacz dzisiejszą datę
-            const today = new Date();
-            if(today.getFullYear() === year && today.getMonth() === month && today.getDate() === d){
-                div.classList.add('today');
+            if(events[key]) {
+                const types = [...new Set(events[key].map(ev => ev.type))];
+                if (types.length > 1) {
+                    dayDiv.classList.add('has-multiple');
+                } else if (types.length === 1) {
+                    dayDiv.classList.add(`has-${types[0]}`);
+                }
             }
 
-            div.onclick = ()=>showEvents(key);
-            daysEl.appendChild(div);
+            const today = new Date();
+            if(today.getFullYear()===year && today.getMonth()===month && today.getDate()===d) dayDiv.classList.add('today');
+
+            dayDiv.onclick = () => showEvents(key);
+            daysEl.appendChild(dayDiv);
         }
     }
 
-    function showEvents(key){
-        mergeEvents();
+    function showEvents(key) {
         const list = document.getElementById('eventList');
-        const label = new Date(key).toLocaleDateString('pl-PL', {year:'numeric',month:'long',day:'numeric'});
-        list.innerHTML = `<h3>${label}</h3>`;
-        if(!events[key]){
-            list.innerHTML += '<p>Brak wydarzeń</p>';
+        const dateLabel = new Date(key).toLocaleDateString('pl-PL', {day:'numeric', month:'long', year:'numeric'});
+        list.innerHTML = `<h3>${dateLabel}</h3>`;
+        if(!events[key] || events[key].length === 0) {
+            list.innerHTML += '<p>Brak wydarzeń.</p>';
             return;
         }
-        events[key].forEach((e, idx)=>{
-            list.innerHTML += `
-      <div class="event ${e.type}">
-        <strong>${e.title}</strong><br>
-        <span>${e.place} • ${e.time}</span>
-        <div class="event-controls">` +
-                    (isLogged ? `<button onclick="editEvent('${key}', ${idx})">Edytuj</button> <button onclick="deleteEvent('${key}', ${idx})">Usuń</button>` : '') +
-                    `</div>
-      </div>`;
+        events[key].forEach((ev, idx) => {
+            const div = document.createElement('div');
+            div.className = `event ${ev.type}`;
+            div.innerHTML = `
+                <strong>${ev.time} - ${ev.title}</strong><br>
+                <span>📍 ${ev.place}</span>
+                ${isLogged ? `
+                    <div class="event-controls">
+                        <button onclick="prepareEdit('${key}', ${idx})">Edytuj</button>
+                        <button onclick="deleteEvent('${key}', ${idx})">Usuń</button>
+                    </div>
+                ` : ''}
+            `;
+            list.appendChild(div);
         });
     }
 
-    function changeMonth(n){
-        currentDate.setMonth(currentDate.getMonth()+n);
-        renderCalendar();
-    }
-
-    /* ===== ADMIN (client-side) ===== */
-    const ADMIN_USER = 'Cantus';
-    const ADMIN_PASS = 'mirabilis#2026';
-    let isLogged = false;
-
-    function tryLogin(){
-        const user = document.getElementById('username').value || '';
-        const pass = document.getElementById('password').value || '';
-        if(user === ADMIN_USER && pass === ADMIN_PASS){
+    function tryLogin() {
+        if(document.getElementById('username').value === 'Cantus' && document.getElementById('password').value === 'mirabilis#2026') {
             isLogged = true;
             document.getElementById('loginArea').style.display = 'none';
             document.getElementById('adminFormArea').style.display = 'block';
-            alert('Zalogowano poprawnie. Edycje będą zapisywane w pamięci — pamiętaj, aby wyeksportować JSON, jeśli chcesz zachować zmiany.');
             renderCalendar();
-        } else {
-            alert('Błędna nazwa użytkownika lub hasło.');
-        }
+        } else { alert("Błędne dane."); }
     }
 
-    function logout(){
-        isLogged = false;
-        document.getElementById('loginArea').style.display = 'block';
-        document.getElementById('adminFormArea').style.display = 'none';
-        document.getElementById('loginForm').reset();
-        renderCalendar();
-    }
+    function logout() { location.reload(); }
 
-    /* ===== Helpers for working with in-memory editableEvents (no localStorage) ===== */
-
-    function reloadFromRepoFile(){
-        if(!confirm('Przeładować plik z repozytorium? Wszystkie niezapisane zmiany w pamięci zostaną utracone.')) return;
-        (async ()=>{
-            await loadRepoEvents();
-            renderCalendar();
-            alert('Dane przeładowane z pliku ' + EVENTS_JSON_PATH);
-        })();
-    }
-
-    function restoreDefaults(){
-        if(!confirm('Przywrócić dane domyślne wbudowane w stronę? Wszystkie niezapisane zmiany zostaną utracone.')) return;
-        editableEvents = JSON.parse(JSON.stringify(embeddedDefaultEvents));
-        renderCalendar();
-        alert('Przywrócono dane domyślne.');
-    }
-
-    function exportEditableEvents(){
-        // export the current in-memory editableEvents
-        const payload = editableEvents || {};
-        const raw = JSON.stringify(payload, null, 2);
-        const blob = new Blob([raw], {type: 'application/json;charset=utf-8'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        // suggest a filename; user can rename before adding to repo
-        a.download = 'cantus_events_export.json';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-    }
-
-    /* Add / Edit / Delete events in editableEvents (in-memory only) */
-    let editingContext = null; // {date, index} when editing existing event
-
-    function addEventFromForm(){
+    function addEventFromForm() {
         const date = document.getElementById('evDate').value;
-        const time = document.getElementById('evTime').value;
-        const title = document.getElementById('evTitle').value.trim();
-        const place = document.getElementById('evPlace').value.trim();
-        const type = document.getElementById('evType').value;
-
-        if(!date || !title || !place || !time) { alert('Wypełnij wszystkie pola.'); return; }
-
-        const newEvent = { title, place, time, type };
-
-        if(!editableEvents[date]) editableEvents[date] = [];
-
-        if(editingContext && editingContext.date === date && typeof editingContext.index === 'number'){
-            // replace
-            editableEvents[date][editingContext.index] = newEvent;
+        const newEv = {
+            title: document.getElementById('evTitle').value,
+            place: document.getElementById('evPlace').value,
+            time: document.getElementById('evTime').value,
+            type: document.getElementById('evType').value
+        };
+        if(editingContext) {
+            events[editingContext.date].splice(editingContext.index, 1);
+            if(events[editingContext.date].length === 0) delete events[editingContext.date];
             editingContext = null;
-            document.getElementById('addBtn').textContent = 'Dodaj wydarzenie';
-        } else {
-            editableEvents[date].push(newEvent);
         }
-
+        if(!events[date]) events[date] = [];
+        events[date].push(newEv);
+        events[date].sort((a,b) => a.time.localeCompare(b.time));
+        document.getElementById('addEventForm').reset();
+        document.getElementById('addBtn').textContent = "Dodaj / Zaktualizuj w pamięci";
         renderCalendar();
         showEvents(date);
-        document.getElementById('addEventForm').reset();
-        alert('Wydarzenie zapisane w pamięci. Eksportuj JSON, aby zachować zmiany poza przeglądarką.');
     }
 
-    function editEvent(date, idx){
-        if(!editableEvents[date] || typeof editableEvents[date][idx] === 'undefined'){
-            alert('Nie znaleziono wydarzenia do edycji.');
-            return;
-        }
-        const ev = editableEvents[date][idx];
-        document.getElementById('evDate').value = date;
+    function prepareEdit(key, idx) {
+        const ev = events[key][idx];
+        document.getElementById('evDate').value = key;
         document.getElementById('evTime').value = ev.time;
         document.getElementById('evTitle').value = ev.title;
         document.getElementById('evPlace').value = ev.place;
         document.getElementById('evType').value = ev.type;
-        editingContext = {date, index: idx};
-        document.getElementById('addBtn').textContent = 'Zapisz zmiany';
+        editingContext = {date: key, index: idx};
+        document.getElementById('addBtn').textContent = "Zapisz zmiany w pamięci";
+        document.getElementById('adminSection').scrollIntoView({behavior: 'smooth'});
     }
 
-    function deleteEvent(date, idx){
-        if(!confirm('Czy na pewno usunąć to wydarzenie?')) return;
-        if(editableEvents && editableEvents[date] && typeof editableEvents[date][idx] !== 'undefined'){
-            editableEvents[date].splice(idx,1);
-            if(editableEvents[date].length === 0) delete editableEvents[date];
+    function deleteEvent(key, idx) {
+        if(confirm("Usunąć?")) {
+            events[key].splice(idx, 1);
+            if(events[key].length === 0) delete events[key];
             renderCalendar();
-            showEvents(date);
-            alert('Wydarzenie usunięte (zmiana w pamięci). Eksportuj JSON, aby zachować zmianę poza przeglądarką.');
-            return;
+            showEvents(key);
         }
-        alert('Nie udało się usunąć wydarzenia.');
     }
 
-    /* ===== FADE-IN OBSERVER ===== */
-    const observer = new IntersectionObserver(entries=>{
-        entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
-    },{threshold:0.15});
+    function exportJSON() {
+        const dataStr = JSON.stringify(events, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'cantus_events_export.json';
+        a.click();
+    }
 
-    document.querySelectorAll('.fade').forEach(el=>observer.observe(el));
+    function changeMonth(n) { currentDate.setMonth(currentDate.getMonth() + n); renderCalendar(); }
 
-    // inicjalizacja: załaduj cantus_events_export.json i renderuj
-    (async function init(){
-        await loadRepoEvents();
-        renderCalendar();
-    })();
+    function setupObserver() {
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+        }, {threshold: 0.1});
+        document.querySelectorAll('.fade').forEach(el => observer.observe(el));
+    }
+
+    init();
 </script>
 
 </body>
