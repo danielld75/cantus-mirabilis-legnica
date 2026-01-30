@@ -102,5 +102,23 @@
       "time": "19:40",
       "type": "proba"
     }
+  ],
+  "2026-02-10": [
+    {
+      "title": "PRÓBY NIE MA",
+      "place": "Instytut",
+      "time": "19:40",
+      "type": "proba",
+      "repertoire": ""
+    }
+  ],
+  "2026-02-11": [
+    {
+      "title": "PRÓBY NIE MA",
+      "place": "Instytut",
+      "time": "19:40",
+      "type": "proba",
+      "repertoire": ""
+    }
   ]
 }
