@@ -120,5 +120,32 @@
       "type": "proba",
       "repertoire": ""
     }
+  ],
+  "2026-02-06": [
+    {
+      "title": "PRÓBY NIE MA",
+      "place": "Instytut",
+      "time": "19:40",
+      "type": "proba",
+      "repertoire": ""
+    }
+  ],
+  "2026-02-14": [
+    {
+      "title": "Próba do mszy św 15.02 Zamiast próby 13.02. Repertuar wkrótce",
+      "place": "Instytut",
+      "time": "19:40",
+      "type": "proba",
+      "repertoire": ""
+    }
+  ],
+  "2026-02-13": [
+    {
+      "title": "PRÓBY NIE MA",
+      "place": "Instytut",
+      "time": "19:40",
+      "type": "proba",
+      "repertoire": ""
+    }
   ]
 }
