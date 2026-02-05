@@ -30,12 +30,10 @@
         }
 
         main { max-width: 1100px; margin: auto; padding: 2rem 1rem 4rem; flex: 1; width: 100%; box-sizing: border-box; }
-
         header { text-align: center; padding: 4rem 1rem 3rem; }
         header h1 { font-family: 'Playfair Display', serif; font-size: 3.2rem; letter-spacing: 3px; color: var(--gold); margin: 0; }
         header p { opacity: 0.8; font-size: 1.2rem; }
 
-        /* CALENDAR */
         .calendar { background: var(--panel); border-radius: 20px; padding: 1.5rem; box-shadow: 0 0 60px rgba(201,162,77,.15); margin-bottom: 3rem; }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         .calendar-header h2 { font-family: 'Playfair Display', serif; color: var(--gold); margin: 0; text-transform: capitalize; }
@@ -43,43 +41,23 @@
 
         .weekdays, .days { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
         .weekdays div { opacity: .5; padding: .6rem 0; font-size: 0.8rem; text-transform: uppercase; }
-        
-        .day { 
-            padding: 0.5rem 0; 
-            cursor: pointer; 
-            border-radius: 12px; 
-            transition: 0.2s; 
-            border: 2px solid transparent;
-            margin: 2px;
-            min-height: 75px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
+
+        .day {
+            padding: 0.5rem 0; cursor: pointer; border-radius: 12px; transition: 0.2s; border: 2px solid transparent;
+            margin: 2px; min-height: 75px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
         }
         .day:hover { background: rgba(255,255,255,0.05); }
         .day.today { background: rgba(255,255,255,0.05); border: 2px dashed rgba(201,162,77,0.5); }
-        
         .day.is-holiday { background-color: var(--holiday-bg); }
-        .holiday-name { 
-            font-size: 0.6rem; 
-            line-height: 1.1; 
-            margin-top: 4px; 
-            padding: 0 4px;
-            opacity: 0.7;
-            font-weight: 300;
-        }
-
+        .holiday-name { font-size: 0.6rem; line-height: 1.1; margin-top: 4px; padding: 0 4px; opacity: 0.7; font-weight: 300; }
         .day-number { font-size: 1.1rem; font-weight: 600; }
 
-        /* RAMKI WYDARZEŃ */
         .day.has-liturgia { border-color: var(--color-liturgia); }
         .day.has-koncert { border-color: var(--color-koncert); }
         .day.has-proba { border-color: var(--color-proba); }
         .day.has-inne { border-color: var(--color-inne); }
         .day.has-multiple { border-color: var(--gold); border-style: double; }
 
-        /* EVENTS LIST */
         .events { background: var(--panel); border-radius: 20px; padding: 1.5rem; margin-bottom: 3rem; }
         .events h3 { font-family: 'Playfair Display', serif; color: var(--gold); margin-top: 0; }
         .event { margin-top: 1rem; padding: 1.2rem; border-left: 5px solid var(--gold); background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; }
@@ -87,15 +65,13 @@
         .event.koncert { border-color: var(--color-koncert); }
         .event.proba { border-color: var(--color-proba); }
         .event.inne { border-color: var(--color-inne); }
-        
-        /* Styl listy utworów w wydarzeniu */
+
         .repertoire-list { margin-top: 12px; padding-left: 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; font-size: 0.95rem; }
         .repertoire-list li { margin-bottom: 4px; opacity: 0.9; }
 
         .event-controls { margin-top: 15px; display: flex; gap: 10px; }
         .event-controls button { padding: 4px 10px; font-size: 0.8rem; cursor: pointer; border-radius: 5px; border: 1px solid #555; background: transparent; color: white; }
 
-        /* FOOTER & LOGIN */
         footer { background: #0e0e0e; padding: 3rem 1rem; border-top: 1px solid rgba(201,162,77,0.2); }
         .admin-container { max-width: 800px; margin: auto; }
         .admin { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; }
@@ -103,7 +79,7 @@
         .admin textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 80px; margin-bottom: 10px; }
         .admin button { background: var(--gold); color: black; font-weight: bold; cursor: pointer; border: none; }
         .row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-        
+
         .fade { opacity: 0; transform: translateY(30px); transition: 1s ease; }
         .fade.visible { opacity: 1; transform: translateY(0); }
     </style>
@@ -138,15 +114,17 @@
     <div class="admin-container fade">
         <div class="admin" id="adminSection">
             <h3 style="color:var(--gold); margin: 0 0 1rem 0; font-family: 'Playfair Display', serif;">Panel administracyjny</h3>
+
             <div id="loginArea">
                 <div class="row">
-                    <input id="username" placeholder="Użytkownik" style="flex:1">
+                    <input id="email" type="email" placeholder="E-mail admina" style="flex:1">
                     <input id="password" type="password" placeholder="Hasło" style="flex:1">
-                    <button onclick="tryLogin()">Zaloguj</button>
+                    <button id="loginBtn">Zaloguj</button>
                 </div>
             </div>
+
             <div id="adminFormArea" style="display:none;">
-                <form id="addEventForm" onsubmit="event.preventDefault(); addEventFromForm();">
+                <form id="addEventForm">
                     <div class="row">
                         <input id="evDate" type="date" required>
                         <input id="evTime" type="time" required>
@@ -158,84 +136,122 @@
                         </select>
                     </div>
                     <div class="row">
-                        <input id="evTitle" placeholder="Tytuł wydarzenia (np. Msza św. o pokój)" required style="flex:2;">
-                        <input id="evPlace" placeholder="Miejsce (np. Katedra)" required style="flex:1;">
+                        <input id="evTitle" placeholder="Tytuł wydarzenia" required style="flex:2;">
+                        <input id="evPlace" placeholder="Miejsce" required style="flex:1;">
                     </div>
-                    <textarea id="evRepertoire" placeholder="Repertuar / utwory (wpisz każdy utwór w nowej linii)"></textarea>
-                    <button id="addBtn" type="submit" style="width:100%">Dodaj / Zaktualizuj w pamięci</button>
+                    <textarea id="evRepertoire" placeholder="Repertuar (każdy utwór w nowej linii)"></textarea>
+                    <button id="addBtn" type="submit" style="width:100%">Zapisz na serwerze</button>
                 </form>
                 <div class="row" style="margin-top:15px;">
-                    <button onclick="exportJSON()" style="flex:2; background:#6b8e23; color:white;">POBIERZ PLIK JSON (EKSPORT)</button>
-                    <button onclick="logout()" style="background:#444; color:white;">Wyloguj</button>
+                    <button id="logoutBtn" style="background:#444; color:white; width: 100%;">Wyloguj</button>
                 </div>
             </div>
         </div>
-        <p style="text-align:center; opacity:0.3; font-size:0.8rem; margin-top:20px;">© 2026 Cantus Mirabilis</p>
     </div>
 </footer>
 
-<script>
+<script type="module">
+    // --- FIREBASE IMPORT ---
+    import { initializeApp } from "firebase/app";
+    import { getAnalytics } from "firebase/analytics";
+
+    // --- KONFIGURACJA (Wklej tutaj swoje dane!) ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyArjPTjW2VSW5F1jS5WtbyvQpjJDraJh1U",
+        authDomain: "cantus-calendar.firebaseapp.com",
+        projectId: "cantus-calendar",
+        storageBucket: "cantus-calendar.firebasestorage.app",
+        messagingSenderId: "241605051345",
+        appId: "1:241605051345:web:d3a2fb69447798456296f0",
+        measurementId: "G-BRV1GCH9HS"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+    const eventsRef = ref(db, 'events');
+
+    // --- ZMIENNE GLOBALNE ---
     let events = {};
     let currentDate = new Date();
     let isLogged = false;
     let editingContext = null;
 
     const holidays = {
-        "2026-01-01": "Nowy Rok / Św. Bożej Rodzicielki",
-        "2026-01-06": "Trzech Króli",
-        "2026-02-02": "MB Gromnicznej",
-        "2026-02-18": "Środa Popielcowa",
-        "2026-03-29": "Niedziela Palmowa",
-        "2026-04-02": "Wielki Czwartek",
-        "2026-04-03": "Wielki Piątek",
-        "2026-04-04": "Wielka Sobota",
-        "2026-04-05": "Wielkanoc",
-        "2026-04-06": "Poniedziałek Wielkanocny",
-        "2026-05-01": "Święto Pracy",
-        "2026-05-03": "Konstytucji 3 Maja",
-        "2026-05-17": "Wniebowstąpienie",
-        "2026-05-24": "Zielone Świątki",
-        "2026-05-25": "NMP Matki Kościoła",
-        "2026-06-04": "Boże Ciało",
-        "2026-08-15": "Wniebowzięcie NMP",
-        "2026-11-01": "Wszystkich Świętych",
-        "2026-11-02": "Dzień Zaduszny",
-        "2026-11-11": "Święto Niepodległości",
-        "2026-12-08": "Niepokalane Poczęcie NMP",
-        "2026-12-24": "Wigilia",
-        "2026-12-25": "Boże Narodzenie",
-        "2026-12-26": "Św. Szczepana"
+        "2026-01-01": "Nowy Rok", "2026-01-06": "Trzech Króli", "2026-04-05": "Wielkanoc",
+        "2026-04-06": "Poniedziałek Wielkanocny", "2026-05-03": "NMP Królowej Polski",
+        "2026-06-04": "Boże Ciało", "2026-08-15": "Wniebowzięcie NMP", "2026-11-01": "Wszystkich Świętych",
+        "2026-12-25": "Boże Narodzenie" // Uproszczona lista
     };
 
-    async function init() {
-        try {
-            const response = await fetch('./cantus_events_export.json?t=' + Date.now());
-            if (response.ok) events = await response.json();
-        } catch (e) { console.log("Brak bazy danych JSON."); }
+    // --- LOGIKA FIREBASE ---
+
+    // Obserwator zmian danych w bazie
+    onValue(eventsRef, (snapshot) => {
+        events = snapshot.val() || {};
         renderCalendar();
-        setupObserver();
+    });
+
+    // Obserwator stanu logowania
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            isLogged = true;
+            document.getElementById('loginArea').style.display = 'none';
+            document.getElementById('adminFormArea').style.display = 'block';
+        } else {
+            isLogged = false;
+            document.getElementById('loginArea').style.display = 'block';
+            document.getElementById('adminFormArea').style.display = 'none';
+        }
+        renderCalendar();
+    });
+
+    // Logowanie
+    window.tryLogin = async () => {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } catch (e) {
+            alert("Błąd logowania: " + e.message);
+        }
+    };
+    document.getElementById('loginBtn').onclick = window.tryLogin;
+
+    // Wylogowanie
+    document.getElementById('logoutBtn').onclick = () => signOut(auth);
+
+    // Zapisywanie do Firebase
+    async function saveToDB() {
+        try {
+            await set(eventsRef, events);
+            alert("Zaktualizowano dane na serwerze!");
+        } catch (e) {
+            alert("Brak uprawnień do zapisu!");
+        }
     }
 
-    function renderCalendar() {
+    // --- LOGIKA KALENDARZA ---
+
+    window.renderCalendar = function() {
         const daysEl = document.getElementById('days');
         daysEl.innerHTML = '';
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         const firstDayOfMonth = new Date(year, month, 1);
-        document.getElementById('monthYear').textContent = 
-            firstDayOfMonth.toLocaleString('pl-PL', {month:'long', year:'numeric'});
-        
-        let firstDayIndex = firstDayOfMonth.getDay(); 
-        if (firstDayIndex === 0) firstDayIndex = 7; 
+        document.getElementById('monthYear').textContent = firstDayOfMonth.toLocaleString('pl-PL', {month:'long', year:'numeric'});
+
+        let firstDayIndex = firstDayOfMonth.getDay();
+        if (firstDayIndex === 0) firstDayIndex = 7;
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
+
         for(let i = 1; i < firstDayIndex; i++) daysEl.appendChild(document.createElement('div'));
-        
+
         for(let d = 1; d <= daysInMonth; d++) {
             const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             const dayDiv = document.createElement('div');
             dayDiv.className = 'day';
-            
+
             const numDiv = document.createElement('div');
             numDiv.className = 'day-number';
             numDiv.textContent = d;
@@ -254,27 +270,27 @@
                 if (types.length > 1) dayDiv.classList.add('has-multiple');
                 else if (types.length === 1) dayDiv.classList.add(`has-${types[0]}`);
             }
-            
+
             const today = new Date();
             if(today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) dayDiv.classList.add('today');
-            
+
             dayDiv.onclick = () => showEvents(key);
             daysEl.appendChild(dayDiv);
         }
     }
 
-    function changeMonth(n) {
+    window.changeMonth = (n) => {
         currentDate.setDate(1);
         currentDate.setMonth(currentDate.getMonth() + n);
         renderCalendar();
-    }
+    };
 
-    function showEvents(key) {
+    window.showEvents = (key) => {
         const list = document.getElementById('eventList');
         const dateLabel = new Date(key).toLocaleDateString('pl-PL', {day:'numeric', month:'long', year:'numeric'});
         let html = `<h3>${dateLabel}</h3>`;
         if(holidays[key]) html += `<p style="color:var(--gold); font-size:0.9rem; margin-top:-10px;">✨ ${holidays[key]}</p>`;
-        
+
         if(!events[key] || events[key].length === 0) {
             html += '<p>Brak wydarzeń chóru.</p>';
             list.innerHTML = html;
@@ -283,8 +299,6 @@
             events[key].forEach((ev, idx) => {
                 const div = document.createElement('div');
                 div.className = `event ${ev.type}`;
-                
-                // Budowanie sekcji repertuaru
                 let repertoireHTML = '';
                 if(ev.repertoire && ev.repertoire.trim() !== '') {
                     const tracks = ev.repertoire.split('\n').filter(line => line.trim() !== '');
@@ -306,80 +320,63 @@
             });
         }
         if (window.innerWidth < 768) list.scrollIntoView({behavior: 'smooth'});
-    }
+    };
 
-    function tryLogin() {
-        if(document.getElementById('username').value === 'Cantus' && document.getElementById('password').value === 'mirabilis#2026') {
-            isLogged = true;
-            document.getElementById('loginArea').style.display = 'none';
-            document.getElementById('adminFormArea').style.display = 'block';
-            renderCalendar();
-        } else alert("Błąd!");
-    }
-
-    function logout() { location.reload(); }
-
-    function addEventFromForm() {
+    // Obsługa formularza
+    document.getElementById('addEventForm').onsubmit = (e) => {
+        e.preventDefault();
         const date = document.getElementById('evDate').value;
         const newEv = {
             title: document.getElementById('evTitle').value,
             place: document.getElementById('evPlace').value,
             time: document.getElementById('evTime').value,
             type: document.getElementById('evType').value,
-            repertoire: document.getElementById('evRepertoire').value // Pobieranie nowej listy
+            repertoire: document.getElementById('evRepertoire').value
         };
+
         if(editingContext) {
             events[editingContext.date].splice(editingContext.index, 1);
             if(events[editingContext.date].length === 0) delete events[editingContext.date];
             editingContext = null;
         }
+
         if(!events[date]) events[date] = [];
         events[date].push(newEv);
         events[date].sort((a,b) => a.time.localeCompare(b.time));
-        document.getElementById('addEventForm').reset();
-        document.getElementById('addBtn').textContent = "Dodaj / Zaktualizuj w pamięci";
-        renderCalendar();
-        showEvents(date);
-    }
 
-    function prepareEdit(key, idx) {
+        saveToDB();
+        document.getElementById('addEventForm').reset();
+        document.getElementById('addBtn').textContent = "Zapisz na serwerze";
+    };
+
+    window.prepareEdit = (key, idx) => {
         const ev = events[key][idx];
         document.getElementById('evDate').value = key;
         document.getElementById('evTime').value = ev.time;
         document.getElementById('evTitle').value = ev.title;
         document.getElementById('evPlace').value = ev.place;
         document.getElementById('evType').value = ev.type;
-        document.getElementById('evRepertoire').value = ev.repertoire || ''; // Wypełnianie pola edycji
+        document.getElementById('evRepertoire').value = ev.repertoire || '';
         editingContext = {date: key, index: idx};
-        document.getElementById('addBtn').textContent = "Zapisz zmiany w pamięci";
+        document.getElementById('addBtn').textContent = "Zaktualizuj na serwerze";
         document.getElementById('adminSection').scrollIntoView({behavior: 'smooth'});
-    }
+    };
 
-    function deleteEvent(key, idx) {
-        if(confirm("Usunąć?")) {
+    window.deleteEvent = (key, idx) => {
+        if(confirm("Usunąć trwale z serwera?")) {
             events[key].splice(idx, 1);
             if(events[key].length === 0) delete events[key];
-            renderCalendar();
-            showEvents(key);
+            saveToDB();
         }
-    }
+    };
 
-    function exportJSON() {
-        const blob = new Blob([JSON.stringify(events, null, 2)], {type: "application/json"});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'cantus_events_export.json';
-        a.click();
-    }
+    // Init observera
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+    }, {threshold: 0.1});
+    document.querySelectorAll('.fade').forEach(el => observer.observe(el));
 
-    function setupObserver() {
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
-        }, {threshold: 0.1});
-        document.querySelectorAll('.fade').forEach(el => observer.observe(el));
-    }
-
-    init();
+    renderCalendar();
 </script>
 
 </body>
