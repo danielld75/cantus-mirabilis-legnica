@@ -31,22 +31,6 @@
       "type": "liturgia"
     }
   ],
-  "2026-04-02": [
-    {
-      "title": "Wielki Czwartek – Msza Krzyżma",
-      "place": "Katedra",
-      "time": "10:00",
-      "type": "liturgia"
-    }
-  ],
-  "2026-04-03": [
-    {
-      "title": "Wielki Piątek",
-      "place": "Katedra",
-      "time": "18:30",
-      "type": "liturgia"
-    }
-  ],
   "2026-05-10": [
     {
       "title": "Niedziela",
@@ -147,6 +131,24 @@
       "time": "10:00",
       "type": "liturgia",
       "repertoire": "Pd: Gdzie miłość wzajemna DZIUDA\nAlleluja: PAŁKA \"Na Błoniach\"\nBaranku Boży: KUSZ (Missa Sine Nomine)\nK: Ave Verum Jenkins\nZ: Niechaj Cię Panie BEBENEK"
+    }
+  ],
+  "2026-04-03": [
+    {
+      "title": "Wielki Piątek",
+      "place": "Katedra",
+      "time": "18:30",
+      "type": "liturgia",
+      "repertoire": "Chrystus stał się dla nas (3-głosowe)\nPasja (Gałuszka)\nHymn ku czci Krzyża (P. Bębenek)\t\nO Crux Ave (R. Dubra)\t\t\t\nJezu Tyś całą Krwią zbroczony (P. Bębenek)\nJuż Cię żegnam (A. Nikodemowicz)\t \nStabat Mater (Bujnowski)\t\nAve verum (Sławecki)\t\t\t\t\t\nDuszo Chrystusowa (Stuligrosz, Paciorek)\t\nOdszedł Pasterz od nas (Lewkowicz, Zoła)\nDobranoc głowo święta (Pośpieszalski)\n"
+    }
+  ],
+  "2026-04-02": [
+    {
+      "title": "Wielki Czwartek – Msza Krzyżma",
+      "place": "Katedra",
+      "time": "10:00",
+      "type": "liturgia",
+      "repertoire": "Ludu kapłański (Bębenek)\t\nKyrie VIII De Angelis POLIFONIA (Menschick)\nGloria VIII De Angelis (unisono)\nChwała Tobie Królu wieków \t(Gałuszka)\nPrzyjmij pieśń Odkupicielu (unisono)\nSanctus VIII De Angelis\tPolifonia (Menschick)\nAgnus Dei VIII De Angelis Polifonia (Menschick)\nAve Verum (Sławecki)\nNiechaj Cię Panie (Bębenek)\nWeź w swą opiekę\t(unisono)"
     }
   ]
 }
