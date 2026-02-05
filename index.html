@@ -151,9 +151,10 @@
 </footer>
 
 <script type="module">
-    // --- FIREBASE IMPORT ---
-    import { initializeApp } from "firebase/app";
-    import { getAnalytics } from "firebase/analytics";
+    // --- FIREBASE IMPORT (Właściwe adresy dla przeglądarki) ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     // --- KONFIGURACJA (Wklej tutaj swoje dane!) ---
     const firebaseConfig = {
