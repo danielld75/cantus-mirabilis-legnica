@@ -170,7 +170,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
-    const eventsRef = ref(db, 'events');
+    const eventsRef = ref(db, '/');
 
     // --- ZMIENNE GLOBALNE ---
     let events = {};
