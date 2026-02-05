@@ -15,14 +15,6 @@
       "type": "koncert"
     }
   ],
-  "2026-02-15": [
-    {
-      "title": "Niedziela",
-      "place": "Katedra",
-      "time": "10:00",
-      "type": "liturgia"
-    }
-  ],
   "2026-03-08": [
     {
       "title": "Niedziela",
@@ -146,6 +138,15 @@
       "time": "19:40",
       "type": "proba",
       "repertoire": ""
+    }
+  ],
+  "2026-02-15": [
+    {
+      "title": "Niedziela",
+      "place": "Katedra",
+      "time": "10:00",
+      "type": "liturgia",
+      "repertoire": "Pd: Gdzie miłość wzajemna DZIUDA\nAlleluja: PAŁKA \"Na Błoniach\"\nBaranku Boży: KUSZ (Missa Sine Nomine)\nK: Ave Verum Jenkins\nZ: Niechaj Cię Panie BEBENEK"
     }
   ]
 }
