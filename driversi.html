@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Driversi – Cantus Mirabilis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --gold: #c9a24d;
+            --gold-soft: rgba(201,162,77,.14);
+            --panel: #171717;
+            --panel-2: #1f1f1f;
+            --text: #eaeaea;
+            --muted: #9a9a9a;
+            --line: rgba(255,255,255,.08);
+            --passenger: #6fb3ff;
+            --danger: #e06666;
+            --ok: #7fd17f;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: radial-gradient(circle at top, #222, #000);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        button, select, input { font-family: inherit; font-size: 1rem; }
+        :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+        /* ===== NAGŁÓWEK ===== */
+        header { text-align: center; padding: 3.5rem 1rem 2rem; position: relative; }
+        .back {
+            position: absolute; left: 1rem; top: 1rem;
+            text-decoration: none; color: var(--gold); font-size: .9rem;
+            border: 1px solid rgba(201,162,77,.4); padding: .45rem .9rem; border-radius: 10px;
+        }
+        .back:hover { background: var(--gold-soft); }
+        header svg { width: 130px; color: var(--gold); }
+        header h1 { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 3rem; letter-spacing: 2px; margin: .4rem 0 .3rem; }
+        header p { opacity: .75; margin: 0; font-size: 1.1rem; }
+
+        .summary { display: flex; justify-content: center; gap: .6rem; flex-wrap: wrap; margin-top: 1.4rem; }
+        .pill { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: .35rem .9rem; font-size: .9rem; }
+        .pill b { color: var(--gold); }
+
+        main { max-width: 1100px; margin: 0 auto; padding: 1rem 1rem 4rem; display: grid; gap: 1.5rem; }
+
+        .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 1.5rem; }
+        .card h2 { font-family: 'Playfair Display', serif; color: var(--gold); font-weight: 500; font-size: 1.45rem; margin: 0 0 1.1rem; }
+        .card h2 .count { font-family: 'Inter', sans-serif; font-size: .9rem; color: var(--muted); margin-left: .4rem; }
+
+        /* ===== FORMULARZ ZAPISU ===== */
+        .signup { box-shadow: 0 0 60px rgba(201,162,77,.12); }
+        .signup-grid { display: grid; grid-template-columns: 1.3fr 1fr 1.2fr auto; gap: 1rem; align-items: end; }
+        label.field { display: flex; flex-direction: column; gap: .4rem; font-size: .85rem; color: var(--muted); }
+        select, input[type=text], input[type=email], input[type=password] {
+            background: #222; color: var(--text); border: 1px solid rgba(255,255,255,.12);
+            border-radius: 10px; padding: .7rem .8rem; width: 100%;
+        }
+        select:disabled { opacity: .5; }
+
+        .role-toggle { display: flex; background: #222; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; padding: 3px; }
+        .role-toggle button {
+            flex: 1; border: 0; background: transparent; color: var(--muted); padding: .6rem .5rem;
+            border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .4rem;
+        }
+        .role-toggle button[aria-pressed="true"][data-role="driver"] { background: var(--gold); color: #111; font-weight: 600; }
+        .role-toggle button[aria-pressed="true"][data-role="passenger"] { background: var(--passenger); color: #0c1a2a; font-weight: 600; }
+
+        .btn { border: 0; border-radius: 10px; padding: .72rem 1.3rem; cursor: pointer; font-weight: 600; }
+        .btn-primary { background: var(--gold); color: #111; }
+        .btn-primary:hover { filter: brightness(1.08); }
+        .btn-ghost { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,.18); font-weight: 400; }
+        .btn-ghost:hover { border-color: var(--gold); }
+        .btn-danger { background: transparent; color: var(--danger); border: 1px solid rgba(224,102,102,.4); font-weight: 400; }
+        .btn-danger:hover { background: rgba(224,102,102,.1); }
+        .btn-sm { padding: .35rem .7rem; font-size: .82rem; border-radius: 8px; }
+
+        .hint { font-size: .85rem; color: var(--muted); margin: 1rem 0 0; }
+
+        /* ===== TABLICA ===== */
+        .board { display: grid; grid-template-columns: 1.7fr 1fr; gap: 1.5rem; align-items: start; }
+        .side { display: grid; gap: 1.5rem; }
+
+        .drivers { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .driver { background: var(--panel-2); border: 1px solid var(--line); border-top: 3px solid var(--gold); border-radius: 14px; padding: 1rem; }
+        .driver.full { border-top-color: var(--muted); }
+        .driver-head { display: flex; align-items: center; gap: .75rem; }
+        .avatar {
+            width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+            display: grid; place-items: center; font-weight: 600; font-size: .9rem;
+            background: var(--gold-soft); color: var(--gold); border: 1px solid rgba(201,162,77,.4);
+        }
+        .avatar.pax { background: rgba(111,179,255,.12); color: var(--passenger); border-color: rgba(111,179,255,.4); }
+        .driver-name { font-weight: 600; }
+        .driver-sub { font-size: .82rem; color: var(--muted); }
+        .driver-sub.free { color: var(--ok); }
+
+        .seats { display: flex; gap: 6px; margin: .9rem 0 .2rem; }
+        .seat { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--gold); }
+        .seat.taken { background: var(--passenger); border-color: var(--passenger); }
+        .solo { font-size: .82rem; color: var(--muted); font-style: italic; margin-top: .8rem; }
+
+        .pax-list { list-style: none; margin: .7rem 0 0; padding: 0; display: grid; gap: .4rem; }
+        .pax-list li { display: flex; align-items: center; gap: .55rem; font-size: .93rem; padding: .35rem .5rem; background: rgba(111,179,255,.06); border-radius: 8px; flex-wrap: wrap; }
+        .pax-list li::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--passenger); flex-shrink: 0; }
+        .pax-list .grow { flex: 1; }
+
+        .admin-row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin-top: .9rem; padding-top: .8rem; border-top: 1px dashed var(--line); }
+        .admin-row select { width: auto; padding: .35rem .5rem; font-size: .82rem; }
+        .pax-list select { width: auto; padding: .25rem .4rem; font-size: .8rem; }
+
+        .list { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+        .list li { display: flex; align-items: center; gap: .7rem; }
+        .list .avatar { width: 34px; height: 34px; font-size: .78rem; }
+        .list .meta { font-size: .8rem; color: var(--muted); }
+
+        .chips { display: flex; flex-wrap: wrap; gap: .45rem; }
+        .chip { background: #222; border: 1px solid var(--line); border-radius: 999px; padding: .3rem .75rem; font-size: .88rem; }
+
+        .empty { color: var(--muted); font-size: .92rem; margin: 0; }
+
+        /* ===== ADMIN ===== */
+        footer { background: #0e0e0e; border-top: 1px solid rgba(201,162,77,.2); padding: 3rem 1rem; }
+        .admin { max-width: 800px; margin: 0 auto; }
+        .admin h2 { font-family: 'Playfair Display', serif; color: var(--gold); font-weight: 500; margin: 0 0 1rem; }
+        .admin h3 { font-size: 1rem; margin: 1.6rem 0 .7rem; color: var(--text); }
+        .row { display: flex; gap: .6rem; flex-wrap: wrap; }
+        .row > input { flex: 1; min-width: 180px; }
+
+        .member-table { list-style: none; padding: 0; margin: 0; display: grid; gap: .45rem; }
+        .member-table li { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+        .member-table input { flex: 1; min-width: 160px; padding: .5rem .7rem; }
+        .status { font-size: .75rem; padding: .2rem .55rem; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); min-width: 74px; text-align: center; }
+        .status.driver { color: var(--gold); border-color: rgba(201,162,77,.5); }
+        .status.passenger { color: var(--passenger); border-color: rgba(111,179,255,.5); }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; max-width: calc(100% - 40px);
+            background: #171717; border: 1px solid rgba(201,162,77,.5); color: var(--gold);
+            padding: .7rem 1rem; border-radius: 10px; opacity: 0; transform: translateY(10px);
+            transition: opacity .25s, transform .25s; pointer-events: none; z-index: 10;
+        }
+        .toast.visible { opacity: 1; transform: none; }
+        .toast.error { border-color: rgba(224,102,102,.6); color: var(--danger); }
+
+        [hidden] { display: none !important; }
+
+        @media (max-width: 860px) {
+            .signup-grid { grid-template-columns: 1fr 1fr; }
+            .board { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 520px) {
+            .signup-grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 2.3rem; }
+            .back { position: static; display: inline-block; margin-bottom: 1rem; }
+        }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="back">◀ Kalendarz</a>
+    <svg viewBox="0 0 120 50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M22 36 H8 V28 Q8 24 12 23 L28 20 L42 9 Q45 7 49 7 H76 Q80 7 83 10 L95 21 L108 24 Q113 25 113 30 V36 H98"/>
+        <path d="M38 36 H82"/>
+        <circle cx="30" cy="36" r="8"/><circle cx="90" cy="36" r="8"/>
+        <path d="M47 20 L53 11 H64 V20 Z"/><path d="M70 11 H78 Q80 11 82 13 L88 20 H70 Z"/>
+    </svg>
+    <h1>Driversi</h1>
+    <p>Wspólne dojazdy chóru Cantus Mirabilis</p>
+    <div class="summary" id="summary"></div>
+</header>
+
+<main>
+    <!-- ZAPIS -->
+    <section class="card signup">
+        <h2>Zapisz się na dojazd</h2>
+        <div class="signup-grid">
+            <label class="field">Kim jesteś?
+                <select id="memberSelect"></select>
+            </label>
+
+            <div class="field" style="display:flex;flex-direction:column;gap:.4rem;font-size:.85rem;color:var(--muted)">
+                Jadę jako
+                <div class="role-toggle" role="group" aria-label="Rola">
+                    <button type="button" data-role="driver" aria-pressed="true">🚗 Kierowca</button>
+                    <button type="button" data-role="passenger" aria-pressed="false">🧍 Pasażer</button>
+                </div>
+            </div>
+
+            <label class="field" id="seatsField">Ile osób możesz zabrać?
+                <select id="seatsSelect">
+                    <option value="0">0 – jadę sam(a)</option>
+                    <option value="1">1 osobę</option>
+                    <option value="2">2 osoby</option>
+                    <option value="3" selected>3 osoby</option>
+                    <option value="4">4 osoby</option>
+                </select>
+            </label>
+
+            <label class="field" id="driverField" hidden>Z kim jedziesz?
+                <select id="driverSelect"></select>
+            </label>
+
+            <button class="btn btn-primary" id="signupBtn">Zapisz się</button>
+        </div>
+        <p class="hint">Chcesz zrezygnować albo zmienić kierowcę? Daj znać dyrygentowi – zmiany wprowadza administrator.</p>
+    </section>
+
+    <!-- TABLICA -->
+    <div class="board">
+        <section class="card">
+            <h2>Kierowcy <span class="count" id="driversCount"></span></h2>
+            <div class="drivers" id="driversBoard"></div>
+        </section>
+
+        <div class="side">
+            <section class="card">
+                <h2>Pasażerowie <span class="count" id="paxCount"></span></h2>
+                <ul class="list" id="paxBoard"></ul>
+            </section>
+            <section class="card">
+                <h2>Jeszcze niezapisani <span class="count" id="freeCount"></span></h2>
+                <div class="chips" id="unassignedBoard"></div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="admin">
+        <h2>Panel administracyjny</h2>
+
+        <div id="loginArea">
+            <div class="row">
+                <input id="email" type="email" placeholder="E-mail admina">
+                <input id="password" type="password" placeholder="Hasło">
+                <button class="btn btn-primary" id="loginBtn">Zaloguj</button>
+            </div>
+        </div>
+
+        <div id="adminArea" hidden>
+            <h3>Dodaj członka chóru</h3>
+            <div class="row">
+                <input id="newMemberName" type="text" placeholder="Imię i nazwisko">
+                <button class="btn btn-primary" id="addMemberBtn">Dodaj</button>
+            </div>
+
+            <h3>Członkowie chóru</h3>
+            <ul class="member-table" id="memberTable"></ul>
+
+            <h3>Nowy wyjazd</h3>
+            <div class="row">
+                <button class="btn btn-danger" id="clearAllBtn">Wyczyść wszystkie zapisy</button>
+                <button class="btn btn-ghost" id="logoutBtn">Wyloguj</button>
+            </div>
+            <p class="hint">Na kartach kierowców i przy pasażerach widzisz teraz przyciski do zmiany liczby miejsc, przenoszenia pasażerów i odznaczania osób.</p>
+        </div>
+    </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, update, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+// --- KONFIGURACJA (ta sama co w index.html) ---
+const firebaseConfig = {
+    apiKey: "AIzaSyArjPTjW2VSW5F1jS5WtbyvQpjJDraJh1U",
+    authDomain: "cantus-calendar.firebaseapp.com",
+    databaseURL: "https://cantus-calendar-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "cantus-calendar",
+    storageBucket: "cantus-calendar.firebasestorage.app",
+    messagingSenderId: "241605051345",
+    appId: "1:241605051345:web:d3a2fb69447798456296f0",
+    measurementId: "G-BRV1GCH9HS"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// Dane leżą w osobnej gałęzi /driversi, więc nie mieszają się z kalendarzem:
+//   driversi/members/{id}  = { name }
+//   driversi/signups/{id}  = { role:'driver', seats }  albo  { role:'passenger', driverId }
+const BASE = 'driversi';
+
+let members = {};
+let signups = {};
+let isAdmin = false;
+let role = 'driver';
+
+const $ = id => document.getElementById(id);
+
+// --- POMOCNICZE ---
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nameOf = id => members[id]?.name ?? '(usunięty)';
+const byName = (a, b) => nameOf(a).localeCompare(nameOf(b), 'pl');
+const initials = n => n.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+
+const driverIds = () => Object.keys(signups).filter(id => signups[id].role === 'driver' && members[id]).sort(byName);
+const passengerIds = () => Object.keys(signups).filter(id => signups[id].role === 'passenger' && members[id]).sort(byName);
+const passengersOf = d => passengerIds().filter(id => signups[id].driverId === d);
+const freeSeats = d => (Number(signups[d]?.seats) || 0) - passengersOf(d).length;
+const unassignedIds = () => Object.keys(members).filter(id => !signups[id]).sort(byName);
+
+function plural(n, one, few, many) {
+    if (n === 1) return one;
+    const d = n % 10, t = n % 100;
+    return (d >= 2 && d <= 4 && (t < 12 || t > 14)) ? few : many;
+}
+
+let toastTimer;
+function toast(msg, isError = false) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.toggle('error', isError);
+    t.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('visible'), 2600);
+}
+
+// --- FIREBASE: odczyt na żywo ---
+onValue(ref(db, BASE), snap => {
+    const v = snap.val() || {};
+    members = v.members || {};
+    signups = v.signups || {};
+    render();
+}, () => toast('Nie udało się wczytać danych z serwera', true));
+
+onAuthStateChanged(auth, user => {
+    isAdmin = !!user;
+    $('loginArea').hidden = isAdmin;
+    $('adminArea').hidden = !isAdmin;
+    render();
+});
+
+// --- RENDER ---
+function render() {
+    renderSelects();
+    renderDrivers();
+    renderPassengers();
+    renderUnassigned();
+    renderSummary();
+    if (isAdmin) renderMemberTable();
+}
+
+function renderSelects() {
+    const ms = $('memberSelect');
+    const prevMember = ms.value;
+    const free = unassignedIds();
+    ms.innerHTML = `<option value="">— wybierz swoje imię i nazwisko —</option>` +
+        free.map(id => `<option value="${id}">${esc(nameOf(id))}</option>`).join('');
+    if (free.includes(prevMember)) ms.value = prevMember;
+    ms.disabled = free.length === 0;
+    if (!free.length) ms.innerHTML = `<option value="">Wszyscy są już zapisani</option>`;
+
+    const ds = $('driverSelect');
+    const prevDriver = ds.value;
+    const avail = driverIds().filter(d => freeSeats(d) > 0);
+    ds.innerHTML = avail.length
+        ? `<option value="">— wybierz kierowcę —</option>` +
+          avail.map(d => { const f = freeSeats(d); return `<option value="${d}">${esc(nameOf(d))} (${f} ${plural(f,'wolne miejsce','wolne miejsca','wolnych miejsc')})</option>`; }).join('')
+        : `<option value="">Brak kierowców z wolnymi miejscami</option>`;
+    if (avail.includes(prevDriver)) ds.value = prevDriver;
+    ds.disabled = !avail.length;
+}
+
+function seatOptions(selected, min) {
+    return [0,1,2,3,4].map(n => `<option value="${n}" ${n === selected ? 'selected' : ''} ${n < min ? 'disabled' : ''}>${n} ${plural(n,'miejsce','miejsca','miejsc')}</option>`).join('');
+}
+
+function renderDrivers() {
+    const board = $('driversBoard');
+    const ids = driverIds();
+    $('driversCount').textContent = ids.length ? `(${ids.length})` : '';
+    if (!ids.length) { board.innerHTML = `<p class="empty">Nikt jeszcze nie zgłosił się jako kierowca.</p>`; return; }
+
+    board.innerHTML = ids.map(d => {
+        const seats = Number(signups[d].seats) || 0;
+        const pax = passengersOf(d);
+        const free = seats - pax.length;
+        const sub = seats === 0
+            ? 'Jedzie bez pasażerów'
+            : free > 0 ? `${free} z ${seats} ${plural(seats,'miejsca','miejsc','miejsc')} wolne` : 'Komplet';
+        const seatBoxes = seats
+            ? `<div class="seats" aria-label="${pax.length} zajęte z ${seats}">${Array.from({length: seats}, (_, i) => `<span class="seat ${i < pax.length ? 'taken' : ''}" title="${i < pax.length ? 'zajęte' : 'wolne'}"></span>`).join('')}</div>`
+            : `<div class="solo">Brak miejsc dla pasażerów</div>`;
+
+        const otherDrivers = ids.filter(x => x !== d);
+        const paxHTML = pax.length ? `<ul class="pax-list">${pax.map(p => `
+            <li>
+                <span class="grow">${esc(nameOf(p))}</span>
+                ${isAdmin ? `
+                    <select data-action="move" data-id="${p}" aria-label="Przenieś pasażera">
+                        <option value="">Przenieś do…</option>
+                        ${otherDrivers.filter(o => freeSeats(o) > 0).map(o => `<option value="${o}">${esc(nameOf(o))}</option>`).join('')}
+                    </select>
+                    <button class="btn btn-danger btn-sm" data-action="unassign" data-id="${p}">Odznacz</button>
+                ` : ''}
+            </li>`).join('')}</ul>` : '';
+
+        const adminHTML = isAdmin ? `
+            <div class="admin-row">
+                <select data-action="seats" data-id="${d}" aria-label="Liczba miejsc">${seatOptions(seats, pax.length)}</select>
+                <button class="btn btn-danger btn-sm" data-action="unassign" data-id="${d}">Odznacz kierowcę</button>
+            </div>` : '';
+
+        return `
+            <article class="driver ${seats > 0 && free <= 0 ? 'full' : ''}">
+                <div class="driver-head">
+                    <div class="avatar">${esc(initials(nameOf(d)))}</div>
+                    <div>
+                        <div class="driver-name">${esc(nameOf(d))}</div>
+                        <div class="driver-sub ${free > 0 ? 'free' : ''}">${sub}</div>
+                    </div>
+                </div>
+                ${seatBoxes}
+                ${paxHTML}
+                ${adminHTML}
+            </article>`;
+    }).join('');
+}
+
+function renderPassengers() {
+    const ids = passengerIds();
+    $('paxCount').textContent = ids.length ? `(${ids.length})` : '';
+    $('paxBoard').innerHTML = ids.length
+        ? ids.map(p => `
+            <li>
+                <div class="avatar pax">${esc(initials(nameOf(p)))}</div>
+                <div>
+                    <div>${esc(nameOf(p))}</div>
+                    <div class="meta">jedzie z: ${esc(nameOf(signups[p].driverId))}</div>
+                </div>
+            </li>`).join('')
+        : `<li class="empty">Brak pasażerów.</li>`;
+}
+
+function renderUnassigned() {
+    const ids = unassignedIds();
+    $('freeCount').textContent = ids.length ? `(${ids.length})` : '';
+    $('unassignedBoard').innerHTML = ids.length
+        ? ids.map(id => `<span class="chip">${esc(nameOf(id))}</span>`).join('')
+        : `<p class="empty">${Object.keys(members).length ? 'Wszyscy są zapisani.' : 'Lista członków jest pusta – dodaje ich administrator.'}</p>`;
+}
+
+function renderSummary() {
+    const d = driverIds();
+    const seatsFree = d.reduce((s, id) => s + Math.max(0, freeSeats(id)), 0);
+    const p = passengerIds().length;
+    $('summary').innerHTML = `
+        <span class="pill"><b>${d.length}</b> ${plural(d.length,'kierowca','kierowców','kierowców')}</span>
+        <span class="pill"><b>${p}</b> ${plural(p,'pasażer','pasażerów','pasażerów')}</span>
+        <span class="pill"><b>${seatsFree}</b> ${plural(seatsFree,'wolne miejsce','wolne miejsca','wolnych miejsc')}</span>`;
+}
+
+function renderMemberTable() {
+    const ids = Object.keys(members).sort(byName);
+    $('memberTable').innerHTML = ids.length ? ids.map(id => {
+        const s = signups[id];
+        const status = !s ? ['', 'niezapisany'] : s.role === 'driver' ? ['driver', 'kierowca'] : ['passenger', 'pasażer'];
+        return `
+            <li>
+                <input type="text" value="${esc(nameOf(id))}" data-name-input="${id}" aria-label="Imię i nazwisko">
+                <span class="status ${status[0]}">${status[1]}</span>
+                <button class="btn btn-ghost btn-sm" data-action="rename" data-id="${id}">Zapisz</button>
+                ${s ? `<button class="btn btn-ghost btn-sm" data-action="unassign" data-id="${id}">Odznacz</button>` : ''}
+                <button class="btn btn-danger btn-sm" data-action="delete" data-id="${id}">Usuń</button>
+            </li>`;
+    }).join('') : `<li class="empty">Brak członków. Dodaj pierwszą osobę powyżej.</li>`;
+}
+
+// --- ZAPIS UŻYTKOWNIKA ---
+document.querySelectorAll('.role-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        role = btn.dataset.role;
+        document.querySelectorAll('.role-toggle button').forEach(b => b.setAttribute('aria-pressed', b === btn));
+        $('seatsField').hidden = role !== 'driver';
+        $('driverField').hidden = role !== 'passenger';
+    });
+});
+
+$('signupBtn').addEventListener('click', async () => {
+    const id = $('memberSelect').value;
+    if (!id) return toast('Wybierz swoje imię i nazwisko', true);
+    if (signups[id]) return toast('Ta osoba jest już zapisana', true);
+
+    let data;
+    if (role === 'driver') {
+        data = { role: 'driver', seats: Number($('seatsSelect').value), ts: Date.now() };
+    } else {
+        const d = $('driverSelect').value;
+        if (!d) return toast('Wybierz kierowcę', true);
+        if (freeSeats(d) <= 0) return toast('U tego kierowcy nie ma już wolnych miejsc', true);
+        data = { role: 'passenger', driverId: d, ts: Date.now() };
+    }
+
+    try {
+        await set(ref(db, `${BASE}/signups/${id}`), data);
+        toast(role === 'driver' ? '✔ Zapisano jako kierowca' : `✔ Jedziesz z: ${nameOf(data.driverId)}`);
+        $('memberSelect').value = '';
+    } catch {
+        toast('Nie udało się zapisać – możliwe, że ktoś zapisał tę osobę przed chwilą', true);
+    }
+});
+
+// --- AKCJE ADMINA ---
+// Odznaczenie kierowcy odznacza też jego pasażerów (wracają na listę).
+function unassignPaths(id) {
+    const paths = { [`signups/${id}`]: null };
+    if (signups[id]?.role === 'driver') passengersOf(id).forEach(p => paths[`signups/${p}`] = null);
+    return paths;
+}
+
+async function adminUpdate(paths, okMsg) {
+    try { await update(ref(db, BASE), paths); toast(okMsg); }
+    catch { toast('Brak uprawnień albo błąd zapisu', true); }
+}
+
+document.addEventListener('click', async e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn || btn.tagName === 'SELECT' || !isAdmin) return;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+
+    if (action === 'unassign') {
+        const pax = signups[id]?.role === 'driver' ? passengersOf(id).length : 0;
+        const msg = pax
+            ? `Odznaczyć kierowcę ${nameOf(id)}? Jego pasażerowie (${pax}) też wrócą na listę niezapisanych.`
+            : `Odznaczyć ${nameOf(id)}?`;
+        if (confirm(msg)) adminUpdate(unassignPaths(id), '✔ Odznaczono');
+    }
+
+    if (action === 'rename') {
+        const input = document.querySelector(`[data-name-input="${id}"]`);
+        const name = input.value.trim();
+        if (!name) return toast('Imię i nazwisko nie może być puste', true);
+        adminUpdate({ [`members/${id}/name`]: name }, '✔ Zapisano zmianę');
+    }
+
+    if (action === 'delete') {
+        if (confirm(`Usunąć ${nameOf(id)} z listy członków?`)) {
+            adminUpdate({ [`members/${id}`]: null, ...unassignPaths(id) }, '✔ Usunięto');
+        }
+    }
+});
+
+document.addEventListener('change', e => {
+    const sel = e.target.closest('select[data-action]');
+    if (!sel || !isAdmin) return;
+    const id = sel.dataset.id;
+
+    if (sel.dataset.action === 'seats') {
+        const n = Number(sel.value);
+        if (n < passengersOf(id).length) { toast('Najpierw przenieś albo odznacz pasażerów', true); return render(); }
+        adminUpdate({ [`signups/${id}/seats`]: n }, '✔ Zmieniono liczbę miejsc');
+    }
+
+    if (sel.dataset.action === 'move' && sel.value) {
+        if (freeSeats(sel.value) <= 0) { toast('U tego kierowcy nie ma miejsc', true); return render(); }
+        adminUpdate({ [`signups/${id}/driverId`]: sel.value }, `✔ Przeniesiono do: ${nameOf(sel.value)}`);
+    }
+});
+
+$('addMemberBtn').addEventListener('click', async () => {
+    const name = $('newMemberName').value.trim();
+    if (!name) return toast('Wpisz imię i nazwisko', true);
+    try {
+        await set(push(ref(db, `${BASE}/members`)), { name });
+        $('newMemberName').value = '';
+        toast(`✔ Dodano: ${name}`);
+    } catch { toast('Brak uprawnień do zapisu', true); }
+});
+$('newMemberName').addEventListener('keydown', e => { if (e.key === 'Enter') $('addMemberBtn').click(); });
+
+$('clearAllBtn').addEventListener('click', async () => {
+    if (!confirm('Wyczyścić wszystkie zapisy kierowców i pasażerów? Lista członków zostanie.')) return;
+    try { await set(ref(db, `${BASE}/signups`), null); toast('✔ Zapisy wyczyszczone'); }
+    catch { toast('Brak uprawnień do zapisu', true); }
+});
+
+// --- LOGOWANIE ---
+$('loginBtn').addEventListener('click', async () => {
+    try { await signInWithEmailAndPassword(auth, $('email').value, $('password').value); }
+    catch (e) { toast('Błąd logowania: ' + e.message, true); }
+});
+$('password').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
+$('logoutBtn').addEventListener('click', () => signOut(auth));
+</script>
+</body>
+</html>
