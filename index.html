@@ -66,8 +66,29 @@
         .event.proba { border-color: var(--color-proba); }
         .event.inne { border-color: var(--color-inne); }
 
-        .repertoire-list { margin-top: 12px; padding-left: 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; font-size: 0.95rem; }
+        /* ===== REPERTUAR: puste kółka zamiast numerów ===== */
+        .repertoire-list {
+            list-style: circle;
+            margin-top: 12px; padding-left: 1.4rem;
+            border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; font-size: 0.95rem;
+        }
         .repertoire-list li { margin-bottom: 4px; opacity: 0.9; }
+        .repertoire-list li::marker { color: var(--gold); }
+        /* linia zaczęta spacją = dopisek bez kółka */
+        .repertoire-list li.note { list-style: none; margin-top: -2px; font-size: 0.88em; opacity: 0.7; }
+
+        /* ===== FORMATOWANIE ZE ZNACZNIKÓW ===== */
+        .fmt-b { font-weight: 700; }
+        .fmt-i { font-style: italic; }
+        .fmt-u { text-decoration: underline; }
+        .fmt-red    { color: #ff6b6b; }
+        .fmt-blue   { color: #6fb3ff; }
+        .fmt-green  { color: #7fd17f; }
+        .fmt-gold   { color: var(--gold); }
+        .fmt-yellow { color: #ffd84d; }
+        .fmt-orange { color: #ffa94d; }
+        .fmt-purple { color: #c49bff; }
+        .fmt-gray   { color: #9a9a9a; }
 
         .event-controls { margin-top: 15px; display: flex; gap: 10px; }
         .event-controls button { padding: 4px 10px; font-size: 0.8rem; cursor: pointer; border-radius: 5px; border: 1px solid #555; background: transparent; color: white; }
@@ -79,6 +100,8 @@
         .admin textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 80px; margin-bottom: 10px; }
         .admin button { background: var(--gold); color: black; font-weight: bold; cursor: pointer; border: none; }
         .row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .format-hint { font-size: 0.8rem; opacity: 0.6; margin: -4px 0 12px; line-height: 1.5; }
+        .format-hint code { background: #222; padding: 1px 5px; border-radius: 4px; }
 
         .fade { opacity: 0; transform: translateY(30px); transition: 1s ease; }
         .fade.visible { opacity: 1; transform: translateY(0); }
@@ -139,7 +162,13 @@
                         <input id="evTitle" placeholder="Tytuł wydarzenia" required style="flex:2;">
                         <input id="evPlace" placeholder="Miejsce" required style="flex:1;">
                     </div>
-                    <textarea id="evRepertoire" placeholder="Repertuar (każdy utwór w nowej linii)"></textarea>
+                    <textarea id="evRepertoire" placeholder="Repertuar (każdy utwór w nowej linii, linia zaczęta spacją = dopisek bez kółka)"></textarea>
+                    <p class="format-hint">
+                        Formatowanie: <code>&lt;b&gt;</code> pogrubienie, <code>&lt;i&gt;</code> kursywa, <code>&lt;u&gt;</code> podkreślenie,
+                        kolory: <code>&lt;red&gt;</code> <code>&lt;blue&gt;</code> <code>&lt;green&gt;</code> <code>&lt;gold&gt;</code>
+                        <code>&lt;yellow&gt;</code> <code>&lt;orange&gt;</code> <code>&lt;purple&gt;</code> <code>&lt;gray&gt;</code>.
+                        Przykład: <code>&lt;b&gt;&lt;red&gt;Gaude Mater&lt;/red&gt;&lt;/b&gt;</code>
+                    </p>
                     <button id="addBtn" type="submit" style="width:100%">Zapisz na serwerze</button>
                 </form>
                 <div class="row" style="margin-top:15px;">
@@ -208,6 +237,71 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
         "2026-12-25": "Boże Narodzenie",
         "2026-12-26": "Św. Szczepana"
     };
+
+    // --- FORMATOWANIE TEKSTU ZNACZNIKAMI ---
+    // Dozwolone znaczniki -> klasa CSS. Żeby dodać nowy kolor:
+    // dopisz go tutaj + klasę .fmt-nazwa w CSS.
+    const FORMAT_TAGS = ['b', 'i', 'u', 'red', 'blue', 'green', 'gold', 'yellow', 'orange', 'purple', 'gray'];
+
+    function escapeHTML(s) {
+        return String(s ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // Zamienia <b>, <red> itd. na bezpieczne <span class="fmt-...">.
+    // Wszystko inne (np. <script>) jest wyświetlane jako zwykły tekst.
+    // Niezamknięte znaczniki zamykają się same na końcu tekstu.
+    function formatText(raw) {
+        const src = String(raw ?? '');
+        const re = /<(\/?)([a-z]+)>/gi;
+        const stack = [];
+        let out = '', last = 0, m;
+
+        while ((m = re.exec(src)) !== null) {
+            const isClose = m[1] === '/';
+            const name = m[2].toLowerCase();
+            if (!FORMAT_TAGS.includes(name)) continue; // nieznany znacznik zostaje jako tekst
+
+            out += escapeHTML(src.slice(last, m.index));
+            last = re.lastIndex;
+
+            if (!isClose) {
+                stack.push(name);
+                out += `<span class="fmt-${name}">`;
+            } else {
+                const pos = stack.lastIndexOf(name);
+                if (pos === -1) continue; // zamknięcie bez otwarcia – ignorujemy
+                // zamykamy wszystko do tego znacznika i otwieramy z powrotem wewnętrzne
+                // (dzięki temu np. <b><red>x</b>y</red> też działa)
+                const closed = stack.splice(pos);
+                out += '</span>'.repeat(closed.length);
+                for (let i = 1; i < closed.length; i++) {
+                    stack.push(closed[i]);
+                    out += `<span class="fmt-${closed[i]}">`;
+                }
+            }
+        }
+        out += escapeHTML(src.slice(last));
+        out += '</span>'.repeat(stack.length);
+        return out;
+    }
+
+    // Repertuar: każda linia = punkt z pustym kółkiem.
+    // Linia zaczynająca się od spacji/tabulatora = dopisek bez kółka.
+    function renderRepertoire(text) {
+        if (!text) return '';
+        const items = text.split(/\r?\n/)
+            .filter(line => line.trim() !== '')
+            .map(line => {
+                const isNote = /^[ \t]/.test(line);
+                return `<li${isNote ? ' class="note"' : ''}>${formatText(line.trim())}</li>`;
+            });
+        return items.length ? `<ul class="repertoire-list">${items.join('')}</ul>` : '';
+    }
 
     // --- LOGIKA FIREBASE ---
 
@@ -324,16 +418,11 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
             events[key].forEach((ev, idx) => {
                 const div = document.createElement('div');
                 div.className = `event ${ev.type}`;
-                let repertoireHTML = '';
-                if(ev.repertoire && ev.repertoire.trim() !== '') {
-                    const tracks = ev.repertoire.split('\n').filter(line => line.trim() !== '');
-                    repertoireHTML = '<ol class="repertoire-list">' + tracks.map(t => `<li>${t}</li>`).join('') + '</ol>';
-                }
 
                 div.innerHTML = `
-                    <strong>${ev.time} - ${ev.title}</strong><br>
-                    <span>📍 ${ev.place}</span>
-                    ${repertoireHTML}
+                    <strong>${escapeHTML(ev.time)} - ${formatText(ev.title)}</strong><br>
+                    <span>📍 ${formatText(ev.place)}</span>
+                    ${renderRepertoire(ev.repertoire)}
                     ${isLogged ? `
                         <div class="event-controls">
                             <button onclick="prepareEdit('${key}', ${idx})">Edytuj</button>
