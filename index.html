@@ -103,6 +103,20 @@
         .format-hint { font-size: 0.8rem; opacity: 0.6; margin: -4px 0 12px; line-height: 1.5; }
         .format-hint code { background: #222; padding: 1px 5px; border-radius: 4px; }
 
+        /* ===== PRZYCISK DRIVERSI ===== */
+        .driversi-btn {
+            display: inline-flex; align-items: center; gap: 1rem; margin-top: 1.8rem;
+            padding: .8rem 1.4rem .8rem 1rem; border: 1px solid rgba(201,162,77,.5); border-radius: 16px;
+            color: var(--text); text-decoration: none; background: rgba(201,162,77,.06);
+            transition: background .2s, transform .2s;
+        }
+        .driversi-btn:hover { background: rgba(201,162,77,.14); transform: translateY(-2px); }
+        .driversi-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+        .driversi-btn svg { width: 72px; color: var(--gold); flex-shrink: 0; }
+        .driversi-btn span { display: flex; flex-direction: column; text-align: left; }
+        .driversi-btn strong { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 1.25rem; font-weight: 500; }
+        .driversi-btn small { opacity: .7; font-size: .85rem; }
+
         .fade { opacity: 0; transform: translateY(30px); transition: 1s ease; }
         .fade.visible { opacity: 1; transform: translateY(0); }
     </style>
@@ -112,6 +126,15 @@
 <header class="fade">
     <h1>CANTUS MIRABILIS</h1>
     <p>Kalendarium i repertuar chóru • 2026</p>
+    <a href="driversi.html" class="driversi-btn">
+        <svg viewBox="0 0 120 50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 36 H8 V28 Q8 24 12 23 L28 20 L42 9 Q45 7 49 7 H76 Q80 7 83 10 L95 21 L108 24 Q113 25 113 30 V36 H98"/>
+            <path d="M38 36 H82"/>
+            <circle cx="30" cy="36" r="8"/><circle cx="90" cy="36" r="8"/>
+            <path d="M47 20 L53 11 H64 V20 Z"/><path d="M70 11 H78 Q80 11 82 13 L88 20 H70 Z"/>
+        </svg>
+        <span><strong>Driversi</strong><small>Wspólne dojazdy – zapisz się jako kierowca lub pasażer</small></span>
+    </a>
 </header>
 
 <main>
@@ -182,7 +205,7 @@
 <script type="module">
     // --- FIREBASE IMPORT (Właściwe adresy dla przeglądarki) ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     // --- KONFIGURACJA (Wklej tutaj swoje dane!) ---
@@ -306,8 +329,15 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
     // --- LOGIKA FIREBASE ---
 
     // Obserwator zmian danych w bazie
+    // W bazie obok wydarzeń leży też gałąź /driversi – bierzemy tylko klucze-daty
+    const isDateKey = k => /^\d{4}-\d{2}-\d{2}$/.test(k);
+    let serverDateKeys = [];
+
     onValue(eventsRef, (snapshot) => {
-        events = snapshot.val() || {};
+        const all = snapshot.val() || {};
+        events = {};
+        Object.keys(all).filter(isDateKey).forEach(k => events[k] = all[k]);
+        serverDateKeys = Object.keys(events);
         renderCalendar();
     });
 
@@ -343,7 +373,10 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
     // Zapisywanie do Firebase
     async function saveToDB() {
         try {
-            await set(eventsRef, events);
+            // update zamiast set: zmienia tylko daty, nie rusza /driversi
+            const payload = { ...events };
+            serverDateKeys.forEach(k => { if (!(k in events)) payload[k] = null; });
+            await update(eventsRef, payload);
             alert("Zaktualizowano dane na serwerze!");
         } catch (e) {
             alert("Brak uprawnień do zapisu!");
