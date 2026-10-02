@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Rozliczenia LPGK</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --gold: #c9a24d;
+            --gold-soft: rgba(201,162,77,.14);
+            --flame: #ffc861;
+            --sage: #8fc1b5;
+            --sage-soft: rgba(143,193,181,.13);
+            --panel: #161616;
+            --panel-2: #1e1e1e;
+            --text: #eaeaea;
+            --muted: #9a9a9a;
+            --line: rgba(255,255,255,.08);
+            --danger: #e06666;
+            --ok: #7fd17f;
+        }
+
+        * { box-sizing: border-box; }
+        body { margin: 0; background: radial-gradient(ellipse at top, #1d1d1f 0%, #0a0a0a 55%, #000 100%); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+        button, select, input { font-family: inherit; font-size: 1rem; }
+        :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+        [hidden] { display: none !important; }
+
+        /* ===== SCENA CMENTARNA ===== */
+        header { text-align: center; }
+        .scene { display: block; width: 100%; height: 230px; }
+        .flame { transform-origin: 400px 152px; animation: flicker 2.6s ease-in-out infinite; }
+        .glow { animation: glow 2.6s ease-in-out infinite; transform-origin: 400px 150px; }
+        @keyframes flicker {
+            0%, 100% { transform: scale(1, 1) rotate(0deg); }
+            25% { transform: scale(.94, 1.06) rotate(-2deg); }
+            50% { transform: scale(1.04, .96) rotate(1.5deg); }
+            75% { transform: scale(.97, 1.04) rotate(-1deg); }
+        }
+        @keyframes glow { 0%, 100% { opacity: .9; } 50% { opacity: .65; } }
+
+        .title-block { padding: .5rem 1rem 2rem; margin-top: -10px; }
+        header h1 { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 2.8rem; letter-spacing: 2px; margin: 0; font-weight: 500; }
+        header p { opacity: .7; margin: .4rem 0 0; }
+
+        .userbar { display: flex; justify-content: center; align-items: center; gap: .8rem; margin-top: 1.2rem; flex-wrap: wrap; font-size: .92rem; }
+        .role { font-size: .72rem; padding: .2rem .55rem; border-radius: 999px; border: 1px solid rgba(201,162,77,.5); color: var(--gold); }
+
+        main { max-width: 1150px; margin: 0 auto; padding: 0 1rem 4rem; display: grid; grid-template-columns: 1fr 1.25fr; gap: 1.5rem; align-items: start; }
+        .full { grid-column: 1 / -1; }
+
+        .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 1.5rem; }
+        .card h2 { font-family: 'Playfair Display', serif; color: var(--gold); font-weight: 500; font-size: 1.4rem; margin: 0 0 1.1rem; }
+        .glow-card { box-shadow: 0 0 70px rgba(255,200,97,.07); }
+
+        input[type=text], input[type=email], input[type=password], input[type=date], input[type=number], select {
+            background: #222; color: var(--text); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; padding: .65rem .8rem; width: 100%;
+        }
+        input[type=date] { color-scheme: dark; }
+        label.field { display: flex; flex-direction: column; gap: .35rem; font-size: .82rem; color: var(--muted); }
+        .hint { font-size: .82rem; color: var(--muted); margin: .7rem 0 0; line-height: 1.45; }
+
+        .btn { border: 0; border-radius: 10px; padding: .7rem 1.25rem; cursor: pointer; font-weight: 600; }
+        .btn-primary { background: var(--gold); color: #111; }
+        .btn-primary:hover { filter: brightness(1.08); }
+        .btn-ghost { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,.18); font-weight: 400; }
+        .btn-ghost:hover { border-color: var(--gold); }
+        .btn-danger { background: transparent; color: var(--danger); border: 1px solid rgba(224,102,102,.4); font-weight: 400; }
+        .btn-sm { padding: .35rem .7rem; font-size: .8rem; border-radius: 8px; }
+        .row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: end; }
+        .row > * { flex: 1; min-width: 130px; }
+        .row > .btn { flex: 0 0 auto; min-width: 0; }
+
+        /* ===== LOGOWANIE ===== */
+        .login { max-width: 420px; margin: 0 auto 4rem; display: grid; gap: .8rem; }
+        .login h2 { text-align: center; margin-bottom: .3rem !important; }
+
+        /* ===== FORMULARZ ===== */
+        .toggle { display: flex; background: #222; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; padding: 3px; margin-bottom: 1.1rem; }
+        .toggle button { flex: 1; border: 0; background: transparent; color: var(--muted); padding: .55rem; border-radius: 8px; cursor: pointer; }
+        .toggle button[aria-pressed="true"] { background: var(--gold); color: #111; font-weight: 600; }
+
+        .counts { width: 100%; border-collapse: separate; border-spacing: 0 .45rem; margin-top: .6rem; }
+        .counts th { font-size: .75rem; font-weight: 400; color: var(--muted); text-align: center; padding: 0 .3rem; }
+        .counts th:first-child { text-align: left; }
+        .counts td:first-child { font-size: .93rem; padding-right: .5rem; }
+        .counts td { text-align: center; }
+
+        .stepper { display: inline-flex; align-items: center; background: #222; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; overflow: hidden; }
+        .stepper button { width: 34px; height: 38px; border: 0; background: transparent; color: var(--gold); font-size: 1.15rem; cursor: pointer; }
+        .stepper button:hover { background: var(--gold-soft); }
+        .stepper input { width: 44px !important; border: 0 !important; border-radius: 0 !important; text-align: center; padding: .5rem 0 !important; background: transparent !important; -moz-appearance: textfield; }
+        .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        .preview { margin: 1rem 0; padding: .8rem 1rem; border-radius: 12px; background: rgba(255,200,97,.06); border: 1px solid rgba(255,200,97,.2); font-size: .92rem; }
+        .preview b { color: var(--flame); font-size: 1.1rem; }
+        .preview.warn { background: rgba(224,102,102,.07); border-color: rgba(224,102,102,.3); color: #f0b0b0; }
+
+        /* ===== PODSUMOWANIE ===== */
+        .month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+        .month-nav h2 { margin: 0 !important; text-transform: capitalize; }
+        .month-nav button { background: none; border: 1px solid rgba(201,162,77,.5); color: var(--gold); border-radius: 10px; padding: .35rem .8rem; cursor: pointer; }
+
+        .people { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .person { background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; padding: 1rem; border-top: 3px solid var(--gold); }
+        .person.p1 { border-top-color: var(--sage); }
+        .person .who { font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+        .person .me { font-size: .68rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: .1rem .5rem; font-weight: 400; }
+        .person .amount { font-family: 'Playfair Display', serif; font-size: 1.9rem; color: var(--gold); margin: .4rem 0 .6rem; }
+        .person.p1 .amount { color: var(--sage); }
+        .mini { width: 100%; border-collapse: collapse; font-size: .82rem; }
+        .mini th { font-weight: 400; color: var(--muted); text-align: right; padding: .2rem .3rem; font-size: .72rem; }
+        .mini th:first-child, .mini td:first-child { text-align: left; }
+        .mini td { padding: .28rem .3rem; text-align: right; border-top: 1px solid var(--line); }
+        .mini td.total { font-weight: 600; }
+
+        /* ===== LISTA WPISÓW ===== */
+        .entries { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+        .entry { display: grid; grid-template-columns: 130px 1fr auto; gap: 1rem; align-items: center; background: var(--panel-2); border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 0 12px 12px 0; padding: .75rem 1rem; }
+        .entry.p1 { border-left-color: var(--sage); }
+        .entry.urlop { background: repeating-linear-gradient(135deg, var(--panel-2) 0 12px, #1b1b1b 12px 24px); }
+        .entry .date { font-size: .88rem; }
+        .entry .date small { display: block; color: var(--muted); font-size: .76rem; margin-top: .1rem; }
+        .entry .body { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+        .chip { font-size: .8rem; padding: .25rem .6rem; border-radius: 999px; background: #262626; border: 1px solid var(--line); }
+        .chip b { color: var(--gold); font-weight: 600; }
+        .chip.leave { border-color: rgba(143,193,181,.4); color: var(--sage); }
+        .entry .side { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: .35rem; }
+        .entry .money { font-weight: 600; }
+        .entry .actions { display: flex; gap: .3rem; }
+        .icon-btn { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 8px; padding: .2rem .55rem; cursor: pointer; font-size: .8rem; }
+        .icon-btn:hover { color: var(--text); border-color: rgba(255,255,255,.3); }
+        .icon-btn.danger:hover { color: var(--danger); border-color: rgba(224,102,102,.5); }
+        .empty { color: var(--muted); font-size: .92rem; margin: 0; }
+
+        /* ===== RAPORT / STAWKI ===== */
+        .quick { display: flex; gap: .4rem; flex-wrap: wrap; margin: .8rem 0 1rem; }
+        .rates-list { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: .4rem; }
+        .rates-list li { display: grid; grid-template-columns: 60px repeat(3, 1fr); gap: .5rem; align-items: center; font-size: .88rem; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: .5rem .7rem; }
+        .rates-list li.head { background: none; border: 0; font-size: .72rem; color: var(--muted); padding: 0 .7rem; }
+        .rates-list li button { all: unset; cursor: pointer; font-weight: 600; color: var(--gold); }
+        .rates-list li .r { text-align: right; }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; max-width: calc(100% - 40px); background: #171717;
+            border: 1px solid rgba(201,162,77,.5); color: var(--gold); padding: .7rem 1rem; border-radius: 10px;
+            opacity: 0; transform: translateY(10px); transition: opacity .25s, transform .25s; pointer-events: none; z-index: 10;
+        }
+        .toast.visible { opacity: 1; transform: none; }
+        .toast.error { border-color: rgba(224,102,102,.6); color: var(--danger); }
+
+        #reportSheet { display: none; }
+
+        @media (max-width: 900px) {
+            main { grid-template-columns: 1fr; }
+            .entry { grid-template-columns: 1fr; gap: .5rem; }
+            .entry .side { flex-direction: row; justify-content: space-between; align-items: center; }
+        }
+        @media (max-width: 560px) {
+            .people { grid-template-columns: 1fr; }
+            header h1 { font-size: 2.2rem; }
+            .scene { height: 170px; }
+        }
+        @media (prefers-reduced-motion: reduce) { .flame, .glow { animation: none; } * { transition: none !important; } }
+
+        /* ===== WYDRUK / PDF ===== */
+        @media print {
+            @page { size: A4; margin: 14mm 12mm; }
+            body { background: #fff !important; color: #111; }
+            .screen { display: none !important; }
+            #reportSheet { display: block !important; font-size: 10.5pt; color: #111; }
+            .rp-head { border-bottom: 2px solid #b08a3c; padding-bottom: 8pt; margin-bottom: 12pt; }
+            .rp-head h1 { font-family: 'Playfair Display', serif; font-weight: 500; font-size: 20pt; margin: 0; color: #111; }
+            .rp-head .sub { color: #555; margin-top: 2pt; }
+            .rp-meta { display: flex; justify-content: space-between; margin-top: 6pt; font-size: 9.5pt; color: #333; }
+            .rp-person { margin-top: 14pt; page-break-inside: auto; }
+            .rp-person h2 { font-family: 'Playfair Display', serif; font-weight: 500; font-size: 14pt; margin: 0 0 5pt; border-left: 4px solid #b08a3c; padding-left: 6pt; }
+            table.rp { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+            table.rp th, table.rp td { border: 1px solid #bbb; padding: 3pt 5pt; text-align: center; }
+            table.rp th { background: #f1ece0; font-weight: 600; }
+            table.rp td:first-child, table.rp th:first-child { text-align: left; }
+            table.rp td.money, table.rp th.money { text-align: right; }
+            table.rp tfoot td { font-weight: 700; background: #f7f4ec; }
+            table.rp tr { page-break-inside: avoid; }
+            thead { display: table-header-group; }
+            .rp-leave { margin-top: 5pt; font-size: 9.5pt; color: #333; }
+            .rp-total { margin-top: 6pt; text-align: right; font-size: 11pt; }
+            .rp-total b { font-size: 13pt; }
+            .rp-summary { margin-top: 18pt; page-break-inside: avoid; }
+            .rp-summary h2 { font-family: 'Playfair Display', serif; font-weight: 500; font-size: 14pt; margin: 0 0 5pt; }
+            .rp-rates { margin-top: 10pt; font-size: 9pt; color: #444; }
+            .rp-warn { margin-top: 8pt; font-size: 9.5pt; color: #a33; }
+            .rp-sign { display: flex; justify-content: space-between; gap: 30pt; margin-top: 40pt; page-break-inside: avoid; }
+            .rp-sign div { flex: 1; border-top: 1px solid #555; padding-top: 3pt; text-align: center; font-size: 9pt; color: #444; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="screen">
+    <svg class="scene" viewBox="0 0 800 230" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <defs>
+            <radialGradient id="glowGrad"><stop offset="0" stop-color="#ffcf7a" stop-opacity=".5"/><stop offset=".45" stop-color="#ffb347" stop-opacity=".14"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
+            <radialGradient id="moonGrad"><stop offset="0" stop-color="#f3ead2" stop-opacity=".22"/><stop offset="1" stop-color="#f3ead2" stop-opacity="0"/></radialGradient>
+            <linearGradient id="glassGrad" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#d0483a"/><stop offset="1" stop-color="#5a120c"/></linearGradient>
+            <linearGradient id="flameGrad" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff3c4"/><stop offset=".6" stop-color="#ffc861"/><stop offset="1" stop-color="#ff8a2a"/></linearGradient>
+        </defs>
+
+        <!-- księżyc i gwiazdy -->
+        <circle cx="660" cy="55" r="70" fill="url(#moonGrad)"/>
+        <circle cx="660" cy="55" r="19" fill="#ece3c8" opacity=".85"/>
+        <g fill="#fff">
+            <circle cx="110" cy="38" r="1.1" opacity=".5"/><circle cx="210" cy="70" r=".9" opacity=".35"/>
+            <circle cx="300" cy="28" r="1.2" opacity=".45"/><circle cx="470" cy="50" r=".9" opacity=".4"/>
+            <circle cx="545" cy="22" r="1.1" opacity=".5"/><circle cx="740" cy="100" r=".9" opacity=".35"/>
+            <circle cx="40" cy="90" r=".9" opacity=".3"/><circle cx="380" cy="80" r=".8" opacity=".3"/>
+        </g>
+
+        <!-- dalekie wzgórze -->
+        <path d="M0 160 Q180 120 380 142 T800 132 V230 H0Z" fill="#171717"/>
+
+        <!-- cyprysy -->
+        <g fill="#0f1310">
+            <path d="M80 175 C66 130 72 72 88 34 C104 72 110 130 96 175Z"/>
+            <path d="M118 178 C108 145 112 104 124 78 C136 104 140 145 130 178Z"/>
+            <path d="M700 175 C686 132 692 82 706 46 C720 82 726 132 712 175Z"/>
+        </g>
+
+        <!-- środkowy plan i nagrobki -->
+        <path d="M0 182 Q400 158 800 180 V230 H0Z" fill="#131313"/>
+        <g fill="#262626" stroke="rgba(255,255,255,.07)" stroke-width="1">
+            <path d="M196 178 V142 Q196 126 215 126 Q234 126 234 142 V178Z"/>
+            <path d="M486 176 V146 Q486 132 502 132 Q518 132 518 146 V176Z"/>
+            <rect x="574" y="150" width="36" height="28" rx="3"/>
+            <path d="M622 179 V158 Q622 150 632 150 Q642 150 642 158 V179Z"/>
+        </g>
+        <path d="M296 177 V112 M281 128 H311" stroke="#2b2b2b" stroke-width="8" stroke-linecap="square" fill="none"/>
+
+        <!-- pierwszy plan -->
+        <path d="M0 196 Q400 176 800 196 V230 H0Z" fill="#0b0b0b"/>
+
+        <!-- znicz -->
+        <circle class="glow" cx="400" cy="150" r="80" fill="url(#glowGrad)"/>
+        <path class="flame" d="M400 124 C406 133 410 141 405.5 149 C403.5 152.5 396.5 152.5 394.5 149 C390 141 394 133 400 124Z" fill="url(#flameGrad)"/>
+        <path d="M387 160 H413 L410 153 H390Z" fill="#9a8558"/>
+        <rect x="397" y="150" width="6" height="3" fill="#9a8558"/>
+        <path d="M385 160 H415 L411 191 H389Z" fill="url(#glassGrad)" opacity=".93"/>
+        <path d="M389 163 L391 187" stroke="rgba(255,255,255,.25)" stroke-width="2" stroke-linecap="round"/>
+        <rect x="386" y="190" width="28" height="4" rx="1" fill="#3a3a3a"/>
+    </svg>
+
+    <div class="title-block">
+        <h1>Rozliczenia LPGK</h1>
+        <p>Nabożeństwa i ceremonie świeckie: cmentarz przy ul. Wrocławskiej i na Jaszkowie</p>
+        <div class="userbar" id="userbar" hidden>
+            <span id="userName"></span><span class="role" id="userRole"></span>
+            <button class="btn btn-ghost btn-sm" id="logoutBtn">Wyloguj</button>
+        </div>
+    </div>
+</header>
+
+<!-- LOGOWANIE -->
+<section class="card login screen glow-card" id="loginCard">
+    <h2>Zaloguj się</h2>
+    <input id="login" type="text" placeholder="Login lub e-mail" autocomplete="username">
+    <input id="password" type="password" placeholder="Hasło" autocomplete="current-password">
+    <button class="btn btn-primary" id="loginBtn">Zaloguj</button>
+    <p class="hint" id="loginMsg" style="text-align:center"></p>
+</section>
+
+<main class="screen" id="app" hidden>
+    <!-- NOWY WPIS -->
+    <section class="card glow-card" id="formCard">
+        <h2 id="formTitle">Nowy wpis</h2>
+        <div class="toggle" role="group" aria-label="Rodzaj wpisu">
+            <button type="button" data-mode="uslugi" aria-pressed="true">Usługi (jeden dzień)</button>
+            <button type="button" data-mode="urlop" aria-pressed="false">Urlop (zakres dat)</button>
+        </div>
+
+        <div id="uslugiFields">
+            <label class="field">Data<input type="date" id="fDate"></label>
+            <table class="counts">
+                <thead><tr><th></th><th>ul. Wrocławska</th><th>Jaszków</th></tr></thead>
+                <tbody>
+                    <tr><td>Nabożeństwa</td>
+                        <td><div class="stepper"><button type="button" data-step="-1" data-for="nabWr">−</button><input type="number" id="nabWr" min="0" value="0" inputmode="numeric" aria-label="Nabożeństwa Wrocławska"><button type="button" data-step="1" data-for="nabWr">+</button></div></td>
+                        <td><div class="stepper"><button type="button" data-step="-1" data-for="nabJa">−</button><input type="number" id="nabJa" min="0" value="0" inputmode="numeric" aria-label="Nabożeństwa Jaszków"><button type="button" data-step="1" data-for="nabJa">+</button></div></td></tr>
+                    <tr><td>Ceremonie świeckie</td>
+                        <td><div class="stepper"><button type="button" data-step="-1" data-for="cerWr">−</button><input type="number" id="cerWr" min="0" value="0" inputmode="numeric" aria-label="Ceremonie Wrocławska"><button type="button" data-step="1" data-for="cerWr">+</button></div></td>
+                        <td><div class="stepper"><button type="button" data-step="-1" data-for="cerJa">−</button><input type="number" id="cerJa" min="0" value="0" inputmode="numeric" aria-label="Ceremonie Jaszków"><button type="button" data-step="1" data-for="cerJa">+</button></div></td></tr>
+                    <tr><td>Inne usługi</td>
+                        <td><div class="stepper"><button type="button" data-step="-1" data-for="inne">−</button><input type="number" id="inne" min="0" value="0" inputmode="numeric" aria-label="Inne usługi"><button type="button" data-step="1" data-for="inne">+</button></div></td>
+                        <td><input type="text" id="opis" placeholder="Opis (opcjonalnie)"></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="urlopFields" hidden>
+            <div class="row">
+                <label class="field">Od<input type="date" id="fFrom"></label>
+                <label class="field">Do<input type="date" id="fTo"></label>
+            </div>
+            <label class="field" style="margin-top:.7rem">Uwagi (opcjonalnie)<input type="text" id="fNote" placeholder="np. urlop wypoczynkowy"></label>
+        </div>
+
+        <div class="preview" id="preview"></div>
+
+        <div class="row">
+            <button class="btn btn-primary" id="saveBtn" style="flex:1">Zapisz wpis</button>
+            <button class="btn btn-ghost" id="cancelEditBtn" hidden>Anuluj edycję</button>
+        </div>
+    </section>
+
+    <!-- PODSUMOWANIE MIESIĄCA -->
+    <section class="card">
+        <div class="month-nav">
+            <button id="prevMonth" aria-label="Poprzedni miesiąc">◀</button>
+            <h2 id="monthLabel"></h2>
+            <button id="nextMonth" aria-label="Następny miesiąc">▶</button>
+        </div>
+        <div class="people" id="people"></div>
+    </section>
+
+    <!-- WPISY -->
+    <section class="card full">
+        <h2 id="entriesTitle">Wpisy</h2>
+        <ul class="entries" id="entries"></ul>
+    </section>
+
+    <!-- RAPORT -->
+    <section class="card">
+        <h2>Raport PDF</h2>
+        <div class="row">
+            <label class="field">Od<input type="date" id="rFrom"></label>
+            <label class="field">Do<input type="date" id="rTo"></label>
+        </div>
+        <div class="quick">
+            <button class="btn btn-ghost btn-sm" data-quick="this">Bieżący miesiąc</button>
+            <button class="btn btn-ghost btn-sm" data-quick="prev">Poprzedni miesiąc</button>
+            <button class="btn btn-ghost btn-sm" data-quick="year">Cały rok</button>
+        </div>
+        <div class="row">
+            <label class="field">Kogo uwzględnić
+                <select id="rWho"><option value="all">Obie osoby</option><option value="me">Tylko mnie</option></select>
+            </label>
+            <button class="btn btn-primary" id="reportBtn">Generuj PDF</button>
+        </div>
+        <p class="hint">Otworzy się okno drukowania. Jako drukarkę wybierz „Zapisz jako PDF”.</p>
+    </section>
+
+    <!-- STAWKI -->
+    <section class="card">
+        <h2>Stawki</h2>
+        <ul class="rates-list" id="ratesList"></ul>
+        <div id="ratesForm" hidden>
+            <div class="row">
+                <label class="field" style="flex:0 0 90px; min-width:0">Rok<input type="number" id="rateYear" min="2020" max="2100"></label>
+                <label class="field">Nabożeństwo (zł)<input type="number" id="rateNab" min="0" step="0.01"></label>
+                <label class="field">Ceremonia (zł)<input type="number" id="rateCer" min="0" step="0.01"></label>
+                <label class="field">Inne usługi (zł)<input type="number" id="rateInne" min="0" step="0.01"></label>
+            </div>
+            <button class="btn btn-primary" id="saveRatesBtn" style="margin-top:.8rem; width:100%">Zapisz stawki</button>
+            <p class="hint">Kliknij rok na liście, żeby wczytać jego stawki do edycji. Wpisy liczą się według stawek z roku, w którym była usługa.</p>
+        </div>
+    </section>
+</main>
+
+<div id="reportSheet"></div>
+<div class="toast screen" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+// ================================================================
+//  UŻYTKOWNICY – uzupełnij po założeniu konta Pawła w Firebase
+//  (Authentication → Users: kolumna „User UID”)
+// ================================================================
+const ADMIN = { uid: 'WKLEJ_UID_DANIELA', name: 'Daniel Dziuda' };
+const PAWEL = { uid: 'WKLEJ_UID_PAWLA',   name: 'Paweł Woźniak', login: 'pawelwozniak', email: 'WKLEJ_EMAIL_PAWLA' };
+const PEOPLE = [ADMIN, PAWEL];
+
+const firebaseConfig = {
+    apiKey: "AIzaSyArjPTjW2VSW5F1jS5WtbyvQpjJDraJh1U",
+    authDomain: "cantus-calendar.firebaseapp.com",
+    databaseURL: "https://cantus-calendar-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "cantus-calendar",
+    storageBucket: "cantus-calendar.firebasestorage.app",
+    messagingSenderId: "241605051345",
+    appId: "1:241605051345:web:d3a2fb69447798456296f0",
+    measurementId: "G-BRV1GCH9HS"
+};
+
+const app = initializeApp(firebaseConfig);
+const fs = getFirestore(app);   // rozliczenia są w Firestore – osobno od publicznej bazy kalendarza
+const auth = getAuth(app);
+
+// Firestore:
+//   rozliczenia_wpisy/{uid}_{data}          = { uid, name, kind:'uslugi', dateFrom, dateTo, nabWr, nabJa, cerWr, cerJa, inne, opis }
+//   rozliczenia_wpisy/{uid}_urlop_{czas}    = { uid, name, kind:'urlop', dateFrom, dateTo, opis }
+//   rozliczenia_stawki/{rok}                = { nabozenstwo, ceremonia, inne }
+
+let me = null;
+let entries = [];
+let rates = {};
+let mode = 'uslugi';
+let editingId = null;
+let viewMonth = new Date(); viewMonth.setDate(1);
+let unsubs = [];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pln = n => new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(n || 0);
+const int = v => Math.max(0, parseInt(v, 10) || 0);
+const money = v => Math.max(0, parseFloat(String(v).replace(',', '.')) || 0);
+
+// --- DATY (tekst RRRR-MM-DD, bez problemów ze strefą czasową) ---
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const utc = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+const daysIncl = (a, b) => (utc(b) - utc(a)) / 864e5 + 1;
+const fmtLong = s => parse(s).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+const fmtDay = s => parse(s).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' });
+const fmtWeekday = s => parse(s).toLocaleDateString('pl-PL', { weekday: 'long' });
+const monthBounds = d => [ymd(new Date(d.getFullYear(), d.getMonth(), 1)), ymd(new Date(d.getFullYear(), d.getMonth() + 1, 0))];
+const maxS = (a, b) => a > b ? a : b;
+const minS = (a, b) => a < b ? a : b;
+
+function rangeLabel(from, to) {
+    if (from === to) return fmtLong(from);
+    const [mf, mt] = monthBounds(parse(from));
+    if (from === mf && to === mt) return parse(from).toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' });
+    return `${fmtLong(from)} – ${fmtLong(to)}`;
+}
+
+function plural(n, one, few, many) {
+    if (n === 1) return one;
+    const d = n % 10, t = n % 100;
+    return (d >= 2 && d <= 4 && (t < 12 || t > 14)) ? few : many;
+}
+
+let toastTimer;
+function toast(msg, isError = false) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.toggle('error', isError);
+    t.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('visible'), 2800);
+}
+
+const personIdx = uid => PEOPLE.findIndex(p => p.uid === uid);
+const isAdmin = () => me?.uid === ADMIN.uid;
+
+// --- STAWKI ---
+// Bierze stawki z roku usługi; jeśli brak – z najbliższego wcześniejszego roku.
+function rateFor(dateStr) {
+    const y = Number(dateStr.slice(0, 4));
+    const years = Object.keys(rates).map(Number).filter(r => r <= y).sort((a, b) => b - a);
+    return years.length ? { year: years[0], ...rates[years[0]] } : null;
+}
+
+function amountOf(e) {
+    if (e.kind !== 'uslugi') return 0;
+    const r = rateFor(e.dateFrom);
+    if (!r) return null;
+    return (int(e.nabWr) + int(e.nabJa)) * money(r.nabozenstwo)
+         + (int(e.cerWr) + int(e.cerJa)) * money(r.ceremonia)
+         + int(e.inne) * money(r.inne);
+}
+
+// --- PODSUMOWANIE ZAKRESU ---
+function summarize(from, to, people) {
+    return people.map(p => {
+        const mine = entries.filter(e => e.uid === p.uid);
+        const uslugi = mine.filter(e => e.kind === 'uslugi' && e.dateFrom >= from && e.dateFrom <= to).sort((a, b) => a.dateFrom.localeCompare(b.dateFrom));
+        const urlopy = mine.filter(e => e.kind === 'urlop' && e.dateFrom <= to && e.dateTo >= from).sort((a, b) => a.dateFrom.localeCompare(b.dateFrom));
+        const s = { person: p, uslugi, urlopy, nabWr: 0, nabJa: 0, cerWr: 0, cerJa: 0, inne: 0, amount: 0, missing: false, urlopDays: 0, yearsUsed: new Set() };
+        uslugi.forEach(e => {
+            ['nabWr', 'nabJa', 'cerWr', 'cerJa', 'inne'].forEach(k => s[k] += int(e[k]));
+            const a = amountOf(e);
+            if (a === null) s.missing = true; else { s.amount += a; s.yearsUsed.add(rateFor(e.dateFrom).year); }
+        });
+        urlopy.forEach(e => s.urlopDays += daysIncl(maxS(from, e.dateFrom), minS(to, e.dateTo)));
+        return s;
+    });
+}
+
+// --- LOGOWANIE ---
+function resolveLogin(v) {
+    v = v.trim();
+    if (v.includes('@')) return v;
+    if (v.toLowerCase() === PAWEL.login) return PAWEL.email;
+    return v;
+}
+
+$('loginBtn').addEventListener('click', async () => {
+    $('loginMsg').textContent = '';
+    try { await signInWithEmailAndPassword(auth, resolveLogin($('login').value), $('password').value); }
+    catch { $('loginMsg').textContent = 'Nieprawidłowy login lub hasło.'; }
+});
+$('password').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
+$('logoutBtn').addEventListener('click', () => signOut(auth));
+
+onAuthStateChanged(auth, user => {
+    unsubs.forEach(u => u()); unsubs = [];
+    entries = []; rates = {};
+    me = user ? PEOPLE.find(p => p.uid === user.uid) || null : null;
+
+    if (user && !me) {
+        $('loginMsg').textContent = 'To konto nie ma dostępu do rozliczeń.';
+        signOut(auth);
+        return;
+    }
+
+    $('loginCard').hidden = !!me;
+    $('app').hidden = !me;
+    $('userbar').hidden = !me;
+    if (!me) return;
+
+    $('userName').textContent = me.name;
+    $('userRole').textContent = isAdmin() ? 'Administrator' : 'Użytkownik';
+    $('ratesForm').hidden = !isAdmin();
+    $('rWho').value = 'all';
+    resetForm();
+    setReportRange('this');
+
+    unsubs.push(onSnapshot(collection(fs, 'rozliczenia_wpisy'),
+        snap => { entries = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); },
+        () => toast('Brak dostępu do wpisów – sprawdź reguły Firestore', true)));
+    unsubs.push(onSnapshot(collection(fs, 'rozliczenia_stawki'),
+        snap => { rates = {}; snap.docs.forEach(d => rates[d.id] = d.data()); renderAll(); updatePreview(); },
+        () => toast('Brak dostępu do stawek – sprawdź reguły Firestore', true)));
+});
+
+// --- FORMULARZ ---
+function setMode(m) {
+    mode = m;
+    document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === m));
+    $('uslugiFields').hidden = m !== 'uslugi';
+    $('urlopFields').hidden = m !== 'urlop';
+    updatePreview();
+}
+document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => { if (!editingId) setMode(b.dataset.mode); }));
+
+$('formCard').addEventListener('click', e => {
+    const b = e.target.closest('[data-step]');
+    if (!b) return;
+    const input = $(b.dataset.for);
+    input.value = int(input.value) + Number(b.dataset.step);
+    if (int(input.value) < 0 || input.value < 0) input.value = 0;
+    updatePreview();
+});
+$('formCard').addEventListener('input', updatePreview);
+
+function formData() {
+    return {
+        nabWr: int($('nabWr').value), nabJa: int($('nabJa').value),
+        cerWr: int($('cerWr').value), cerJa: int($('cerJa').value),
+        inne: int($('inne').value)
+    };
+}
+
+function updatePreview() {
+    const box = $('preview');
+    box.classList.remove('warn');
+    if (mode === 'urlop') {
+        const f = $('fFrom').value, t = $('fTo').value;
+        if (f && t && t >= f) { const n = daysIncl(f, t); box.innerHTML = `Urlop: <b>${n} ${plural(n, 'dzień', 'dni', 'dni')}</b>`; }
+        else if (f && t) { box.classList.add('warn'); box.textContent = 'Data końcowa jest wcześniejsza niż początkowa.'; }
+        else box.textContent = 'Wybierz pierwszy i ostatni dzień urlopu.';
+        return;
+    }
+    const date = $('fDate').value;
+    if (!date) { box.textContent = 'Wybierz datę.'; return; }
+    const a = amountOf({ kind: 'uslugi', dateFrom: date, ...formData() });
+    if (a === null) { box.classList.add('warn'); box.textContent = `Brak stawek na ${date.slice(0, 4)} – administrator musi je uzupełnić.`; return; }
+    const r = rateFor(date);
+    box.innerHTML = `Wartość wpisu: <b>${pln(a)}</b> <span style="color:var(--muted)">(stawki ${r.year})</span>`;
+}
+
+function resetForm() {
+    editingId = null;
+    ['nabWr', 'nabJa', 'cerWr', 'cerJa', 'inne'].forEach(id => $(id).value = 0);
+    $('opis').value = ''; $('fNote').value = '';
+    $('fDate').value = ymd(new Date());
+    $('fFrom').value = ''; $('fTo').value = '';
+    $('formTitle').textContent = 'Nowy wpis';
+    $('saveBtn').textContent = 'Zapisz wpis';
+    $('cancelEditBtn').hidden = true;
+    setMode('uslugi');
+}
+$('cancelEditBtn').addEventListener('click', resetForm);
+
+function startEdit(id) {
+    const e = entries.find(x => x.id === id);
+    if (!e || e.uid !== me.uid) return;
+    editingId = id;
+    setMode(e.kind);
+    if (e.kind === 'uslugi') {
+        $('fDate').value = e.dateFrom;
+        ['nabWr', 'nabJa', 'cerWr', 'cerJa', 'inne'].forEach(k => $(k).value = int(e[k]));
+        $('opis').value = e.opis || '';
+    } else {
+        $('fFrom').value = e.dateFrom; $('fTo').value = e.dateTo; $('fNote').value = e.opis || '';
+    }
+    $('formTitle').textContent = 'Edycja wpisu';
+    $('saveBtn').textContent = 'Zapisz zmiany';
+    $('cancelEditBtn').hidden = false;
+    updatePreview();
+    $('formCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+$('saveBtn').addEventListener('click', async () => {
+    let id, data;
+    if (mode === 'uslugi') {
+        const date = $('fDate').value;
+        const c = formData();
+        if (!date) return toast('Wybierz datę', true);
+        if (!Object.values(c).some(v => v > 0)) return toast('Wpisz przynajmniej jedną usługę', true);
+        id = `${me.uid}_${date}`;
+        if (id !== editingId && entries.some(e => e.id === id) &&
+            !confirm(`Masz już wpis na ${fmtLong(date)}. Zastąpić go?`)) return;
+        data = { kind: 'uslugi', dateFrom: date, dateTo: date, ...c, opis: $('opis').value.trim() };
+    } else {
+        const f = $('fFrom').value, t = $('fTo').value;
+        if (!f || !t) return toast('Wybierz zakres dat', true);
+        if (t < f) return toast('Data końcowa jest wcześniejsza niż początkowa', true);
+        id = editingId || `${me.uid}_urlop_${Date.now()}`;
+        data = { kind: 'urlop', dateFrom: f, dateTo: t, nabWr: 0, nabJa: 0, cerWr: 0, cerJa: 0, inne: 0, opis: $('fNote').value.trim() };
+    }
+
+    try {
+        await setDoc(doc(fs, 'rozliczenia_wpisy', id), { ...data, uid: me.uid, name: me.name, updatedAt: Date.now() });
+        if (editingId && editingId !== id) await deleteDoc(doc(fs, 'rozliczenia_wpisy', editingId));
+        toast(editingId ? '✔ Zapisano zmiany' : '✔ Dodano wpis');
+        viewMonth = parse(data.dateFrom); viewMonth.setDate(1);
+        resetForm();
+        renderAll();
+    } catch { toast('Nie udało się zapisać – brak uprawnień', true); }
+});
+
+// --- RENDER ---
+function renderAll() {
+    if (!me) return;
+    renderMonth();
+    renderEntries();
+    renderRates();
+}
+
+$('prevMonth').addEventListener('click', () => { viewMonth.setMonth(viewMonth.getMonth() - 1); renderAll(); });
+$('nextMonth').addEventListener('click', () => { viewMonth.setMonth(viewMonth.getMonth() + 1); renderAll(); });
+
+function renderMonth() {
+    const [from, to] = monthBounds(viewMonth);
+    $('monthLabel').textContent = viewMonth.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' });
+    $('people').innerHTML = summarize(from, to, PEOPLE).map((s, i) => `
+        <div class="person p${i}">
+            <div class="who">${esc(s.person.name)}${s.person.uid === me.uid ? '<span class="me">to Ty</span>' : ''}</div>
+            <div class="amount">${pln(s.amount)}${s.missing ? ' <span style="font-size:.8rem;color:var(--danger)">+ brak stawek</span>' : ''}</div>
+            <table class="mini">
+                <tr><th></th><th>Wrocławska</th><th>Jaszków</th><th>Razem</th></tr>
+                <tr><td>Nabożeństwa</td><td>${s.nabWr}</td><td>${s.nabJa}</td><td class="total">${s.nabWr + s.nabJa}</td></tr>
+                <tr><td>Ceremonie</td><td>${s.cerWr}</td><td>${s.cerJa}</td><td class="total">${s.cerWr + s.cerJa}</td></tr>
+                <tr><td>Inne usługi</td><td></td><td></td><td class="total">${s.inne}</td></tr>
+                <tr><td>Urlop</td><td></td><td></td><td class="total">${s.urlopDays} ${plural(s.urlopDays, 'dzień', 'dni', 'dni')}</td></tr>
+            </table>
+        </div>`).join('');
+}
+
+function chips(e) {
+    if (e.kind === 'urlop') {
+        const n = daysIncl(e.dateFrom, e.dateTo);
+        return `<span class="chip leave">Urlop: ${n} ${plural(n, 'dzień', 'dni', 'dni')}</span>${e.opis ? `<span class="chip">${esc(e.opis)}</span>` : ''}`;
+    }
+    const part = (label, wr, ja) => {
+        const bits = [];
+        if (wr) bits.push(`Wrocławska <b>${wr}</b>`);
+        if (ja) bits.push(`Jaszków <b>${ja}</b>`);
+        return bits.length ? `<span class="chip">${label}: ${bits.join(', ')}</span>` : '';
+    };
+    return part('Nabożeństwa', int(e.nabWr), int(e.nabJa))
+         + part('Ceremonie', int(e.cerWr), int(e.cerJa))
+         + (int(e.inne) ? `<span class="chip">Inne usługi: <b>${int(e.inne)}</b>${e.opis ? ` (${esc(e.opis)})` : ''}</span>` : '');
+}
+
+function renderEntries() {
+    const [from, to] = monthBounds(viewMonth);
+    const list = entries
+        .filter(e => personIdx(e.uid) !== -1 && e.dateFrom <= to && e.dateTo >= from)
+        .sort((a, b) => b.dateFrom.localeCompare(a.dateFrom) || personIdx(a.uid) - personIdx(b.uid));
+
+    $('entriesTitle').textContent = `Wpisy: ${viewMonth.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' })}`;
+    $('entries').innerHTML = list.length ? list.map(e => {
+        const i = personIdx(e.uid);
+        const own = e.uid === me.uid;
+        const amt = amountOf(e);
+        const dateHTML = e.kind === 'urlop' && e.dateFrom !== e.dateTo
+            ? `${fmtDay(e.dateFrom)} – ${fmtDay(e.dateTo)}<small>${esc(e.name)}</small>`
+            : `${fmtDay(e.dateFrom)}<small>${fmtWeekday(e.dateFrom)}, ${esc(e.name)}</small>`;
+        return `
+            <li class="entry p${i} ${e.kind === 'urlop' ? 'urlop' : ''}">
+                <div class="date">${dateHTML}</div>
+                <div class="body">${chips(e)}</div>
+                <div class="side">
+                    <span class="money">${e.kind === 'urlop' ? '' : amt === null ? '<span style="color:var(--danger)">brak stawek</span>' : pln(amt)}</span>
+                    ${own ? `<span class="actions">
+                        <button class="icon-btn" data-edit="${e.id}">Edytuj</button>
+                        <button class="icon-btn danger" data-del="${e.id}">Usuń</button>
+                    </span>` : ''}
+                </div>
+            </li>`;
+    }).join('') : `<li class="empty">W tym miesiącu nie ma jeszcze wpisów.</li>`;
+}
+
+$('entries').addEventListener('click', async e => {
+    const ed = e.target.closest('[data-edit]');
+    if (ed) return startEdit(ed.dataset.edit);
+    const del = e.target.closest('[data-del]');
+    if (!del) return;
+    const entry = entries.find(x => x.id === del.dataset.del);
+    if (!entry || entry.uid !== me.uid) return;
+    const label = entry.kind === 'urlop' ? `urlop ${fmtDay(entry.dateFrom)} – ${fmtDay(entry.dateTo)}` : `wpis z ${fmtLong(entry.dateFrom)}`;
+    if (!confirm(`Usunąć ${label}?`)) return;
+    try { await deleteDoc(doc(fs, 'rozliczenia_wpisy', entry.id)); toast('✔ Usunięto'); if (editingId === entry.id) resetForm(); }
+    catch { toast('Nie udało się usunąć – brak uprawnień', true); }
+});
+
+// --- STAWKI ---
+function renderRates() {
+    const years = Object.keys(rates).sort((a, b) => b - a);
+    $('ratesList').innerHTML = years.length
+        ? `<li class="head"><span>Rok</span><span class="r">Nabożeństwo</span><span class="r">Ceremonia</span><span class="r">Inne</span></li>` +
+          years.map(y => `<li>
+              ${isAdmin() ? `<button data-year="${y}">${y}</button>` : `<b style="color:var(--gold)">${y}</b>`}
+              <span class="r">${pln(money(rates[y].nabozenstwo))}</span>
+              <span class="r">${pln(money(rates[y].ceremonia))}</span>
+              <span class="r">${pln(money(rates[y].inne))}</span>
+          </li>`).join('')
+        : `<li class="empty">${isAdmin() ? 'Nie ma jeszcze stawek. Wpisz je poniżej.' : 'Administrator nie wpisał jeszcze stawek.'}</li>`;
+
+    if (isAdmin() && !$('rateYear').value) loadRateYear(String(new Date().getFullYear()));
+}
+
+function loadRateYear(y) {
+    const r = rates[y] || {};
+    $('rateYear').value = y;
+    $('rateNab').value = r.nabozenstwo ?? '';
+    $('rateCer').value = r.ceremonia ?? '';
+    $('rateInne').value = r.inne ?? '';
+}
+$('ratesList').addEventListener('click', e => { const b = e.target.closest('[data-year]'); if (b) loadRateYear(b.dataset.year); });
+$('rateYear').addEventListener('change', () => loadRateYear($('rateYear').value));
+
+$('saveRatesBtn').addEventListener('click', async () => {
+    const y = String(int($('rateYear').value));
+    if (y < 2000) return toast('Wpisz poprawny rok', true);
+    const data = { nabozenstwo: money($('rateNab').value), ceremonia: money($('rateCer').value), inne: money($('rateInne').value), updatedAt: Date.now() };
+    try { await setDoc(doc(fs, 'rozliczenia_stawki', y), data); toast(`✔ Zapisano stawki na ${y}`); }
+    catch { toast('Nie udało się zapisać stawek – brak uprawnień', true); }
+});
+
+// --- RAPORT PDF ---
+function setReportRange(kind) {
+    const now = new Date();
+    if (kind === 'this') { const [f, t] = monthBounds(now); $('rFrom').value = f; $('rTo').value = t; }
+    if (kind === 'prev') { const [f, t] = monthBounds(new Date(now.getFullYear(), now.getMonth() - 1, 1)); $('rFrom').value = f; $('rTo').value = t; }
+    if (kind === 'year') { $('rFrom').value = `${now.getFullYear()}-01-01`; $('rTo').value = `${now.getFullYear()}-12-31`; }
+}
+document.querySelectorAll('[data-quick]').forEach(b => b.addEventListener('click', () => setReportRange(b.dataset.quick)));
+
+$('reportBtn').addEventListener('click', () => {
+    const from = $('rFrom').value, to = $('rTo').value;
+    if (!from || !to) return toast('Wybierz zakres dat', true);
+    if (to < from) return toast('Data końcowa jest wcześniejsza niż początkowa', true);
+
+    const people = $('rWho').value === 'me' ? [me] : PEOPLE;
+    const sums = summarize(from, to, people);
+    const years = new Set(); sums.forEach(s => s.yearsUsed.forEach(y => years.add(y)));
+    const anyMissing = sums.some(s => s.missing);
+    const period = rangeLabel(from, to);
+
+    const personHTML = s => {
+        const rows = s.uslugi.map(e => {
+            const a = amountOf(e);
+            return `<tr>
+                <td>${fmtLong(e.dateFrom)}</td>
+                <td>${int(e.nabWr) || ''}</td><td>${int(e.nabJa) || ''}</td>
+                <td>${int(e.cerWr) || ''}</td><td>${int(e.cerJa) || ''}</td>
+                <td>${int(e.inne) || ''}${e.opis ? ` <span style="color:#666">(${esc(e.opis)})</span>` : ''}</td>
+                <td class="money">${a === null ? 'brak stawek' : pln(a)}</td>
+            </tr>`;
+        }).join('');
+        const leave = s.urlopy.map(e => {
+            const f = maxS(from, e.dateFrom), t = minS(to, e.dateTo), n = daysIncl(f, t);
+            return `${f === t ? fmtLong(f) : `${fmtLong(f)} – ${fmtLong(t)}`} (${n} ${plural(n, 'dzień', 'dni', 'dni')})${e.opis ? `, ${esc(e.opis)}` : ''}`;
+        });
+        return `
+            <section class="rp-person">
+                <h2>${esc(s.person.name)}</h2>
+                ${s.uslugi.length ? `
+                <table class="rp">
+                    <thead>
+                        <tr><th rowspan="2">Data</th><th colspan="2">Nabożeństwa</th><th colspan="2">Ceremonie świeckie</th><th rowspan="2">Inne usługi</th><th rowspan="2" class="money">Kwota</th></tr>
+                        <tr><th>Wrocławska</th><th>Jaszków</th><th>Wrocławska</th><th>Jaszków</th></tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                    <tfoot><tr>
+                        <td>Razem</td><td>${s.nabWr}</td><td>${s.nabJa}</td><td>${s.cerWr}</td><td>${s.cerJa}</td><td>${s.inne}</td><td class="money">${pln(s.amount)}</td>
+                    </tr></tfoot>
+                </table>` : `<p class="rp-leave">Brak usług w tym okresie.</p>`}
+                ${leave.length ? `<p class="rp-leave"><b>Urlop (${s.urlopDays} ${plural(s.urlopDays, 'dzień', 'dni', 'dni')}):</b> ${leave.join('; ')}</p>` : ''}
+                <p class="rp-total">
+                    Nabożeństwa: ${s.nabWr + s.nabJa}, ceremonie świeckie: ${s.cerWr + s.cerJa}, inne usługi: ${s.inne}<br>
+                    Do wypłaty: <b>${pln(s.amount)}</b>
+                </p>
+            </section>`;
+    };
+
+    const total = sums.reduce((a, s) => a + s.amount, 0);
+    $('reportSheet').innerHTML = `
+        <div class="rp-head">
+            <h1>Rozliczenie usług cmentarnych</h1>
+            <div class="sub">Cmentarz komunalny przy ul. Wrocławskiej oraz cmentarz na Jaszkowie w Legnicy</div>
+            <div class="rp-meta">
+                <span>Okres: <b>${period}</b></span>
+                <span>Wygenerowano ${fmtLong(ymd(new Date()))}, ${esc(me.name)}</span>
+            </div>
+        </div>
+
+        ${sums.map(personHTML).join('')}
+
+        ${sums.length > 1 ? `
+        <section class="rp-summary">
+            <h2>Podsumowanie</h2>
+            <table class="rp">
+                <thead><tr><th>Osoba</th><th>Nabożeństwa</th><th>Ceremonie świeckie</th><th>Inne usługi</th><th>Urlop (dni)</th><th class="money">Kwota</th></tr></thead>
+                <tbody>${sums.map(s => `<tr><td>${esc(s.person.name)}</td><td>${s.nabWr + s.nabJa}</td><td>${s.cerWr + s.cerJa}</td><td>${s.inne}</td><td>${s.urlopDays}</td><td class="money">${pln(s.amount)}</td></tr>`).join('')}</tbody>
+                <tfoot><tr><td>Razem</td>
+                    <td>${sums.reduce((a, s) => a + s.nabWr + s.nabJa, 0)}</td>
+                    <td>${sums.reduce((a, s) => a + s.cerWr + s.cerJa, 0)}</td>
+                    <td>${sums.reduce((a, s) => a + s.inne, 0)}</td>
+                    <td>${sums.reduce((a, s) => a + s.urlopDays, 0)}</td>
+                    <td class="money">${pln(total)}</td></tr></tfoot>
+            </table>
+        </section>` : ''}
+
+        ${years.size ? `<p class="rp-rates">Zastosowane stawki: ${[...years].sort().map(y => `${y}: nabożeństwo ${pln(money(rates[y].nabozenstwo))}, ceremonia świecka ${pln(money(rates[y].ceremonia))}, inne usługi ${pln(money(rates[y].inne))}`).join('; ')}.</p>` : ''}
+        ${anyMissing ? `<p class="rp-warn">Uwaga: część usług nie ma przypisanych stawek i nie została uwzględniona w kwotach.</p>` : ''}
+
+        <div class="rp-sign">${people.map(p => `<div>${esc(p.name)}</div>`).join('')}<div>Zatwierdził</div></div>`;
+
+    const oldTitle = document.title;
+    const who = people.length === 1 ? ` ${me.name}` : '';
+    document.title = `Rozliczenie LPGK ${from} – ${to}${who}`;
+    window.addEventListener('afterprint', () => { document.title = oldTitle; }, { once: true });
+    window.print();
+});
+</script>
+</body>
+</html>
