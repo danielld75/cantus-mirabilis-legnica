@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Pieśni i setlisty – Cantus Mirabilis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --gold: #c9a24d;
+            --gold-soft: rgba(201,162,77,.14);
+            --panel: #171717;
+            --panel-2: #1f1f1f;
+            --text: #eaeaea;
+            --muted: #9a9a9a;
+            --line: rgba(255,255,255,.08);
+            --schola: #6fb3ff;
+            --trad: #e0a96d;
+            --danger: #e06666;
+            --ok: #7fd17f;
+        }
+
+        * { box-sizing: border-box; }
+        body { margin: 0; background: radial-gradient(circle at top, #222, #000); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+        button, select, input, textarea { font-family: inherit; font-size: 1rem; }
+        :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+        [hidden] { display: none !important; }
+
+        /* ===== NAGŁÓWEK ===== */
+        header { text-align: center; padding: 3.5rem 1rem 2rem; position: relative; }
+        .back {
+            position: absolute; left: 1rem; top: 1rem; text-decoration: none; color: var(--gold); font-size: .9rem;
+            border: 1px solid rgba(201,162,77,.4); padding: .45rem .9rem; border-radius: 10px;
+        }
+        .back:hover { background: var(--gold-soft); }
+        header svg { width: 74px; color: var(--gold); }
+        header h1 { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 3rem; letter-spacing: 2px; margin: .4rem 0 .3rem; }
+        header p { opacity: .75; margin: 0; font-size: 1.1rem; }
+        .summary { display: flex; justify-content: center; gap: .6rem; flex-wrap: wrap; margin-top: 1.4rem; }
+        .pill { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: .35rem .9rem; font-size: .9rem; }
+        .pill b { color: var(--gold); }
+
+        main { max-width: 1200px; margin: 0 auto; padding: 1rem 1rem 4rem; display: grid; grid-template-columns: minmax(300px, 1fr) 1.7fr; gap: 1.5rem; align-items: start; }
+        .col { display: grid; gap: 1.5rem; }
+
+        .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 1.5rem; }
+        .card h2 { font-family: 'Playfair Display', serif; color: var(--gold); font-weight: 500; font-size: 1.4rem; margin: 0 0 1rem; }
+        .card h2 .count { font-family: 'Inter', sans-serif; font-size: .85rem; color: var(--muted); margin-left: .4rem; }
+        .search-card { box-shadow: 0 0 60px rgba(201,162,77,.12); }
+
+        input[type=text], input[type=search], input[type=email], input[type=password], select, textarea {
+            background: #222; color: var(--text); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; padding: .7rem .85rem; width: 100%;
+        }
+        input[type=search] { font-size: 1.05rem; }
+        textarea { resize: vertical; min-height: 120px; font-size: .9rem; }
+        .hint { font-size: .82rem; color: var(--muted); margin: .6rem 0 0; line-height: 1.45; }
+
+        /* ===== WYNIKI WYSZUKIWANIA ===== */
+        .results { list-style: none; margin: .9rem 0 0; padding: 0; display: grid; gap: .35rem; max-height: 420px; overflow-y: auto; }
+        .results li { display: flex; align-items: stretch; gap: .35rem; }
+        .result {
+            flex: 1; display: flex; align-items: center; gap: .7rem; text-align: left; color: var(--text);
+            background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: .55rem .7rem;
+        }
+        button.result { cursor: pointer; }
+        button.result:hover { border-color: rgba(201,162,77,.6); background: #242424; }
+        button.result:hover .plus { opacity: 1; }
+        .result .t { flex: 1; }
+        .plus { color: var(--gold); font-weight: 600; opacity: .4; }
+        .empty { color: var(--muted); font-size: .9rem; margin: .8rem 0 0; }
+
+        .num {
+            min-width: 2.6rem; text-align: center; font-weight: 600; font-size: .85rem; color: var(--gold);
+            background: var(--gold-soft); border: 1px solid rgba(201,162,77,.35); border-radius: 7px; padding: .15rem .4rem;
+        }
+        .num.none { color: var(--muted); background: transparent; border-color: var(--line); }
+        .cat { font-size: .65rem; letter-spacing: .5px; padding: .15rem .45rem; border-radius: 5px; border: 1px solid; white-space: nowrap; }
+        .cat.SCHOLA { color: var(--schola); border-color: rgba(111,179,255,.45); }
+        .cat.TRADYCYJNE { color: var(--trad); border-color: rgba(224,169,109,.45); }
+
+        .icon-btn {
+            background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 8px;
+            padding: 0 .55rem; cursor: pointer; font-size: .85rem;
+        }
+        .icon-btn:hover { color: var(--text); border-color: rgba(255,255,255,.3); }
+        .icon-btn.danger:hover { color: var(--danger); border-color: rgba(224,102,102,.5); }
+
+        .edit-song { flex: 1; display: grid; grid-template-columns: 80px 1fr; gap: .4rem; background: var(--panel-2); border: 1px solid rgba(201,162,77,.5); border-radius: 10px; padding: .6rem; }
+        .edit-song input, .edit-song select { padding: .45rem .6rem; font-size: .9rem; }
+        .edit-song .wide { grid-column: 1 / -1; display: flex; gap: .4rem; flex-wrap: wrap; }
+
+        /* ===== ARCHIWUM ===== */
+        .arch .result { flex-direction: column; align-items: flex-start; gap: .15rem; }
+        .arch .meta { font-size: .78rem; color: var(--muted); }
+
+        /* ===== SETLISTY ===== */
+        .slots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .slot {
+            background: var(--panel-2); border: 1px solid var(--line); border-top: 3px solid rgba(255,255,255,.12);
+            border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; min-height: 220px;
+        }
+        .slot.admin { cursor: pointer; }
+        .slot.active { border-top-color: var(--gold); box-shadow: 0 0 0 1px rgba(201,162,77,.35), 0 0 30px rgba(201,162,77,.08); }
+        .slot-head { display: flex; align-items: center; gap: .6rem; }
+        .slot-no {
+            width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center;
+            font-size: .8rem; font-weight: 600; border: 1px solid var(--line); color: var(--muted);
+        }
+        .slot.active .slot-no { background: var(--gold); color: #111; border-color: var(--gold); }
+        .slot-title { font-family: 'Playfair Display', serif; font-size: 1.15rem !important; background: transparent !important; border-color: transparent !important; padding: .3rem .4rem !important; }
+        .slot-title:hover, .slot-title:focus { border-color: rgba(255,255,255,.15) !important; background: #222 !important; }
+        h3.slot-title-ro { font-family: 'Playfair Display', serif; font-weight: 500; font-size: 1.2rem; margin: 0; color: var(--gold); }
+        .slot-state { font-size: .72rem; color: var(--muted); margin: .3rem 0 0 2.3rem; min-height: 1em; }
+        .slot-state.saved { color: var(--ok); }
+        .slot-state.dirty { color: var(--trad); }
+        .slot.active .slot-state::before { content: 'Aktywna – tu dodajesz pieśni. '; color: var(--gold); }
+
+        .items { list-style: none; counter-reset: pos; margin: .8rem 0 0; padding: 0; display: grid; gap: .3rem; flex: 1; align-content: start; }
+        .items li { counter-increment: pos; display: flex; align-items: center; gap: .5rem; font-size: .93rem; padding: .35rem .4rem; border-radius: 8px; background: rgba(255,255,255,.025); }
+        .items li::before { content: counter(pos) '.'; color: var(--muted); font-size: .75rem; min-width: 1.2rem; text-align: right; }
+        .items .t { flex: 1; }
+        .items .ctrl { display: flex; gap: .2rem; }
+        .items .ctrl button { padding: .1rem .4rem; font-size: .75rem; }
+        .slot-empty { color: var(--muted); font-size: .88rem; font-style: italic; margin: 1rem 0 0; }
+
+        .slot-actions { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .9rem; padding-top: .8rem; border-top: 1px dashed var(--line); }
+
+        .btn { border: 0; border-radius: 10px; padding: .7rem 1.2rem; cursor: pointer; font-weight: 600; }
+        .btn-primary { background: var(--gold); color: #111; }
+        .btn-primary:hover { filter: brightness(1.08); }
+        .btn-ghost { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,.18); font-weight: 400; }
+        .btn-ghost:hover { border-color: var(--gold); }
+        .btn-danger { background: transparent; color: var(--danger); border: 1px solid rgba(224,102,102,.4); font-weight: 400; }
+        .btn-danger:hover { background: rgba(224,102,102,.1); }
+        .btn-sm { padding: .35rem .7rem; font-size: .8rem; border-radius: 8px; }
+
+        .preview-head { display: flex; justify-content: space-between; align-items: start; gap: 1rem; }
+        .preview-head .meta { font-size: .8rem; color: var(--muted); }
+
+        /* ===== ADMIN ===== */
+        footer { background: #0e0e0e; border-top: 1px solid rgba(201,162,77,.2); padding: 3rem 1rem; }
+        .admin { max-width: 800px; margin: 0 auto; }
+        .admin h2 { font-family: 'Playfair Display', serif; color: var(--gold); font-weight: 500; margin: 0 0 1rem; }
+        .admin h3 { font-size: 1rem; margin: 1.8rem 0 .7rem; }
+        .row { display: flex; gap: .6rem; flex-wrap: wrap; }
+        .row > input { flex: 1; min-width: 160px; }
+        .row > .narrow { flex: 0 0 110px; min-width: 0; }
+        .row > select { width: auto; }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; max-width: calc(100% - 40px); background: #171717;
+            border: 1px solid rgba(201,162,77,.5); color: var(--gold); padding: .7rem 1rem; border-radius: 10px;
+            opacity: 0; transform: translateY(10px); transition: opacity .25s, transform .25s; pointer-events: none; z-index: 10;
+        }
+        .toast.visible { opacity: 1; transform: none; }
+        .toast.error { border-color: rgba(224,102,102,.6); color: var(--danger); }
+
+        @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) {
+            .slots { grid-template-columns: 1fr; }
+            header h1 { font-size: 2.3rem; }
+            .back { position: static; display: inline-block; margin-bottom: 1rem; }
+        }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="back">◀ Kalendarz</a>
+    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M24 46 V14 L52 8 V40"/>
+        <path d="M24 21 L52 15"/>
+        <ellipse cx="18" cy="46" rx="7" ry="5.2" transform="rotate(-20 18 46)" fill="currentColor"/>
+        <ellipse cx="46" cy="40" rx="7" ry="5.2" transform="rotate(-20 46 40)" fill="currentColor"/>
+    </svg>
+    <h1>Pieśni</h1>
+    <p>Baza pieśni i setlisty chóru Cantus Mirabilis</p>
+    <div class="summary" id="summary"></div>
+</header>
+
+<main>
+    <div class="col">
+        <section class="card search-card">
+            <h2>Szukaj pieśni</h2>
+            <input type="search" id="songSearch" placeholder="Wpisz min. 3 litery tytułu lub numer" autocomplete="off">
+            <ul class="results" id="songResults"></ul>
+            <p class="hint" id="songHint"></p>
+        </section>
+
+        <section class="card">
+            <h2>Archiwum setlist <span class="count" id="archCount"></span></h2>
+            <input type="search" id="archSearch" placeholder="Wpisz min. 3 litery nazwy setlisty" autocomplete="off">
+            <ul class="results arch" id="archResults"></ul>
+        </section>
+
+        <section class="card" id="previewCard" hidden>
+            <div class="preview-head">
+                <div>
+                    <h2 id="previewTitle" style="margin-bottom:.2rem"></h2>
+                    <div class="meta" id="previewMeta"></div>
+                </div>
+                <button class="icon-btn" data-action="close-preview" aria-label="Zamknij podgląd">✕</button>
+            </div>
+            <ol class="items" id="previewItems"></ol>
+        </section>
+    </div>
+
+    <section class="card">
+        <h2>Setlisty</h2>
+        <div class="slots" id="slots"></div>
+    </section>
+</main>
+
+<footer>
+    <div class="admin">
+        <h2>Panel administracyjny</h2>
+
+        <div id="loginArea">
+            <div class="row">
+                <input id="email" type="email" placeholder="E-mail admina">
+                <input id="password" type="password" placeholder="Hasło">
+                <button class="btn btn-primary" id="loginBtn">Zaloguj</button>
+            </div>
+        </div>
+
+        <div id="adminArea" hidden>
+            <h3 style="margin-top:0">Dodaj pieśń</h3>
+            <div class="row">
+                <input id="newNumber" type="text" class="narrow" placeholder="Numer">
+                <input id="newTitle" type="text" placeholder="Tytuł pieśni">
+                <select id="newCategory">
+                    <option value="TRADYCYJNE">TRADYCYJNE</option>
+                    <option value="SCHOLA">SCHOLA</option>
+                </select>
+                <button class="btn btn-primary" id="addSongBtn">Dodaj</button>
+            </div>
+
+            <h3>Import z Excela</h3>
+            <textarea id="importText" placeholder="Zaznacz w Excelu kolumny (numer, tytuł, ewentualnie kategoria), skopiuj i wklej tutaj."></textarea>
+            <div class="row" style="margin-top:.6rem; align-items:center">
+                <span class="hint" style="margin:0">Kategoria, gdy brak jej w wierszu:</span>
+                <select id="importCategory">
+                    <option value="TRADYCYJNE">TRADYCYJNE</option>
+                    <option value="SCHOLA">SCHOLA</option>
+                </select>
+                <button class="btn btn-ghost" id="importBtn">Importuj</button>
+            </div>
+            <p class="hint">Każdy wiersz to jedna pieśń. Kolumny mogą być rozdzielone tabulatorem (tak kopiuje Excel) albo średnikiem. Duplikaty (ten sam numer i tytuł) są pomijane.</p>
+
+            <h3>Konto</h3>
+            <button class="btn btn-ghost" id="logoutBtn">Wyloguj</button>
+            <p class="hint">Kliknij setlistę, żeby ją aktywować, i dodawaj do niej pieśni z wyszukiwarki. Pieśń edytujesz ikoną ✎ przy wyniku wyszukiwania.</p>
+        </div>
+    </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, update, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+// --- KONFIGURACJA (ta sama co w index.html) ---
+const firebaseConfig = {
+    apiKey: "AIzaSyArjPTjW2VSW5F1jS5WtbyvQpjJDraJh1U",
+    authDomain: "cantus-calendar.firebaseapp.com",
+    databaseURL: "https://cantus-calendar-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "cantus-calendar",
+    storageBucket: "cantus-calendar.firebasestorage.app",
+    messagingSenderId: "241605051345",
+    appId: "1:241605051345:web:d3a2fb69447798456296f0",
+    measurementId: "G-BRV1GCH9HS"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// Struktura w bazie:
+//   piesni/{id}               = { title, number, category }
+//   setlisty/slots/{0..3}     = { title, items:[{songId,title,number,category}], archiveId? }
+//   setlisty/archive/{id}     = { title, items, savedAt }
+// Setlisty przechowują kopię tytułu i numeru, więc późniejsza edycja pieśni nie psuje archiwum.
+
+const SLOT_COUNT = 4;
+const MIN_CHARS = 3;
+const CATEGORIES = ['SCHOLA', 'TRADYCYJNE'];
+
+let songs = {};
+let slots = Array(SLOT_COUNT).fill(null);
+let archive = {};
+let isAdmin = false;
+let activeSlot = 0;
+let editingSongId = null;
+let previewId = null;
+
+const $ = id => document.getElementById(id);
+
+// --- POMOCNICZE ---
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// Normalizacja do wyszukiwania: małe litery, bez ogonków, znaki interpunkcyjne -> spacja
+const norm = s => String(s ?? '').toLowerCase().replace(/ł/g, 'l')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ').trim();
+
+const itemsOf = x => !x?.items ? [] : Array.isArray(x.items) ? x.items.filter(Boolean) : Object.values(x.items);
+const byTitle = (a, b) => (a.title || '').localeCompare(b.title || '', 'pl');
+
+function plural(n, one, few, many) {
+    if (n === 1) return one;
+    const d = n % 10, t = n % 100;
+    return (d >= 2 && d <= 4 && (t < 12 || t > 14)) ? few : many;
+}
+
+let toastTimer;
+function toast(msg, isError = false) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.toggle('error', isError);
+    t.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('visible'), 2600);
+}
+
+async function write(promise, okMsg) {
+    try { await promise; if (okMsg) toast(okMsg); return true; }
+    catch { toast('Brak uprawnień albo błąd zapisu', true); return false; }
+}
+
+const numBadge = n => `<span class="num ${n ? '' : 'none'}">${n ? esc(n) : '–'}</span>`;
+const catBadge = c => CATEGORIES.includes(c) ? `<span class="cat ${c}">${c}</span>` : '';
+
+// --- FIREBASE: odczyt na żywo ---
+onValue(ref(db, 'piesni'), snap => { songs = snap.val() || {}; renderSongResults(); renderSummary(); });
+
+onValue(ref(db, 'setlisty'), snap => {
+    const v = snap.val() || {};
+    const raw = v.slots || {};
+    slots = Array.from({ length: SLOT_COUNT }, (_, i) => raw[i] || null);
+    archive = v.archive || {};
+    renderSlots();
+    renderArchiveResults();
+    renderPreview();
+    renderSummary();
+});
+
+onAuthStateChanged(auth, user => {
+    isAdmin = !!user;
+    $('loginArea').hidden = isAdmin;
+    $('adminArea').hidden = !isAdmin;
+    editingSongId = null;
+    renderSongResults();
+    renderSlots();
+    renderArchiveResults();
+});
+
+// --- WYSZUKIWANIE PIEŚNI ---
+// Tytuł musi się ZACZYNAĆ od wpisanych liter (bez względu na ogonki i wielkość liter).
+// Same cyfry = szukanie po numerze (już od 1 cyfry).
+function findSongs(q) {
+    const nq = norm(q);
+    if (!nq) return null;
+    const isNumber = /^\d+$/.test(nq);
+    if (!isNumber && nq.replace(/ /g, '').length < MIN_CHARS) return null;
+
+    return Object.entries(songs)
+        .map(([id, s]) => ({ id, ...s }))
+        .filter(s => isNumber ? norm(s.number).startsWith(nq) : norm(s.title).startsWith(nq))
+        .sort(isNumber ? (a, b) => (parseInt(a.number) || 0) - (parseInt(b.number) || 0) : byTitle)
+        .slice(0, 50);
+}
+
+function renderSongResults() {
+    const q = $('songSearch').value;
+    const list = $('songResults');
+    const found = findSongs(q);
+    const hint = $('songHint');
+
+    if (found === null) {
+        list.innerHTML = '';
+        hint.textContent = q.trim() ? `Wpisz jeszcze ${MIN_CHARS - norm(q).replace(/ /g,'').length} ${plural(MIN_CHARS - norm(q).replace(/ /g,'').length,'literę','litery','liter')}…` : (isAdmin ? 'Kliknij pieśń, żeby dodać ją do aktywnej setlisty.' : '');
+        return;
+    }
+    hint.textContent = isAdmin && found.length ? `Kliknij, żeby dodać do setlisty nr ${activeSlot + 1}.` : '';
+    if (!found.length) { list.innerHTML = `<li class="empty">Brak pieśni zaczynających się na „${esc(q.trim())}”.</li>`; return; }
+
+    list.innerHTML = found.map(s => {
+        if (isAdmin && editingSongId === s.id) {
+            return `<li><div class="edit-song">
+                <input type="text" id="editNumber" value="${esc(s.number)}" placeholder="Nr">
+                <input type="text" id="editTitle" value="${esc(s.title)}" placeholder="Tytuł">
+                <div class="wide">
+                    <select id="editCategory" style="width:auto">${CATEGORIES.map(c => `<option ${c === s.category ? 'selected' : ''}>${c}</option>`).join('')}</select>
+                    <button class="btn btn-primary btn-sm" data-action="save-song" data-id="${s.id}">Zapisz</button>
+                    <button class="btn btn-ghost btn-sm" data-action="cancel-edit">Anuluj</button>
+                    <button class="btn btn-danger btn-sm" data-action="delete-song" data-id="${s.id}" style="margin-left:auto">Usuń pieśń</button>
+                </div>
+            </div></li>`;
+        }
+        const inner = `${numBadge(s.number)}<span class="t">${esc(s.title)}</span>${catBadge(s.category)}`;
+        return isAdmin
+            ? `<li><button class="result" data-action="add" data-id="${s.id}">${inner}<span class="plus">+</span></button>
+                   <button class="icon-btn" data-action="edit-song" data-id="${s.id}" aria-label="Edytuj pieśń">✎</button></li>`
+            : `<li><div class="result">${inner}</div></li>`;
+    }).join('');
+}
+
+$('songSearch').addEventListener('input', () => { editingSongId = null; renderSongResults(); });
+
+// --- ARCHIWUM ---
+// Setlista pasuje, gdy jej nazwa albo dowolne słowo w nazwie zaczyna się od wpisanych liter.
+function renderArchiveResults() {
+    const q = $('archSearch').value;
+    const nq = norm(q);
+    const list = $('archResults');
+    $('archCount').textContent = Object.keys(archive).length ? `(${Object.keys(archive).length})` : '';
+
+    if (nq.replace(/ /g, '').length < MIN_CHARS) { list.innerHTML = ''; return; }
+
+    const found = Object.entries(archive)
+        .map(([id, a]) => ({ id, ...a }))
+        .filter(a => (' ' + norm(a.title)).includes(' ' + nq))
+        .sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+
+    if (!found.length) { list.innerHTML = `<li class="empty">Brak setlist pasujących do „${esc(q.trim())}”.</li>`; return; }
+
+    list.innerHTML = found.map(a => {
+        const n = itemsOf(a).length;
+        const date = a.savedAt ? new Date(a.savedAt).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        return `<li>
+            <button class="result" data-action="open-archive" data-id="${a.id}">
+                <span><strong>${esc(a.title)}</strong></span>
+                <span class="meta">${n} ${plural(n,'pieśń','pieśni','pieśni')}${date ? ', zapisano ' + date : ''}</span>
+            </button>
+            ${isAdmin ? `<button class="icon-btn danger" data-action="delete-archive" data-id="${a.id}" aria-label="Usuń z archiwum">🗑</button>` : ''}
+        </li>`;
+    }).join('');
+}
+$('archSearch').addEventListener('input', renderArchiveResults);
+
+function renderPreview() {
+    const a = previewId && archive[previewId];
+    $('previewCard').hidden = !a;
+    if (!a) return;
+    $('previewTitle').textContent = a.title;
+    $('previewMeta').textContent = a.savedAt ? 'Zapisano ' + new Date(a.savedAt).toLocaleDateString('pl-PL') : '';
+    $('previewItems').innerHTML = itemsOf(a).map(it => `<li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}</li>`).join('');
+}
+
+// --- SETLISTY ---
+function slotState(slot) {
+    if (!slot) return ['', ''];
+    const a = slot.archiveId && archive[slot.archiveId];
+    if (!a) return itemsOf(slot).length || slot.title ? ['dirty', 'Niezapisana w archiwum'] : ['', ''];
+    const sig = x => JSON.stringify([x.title || '', itemsOf(x).map(i => [i.songId, i.title, i.number, i.category])]);
+    return sig(a) === sig(slot) ? ['saved', 'Zapisana w archiwum'] : ['dirty', 'Niezapisane zmiany'];
+}
+
+function renderSlots() {
+    const box = $('slots');
+
+    // zachowaj fokus i treść pola tytułu, jeśli admin właśnie pisze
+    const focused = document.activeElement?.dataset?.slotTitle;
+    const focusedVal = focused !== undefined ? document.activeElement.value : null;
+
+    if (!isAdmin) {
+        const filled = slots.map((s, i) => [s, i]).filter(([s]) => s && (s.title || itemsOf(s).length));
+        box.innerHTML = filled.length ? filled.map(([s]) => `
+            <article class="slot">
+                <h3 class="slot-title-ro">${esc(s.title || 'Bez tytułu')}</h3>
+                ${itemsOf(s).length
+                    ? `<ol class="items">${itemsOf(s).map(it => `<li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}</li>`).join('')}</ol>`
+                    : `<p class="slot-empty">Setlista jest jeszcze pusta.</p>`}
+            </article>`).join('')
+            : `<p class="empty" style="grid-column:1/-1">Nie ma teraz bieżących setlist. Starsze znajdziesz w archiwum.</p>`;
+        return;
+    }
+
+    box.innerHTML = slots.map((s, i) => {
+        const items = itemsOf(s);
+        const [stCls, stTxt] = slotState(s);
+        const linked = s?.archiveId && archive[s.archiveId];
+        return `
+        <article class="slot admin ${i === activeSlot ? 'active' : ''}" data-slot="${i}">
+            <div class="slot-head">
+                <span class="slot-no">${i + 1}</span>
+                <input type="text" class="slot-title" data-slot-title="${i}" value="${esc(s?.title || '')}" placeholder="Nadaj tytuł setliście…">
+            </div>
+            <div class="slot-state ${stCls}">${stTxt}</div>
+            ${items.length ? `<ol class="items">${items.map((it, j) => `
+                <li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}
+                    <span class="ctrl">
+                        <button class="icon-btn" data-action="up" data-slot="${i}" data-idx="${j}" ${j === 0 ? 'disabled' : ''} aria-label="W górę">↑</button>
+                        <button class="icon-btn" data-action="down" data-slot="${i}" data-idx="${j}" ${j === items.length - 1 ? 'disabled' : ''} aria-label="W dół">↓</button>
+                        <button class="icon-btn danger" data-action="remove-item" data-slot="${i}" data-idx="${j}" aria-label="Usuń z setlisty">✕</button>
+                    </span>
+                </li>`).join('')}</ol>`
+            : `<p class="slot-empty">${s?.title ? 'Wyszukaj pieśń po lewej i kliknij, żeby ją dodać.' : 'Zacznij od nadania tytułu.'}</p>`}
+            ${s && (items.length || s.title) ? `
+            <div class="slot-actions">
+                ${linked
+                    ? `<button class="btn btn-primary btn-sm" data-action="archive-save" data-slot="${i}">Zapisz zmiany</button>
+                       <button class="btn btn-ghost btn-sm" data-action="archive-save-new" data-slot="${i}">Zapisz jako nową</button>`
+                    : `<button class="btn btn-primary btn-sm" data-action="archive-save-new" data-slot="${i}">Zapisz do archiwum</button>`}
+                <button class="btn btn-danger btn-sm" data-action="slot-clear" data-slot="${i}" style="margin-left:auto">Wyczyść</button>
+            </div>` : ''}
+        </article>`;
+    }).join('');
+
+    if (focused !== undefined) {
+        const el = box.querySelector(`[data-slot-title="${focused}"]`);
+        if (el) { el.value = focusedVal; el.focus(); el.setSelectionRange(focusedVal.length, focusedVal.length); }
+    }
+}
+
+function setActive(i) {
+    if (activeSlot === i) return;
+    activeSlot = i;
+    renderSlots();
+    renderSongResults();
+}
+
+async function saveSlotItems(i, items) {
+    return write(set(ref(db, `setlisty/slots/${i}/items`), items));
+}
+
+async function addSong(id) {
+    const s = songs[id];
+    const slot = slots[activeSlot];
+    if (!s) return;
+    if (!slot?.title?.trim()) {
+        toast(`Najpierw nadaj tytuł setliście nr ${activeSlot + 1}`, true);
+        $('slots').querySelector(`[data-slot-title="${activeSlot}"]`)?.focus();
+        return;
+    }
+    const items = itemsOf(slot);
+    if (items.some(it => it.songId === id) && !confirm(`„${s.title}” jest już na tej setliście. Dodać drugi raz?`)) return;
+    items.push({ songId: id, title: s.title || '', number: s.number || '', category: s.category || '' });
+    if (await saveSlotItems(activeSlot, items)) toast(`+ ${s.title}`);
+}
+
+async function saveToArchive(i, asNew) {
+    const s = slots[i];
+    const items = itemsOf(s);
+    if (!s?.title?.trim()) return toast('Setlista musi mieć tytuł', true);
+    if (!items.length) return toast('Setlista jest pusta', true);
+
+    const data = { title: s.title.trim(), items, savedAt: Date.now() };
+    const id = asNew || !s.archiveId ? push(ref(db, 'setlisty/archive')).key : s.archiveId;
+    await write(update(ref(db, 'setlisty'), {
+        [`archive/${id}`]: data,
+        [`slots/${i}/archiveId`]: id
+    }), asNew ? '✔ Zapisano w archiwum' : '✔ Zapisano zmiany');
+}
+
+async function openArchive(id) {
+    const a = archive[id];
+    if (!a) return;
+
+    if (!isAdmin) { previewId = id; renderPreview(); $('previewCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
+
+    const already = slots.findIndex(s => s?.archiveId === id);
+    if (already !== -1) { setActive(already); return toast(`Ta setlista jest już otwarta w slocie ${already + 1}`); }
+
+    const target = slots[activeSlot];
+    if (target && (target.title || itemsOf(target).length)) {
+        const [st] = slotState(target);
+        const msg = st === 'dirty'
+            ? `Setlista w slocie ${activeSlot + 1} ma niezapisane zmiany. Zastąpić ją setlistą „${a.title}”?`
+            : `Otworzyć „${a.title}” w slocie ${activeSlot + 1} w miejsce „${target.title}”?`;
+        if (!confirm(msg)) return;
+    }
+    await write(set(ref(db, `setlisty/slots/${activeSlot}`), { title: a.title, items: itemsOf(a), archiveId: id }),
+        `✔ Otwarto w slocie ${activeSlot + 1}`);
+}
+
+// --- OBSŁUGA KLIKNIĘĆ ---
+document.addEventListener('click', async e => {
+    const el = e.target.closest('[data-action]');
+
+    if (!el) {
+        // kliknięcie w pustą część setlisty = aktywacja
+        const slotEl = e.target.closest('.slot.admin');
+        if (slotEl && isAdmin) setActive(Number(slotEl.dataset.slot));
+        return;
+    }
+
+    const { action, id } = el.dataset;
+    const i = el.dataset.slot !== undefined ? Number(el.dataset.slot) : null;
+    const j = el.dataset.idx !== undefined ? Number(el.dataset.idx) : null;
+    if (i !== null && isAdmin) setActive(i);
+
+    if (action === 'open-archive') return openArchive(id);
+    if (action === 'close-preview') { previewId = null; return renderPreview(); }
+    if (!isAdmin) return;
+
+    switch (action) {
+        case 'add': return addSong(id);
+        case 'edit-song': editingSongId = id; renderSongResults(); return $('editTitle')?.focus();
+        case 'cancel-edit': editingSongId = null; return renderSongResults();
+        case 'save-song': {
+            const title = $('editTitle').value.trim();
+            if (!title) return toast('Tytuł nie może być pusty', true);
+            if (await write(set(ref(db, `piesni/${id}`), { title, number: $('editNumber').value.trim(), category: $('editCategory').value }), '✔ Zapisano pieśń')) editingSongId = null;
+            return renderSongResults();
+        }
+        case 'delete-song':
+            if (confirm(`Usunąć pieśń „${songs[id]?.title}” z bazy? Setlisty, w których jest, zostaną bez zmian.`)) {
+                editingSongId = null;
+                write(set(ref(db, `piesni/${id}`), null), '✔ Usunięto pieśń');
+            }
+            return;
+        case 'up': case 'down': {
+            const items = itemsOf(slots[i]);
+            const k = action === 'up' ? j - 1 : j + 1;
+            if (k < 0 || k >= items.length) return;
+            [items[j], items[k]] = [items[k], items[j]];
+            return saveSlotItems(i, items);
+        }
+        case 'remove-item': {
+            const items = itemsOf(slots[i]);
+            items.splice(j, 1);
+            return saveSlotItems(i, items);
+        }
+        case 'archive-save': return saveToArchive(i, false);
+        case 'archive-save-new': return saveToArchive(i, true);
+        case 'slot-clear': {
+            const [st] = slotState(slots[i]);
+            const msg = st === 'dirty' ? 'Ta setlista ma niezapisane zmiany. Wyczyścić mimo to?' : 'Wyczyścić slot? Wersja w archiwum zostaje.';
+            if (confirm(msg)) write(set(ref(db, `setlisty/slots/${i}`), null), '✔ Wyczyszczono');
+            return;
+        }
+        case 'delete-archive':
+            if (confirm(`Usunąć „${archive[id]?.title}” z archiwum na stałe?`)) {
+                const paths = { [`archive/${id}`]: null };
+                slots.forEach((s, k) => { if (s?.archiveId === id) paths[`slots/${k}/archiveId`] = null; });
+                if (previewId === id) previewId = null;
+                write(update(ref(db, 'setlisty'), paths), '✔ Usunięto z archiwum');
+            }
+            return;
+    }
+});
+
+// tytuł setlisty zapisuje się po wyjściu z pola albo Enterze
+document.addEventListener('change', e => {
+    const i = e.target.dataset?.slotTitle;
+    if (i === undefined || !isAdmin) return;
+    write(set(ref(db, `setlisty/slots/${i}/title`), e.target.value.trim()));
+});
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.dataset?.slotTitle !== undefined) e.target.blur();
+    if (e.key === 'Enter' && e.target.closest?.('.edit-song')) document.querySelector('[data-action="save-song"]')?.click();
+    if (e.key === 'Escape' && editingSongId) { editingSongId = null; renderSongResults(); }
+});
+document.addEventListener('focusin', e => {
+    const i = e.target.dataset?.slotTitle;
+    if (i !== undefined && isAdmin && Number(i) !== activeSlot) { activeSlot = Number(i); document.querySelectorAll('.slot.admin').forEach(el => el.classList.toggle('active', Number(el.dataset.slot) === activeSlot)); renderSongResults(); }
+});
+
+// --- DODAWANIE I IMPORT PIEŚNI ---
+const songKey = (title, number) => norm(title) + '|' + norm(number);
+
+$('addSongBtn').addEventListener('click', async () => {
+    const title = $('newTitle').value.trim();
+    const number = $('newNumber').value.trim();
+    if (!title) return toast('Wpisz tytuł pieśni', true);
+    const exists = Object.values(songs).some(s => songKey(s.title, s.number) === songKey(title, number));
+    if (exists && !confirm('Taka pieśń (ten sam tytuł i numer) już jest w bazie. Dodać mimo to?')) return;
+    if (await write(set(push(ref(db, 'piesni')), { title, number, category: $('newCategory').value }), `✔ Dodano: ${title}`)) {
+        $('newTitle').value = ''; $('newNumber').value = ''; $('newNumber').focus();
+    }
+});
+['newTitle', 'newNumber'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') $('addSongBtn').click(); }));
+
+$('importBtn').addEventListener('click', async () => {
+    const defCat = $('importCategory').value;
+    const known = new Set(Object.values(songs).map(s => songKey(s.title, s.number)));
+    const toAdd = {};
+    let added = 0, skipped = 0;
+
+    $('importText').value.split(/\r?\n/).forEach(line => {
+        const cells = line.split(/\t|;/).map(c => c.trim()).filter(Boolean);
+        if (!cells.length) return;
+        const category = cells.find(c => CATEGORIES.includes(c.toUpperCase()))?.toUpperCase();
+        const number = cells.find(c => /^\d+[a-zA-Z]?\.?$/.test(c))?.replace(/\.$/, '') || '';
+        const title = cells.find(c => c.toUpperCase() !== category && c.replace(/\.$/, '') !== number);
+        if (!title || /^(tytu[lł]|nazwa|numer|nr)$/i.test(title)) return; // nagłówek albo pusty wiersz
+        const key = songKey(title, number);
+        if (known.has(key)) { skipped++; return; }
+        known.add(key);
+        toAdd[push(ref(db, 'piesni')).key] = { title, number, category: category || defCat };
+        added++;
+    });
+
+    if (!added) return toast(skipped ? `Wszystkie pieśni (${skipped}) już są w bazie` : 'Nie znalazłem żadnych pieśni w tekście', true);
+    if (!confirm(`Zaimportować ${added} ${plural(added,'pieśń','pieśni','pieśni')}?${skipped ? ` Pominięto duplikaty: ${skipped}.` : ''}`)) return;
+    if (await write(update(ref(db, 'piesni'), toAdd), `✔ Zaimportowano ${added} ${plural(added,'pieśń','pieśni','pieśni')}`)) $('importText').value = '';
+});
+
+// --- PODSUMOWANIE ---
+function renderSummary() {
+    const all = Object.values(songs);
+    const schola = all.filter(s => s.category === 'SCHOLA').length;
+    const n = Object.keys(archive).length;
+    $('summary').innerHTML = `
+        <span class="pill"><b>${all.length}</b> ${plural(all.length,'pieśń','pieśni','pieśni')} w bazie</span>
+        <span class="pill"><b>${schola}</b> SCHOLA</span>
+        <span class="pill"><b>${all.length - schola}</b> TRADYCYJNE</span>
+        <span class="pill"><b>${n}</b> ${plural(n,'setlista','setlisty','setlist')} w archiwum</span>`;
+}
+
+// --- LOGOWANIE ---
+$('loginBtn').addEventListener('click', async () => {
+    try { await signInWithEmailAndPassword(auth, $('email').value, $('password').value); }
+    catch (e) { toast('Błąd logowania: ' + e.message, true); }
+});
+$('password').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
+$('logoutBtn').addEventListener('click', () => signOut(auth));
+</script>
+</body>
+</html>
