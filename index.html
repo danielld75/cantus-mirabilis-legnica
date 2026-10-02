@@ -104,14 +104,16 @@
         .format-hint code { background: #222; padding: 1px 5px; border-radius: 4px; }
 
         /* ===== PRZYCISK DRIVERSI ===== */
+        .quick-links { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.8rem; }
         .driversi-btn {
-            display: inline-flex; align-items: center; gap: 1rem; margin-top: 1.8rem;
+            display: inline-flex; align-items: center; gap: 1rem;
             padding: .8rem 1.4rem .8rem 1rem; border: 1px solid rgba(201,162,77,.5); border-radius: 16px;
             color: var(--text); text-decoration: none; background: rgba(201,162,77,.06);
             transition: background .2s, transform .2s;
         }
         .driversi-btn:hover { background: rgba(201,162,77,.14); transform: translateY(-2px); }
         .driversi-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+        .driversi-btn svg.note-icon { width: 40px; margin: 0 16px; }
         .driversi-btn svg { width: 72px; color: var(--gold); flex-shrink: 0; }
         .driversi-btn span { display: flex; flex-direction: column; text-align: left; }
         .driversi-btn strong { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 1.25rem; font-weight: 500; }
@@ -126,6 +128,7 @@
 <header class="fade">
     <h1>CANTUS MIRABILIS</h1>
     <p>Kalendarium i repertuar chóru • 2026</p>
+    <nav class="quick-links">
     <a href="driversi.html" class="driversi-btn">
         <svg viewBox="0 0 120 50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M22 36 H8 V28 Q8 24 12 23 L28 20 L42 9 Q45 7 49 7 H76 Q80 7 83 10 L95 21 L108 24 Q113 25 113 30 V36 H98"/>
@@ -144,6 +147,7 @@
         </svg>
         <span><strong>Pieśni</strong><small>Baza pieśni, numery i setlisty</small></span>
     </a>
+    </nav>
 </header>
 
 <main>
