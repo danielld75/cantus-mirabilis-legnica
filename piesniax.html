@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Pieśni i setlisty</title>
+    <title>Pieśni i setlisty – Cantus Mirabilis</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
@@ -148,6 +148,14 @@
         .row > .narrow { flex: 0 0 110px; min-width: 0; }
         .row > select { width: auto; }
 
+        .num-hint { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+        .num-hint button {
+            background: var(--gold-soft); color: var(--gold); border: 1px solid rgba(201,162,77,.4);
+            border-radius: 999px; padding: .15rem .65rem; font-size: .8rem; cursor: pointer;
+        }
+        .num-hint button:hover { background: rgba(201,162,77,.25); }
+        .num-hint .warn { color: var(--trad); }
+
         .toast {
             position: fixed; bottom: 20px; right: 20px; max-width: calc(100% - 40px); background: #171717;
             border: 1px solid rgba(201,162,77,.5); color: var(--gold); padding: .7rem 1rem; border-radius: 10px;
@@ -176,14 +184,14 @@
         <ellipse cx="46" cy="40" rx="7" ry="5.2" transform="rotate(-20 46 40)" fill="currentColor"/>
     </svg>
     <h1>Pieśni</h1>
-    <p>Baza pieśni, piosenek i setlisty</p>
+    <p>Baza pieśni i setlisty chóru Cantus Mirabilis</p>
     <div class="summary" id="summary"></div>
 </header>
 
 <main>
     <div class="col">
         <section class="card search-card">
-            <h2>Szukaj utworu</h2>
+            <h2>Szukaj pieśni</h2>
             <input type="search" id="songSearch" placeholder="Wpisz min. 3 litery tytułu lub numer" autocomplete="off">
             <ul class="results" id="songResults"></ul>
             <p class="hint" id="songHint"></p>
@@ -236,6 +244,7 @@
                 </select>
                 <button class="btn btn-primary" id="addSongBtn">Dodaj</button>
             </div>
+            <p class="hint num-hint" id="numberHint"></p>
 
             <h3>Import z Excela</h3>
             <textarea id="importText" placeholder="Zaznacz w Excelu kolumny (numer, tytuł, ewentualnie kategoria), skopiuj i wklej tutaj."></textarea>
@@ -335,7 +344,7 @@ const numBadge = n => `<span class="num ${n ? '' : 'none'}">${n ? esc(n) : '–'
 const catBadge = c => CATEGORIES.includes(c) ? `<span class="cat ${c}">${c}</span>` : '';
 
 // --- FIREBASE: odczyt na żywo ---
-onValue(ref(db, 'piesni'), snap => { songs = snap.val() || {}; renderSongResults(); renderSummary(); });
+onValue(ref(db, 'piesni'), snap => { songs = snap.val() || {}; renderSongResults(); renderSummary(); updateNumberSuggestion(); });
 
 onValue(ref(db, 'setlisty'), snap => {
     const v = snap.val() || {};
@@ -356,6 +365,7 @@ onAuthStateChanged(auth, user => {
     renderSongResults();
     renderSlots();
     renderArchiveResults();
+    updateNumberSuggestion();
 });
 
 // --- WYSZUKIWANIE PIEŚNI ---
@@ -664,14 +674,80 @@ document.addEventListener('focusin', e => {
 // --- DODAWANIE I IMPORT PIEŚNI ---
 const songKey = (title, number) => norm(title) + '|' + norm(number);
 
+// --- PODPOWIEDŹ NUMERU ---
+// Zajęte są tylko numery z samych cyfr ("12"). Numery typu "12a" nie blokują "12".
+let lastSuggested = '';
+
+function usedNumbers() {
+    const used = new Set();
+    Object.values(songs).forEach(s => {
+        const n = String(s.number ?? '').trim();
+        if (/^\d+$/.test(n)) used.add(parseInt(n, 10));
+    });
+    return used;
+}
+
+function firstFreeNumber() {
+    const used = usedNumbers();
+    let n = 1;
+    while (used.has(n)) n++;
+    return n;
+}
+
+function nextAfterMax() {
+    const used = usedNumbers();
+    return used.size ? Math.max(...used) + 1 : 1;
+}
+
+function songsWithNumber(num) {
+    const n = String(num).trim().toLowerCase();
+    if (!n) return [];
+    return Object.values(songs).filter(s => String(s.number ?? '').trim().toLowerCase() === n);
+}
+
+function updateNumberSuggestion() {
+    if (!isAdmin) return;
+    const input = $('newNumber');
+    const free = firstFreeNumber();
+    const after = nextAfterMax();
+
+    // wpisz propozycję, jeśli pole jest puste albo wciąż stoi w nim poprzednia propozycja
+    if (!input.value.trim() || input.value.trim() === lastSuggested) {
+        input.value = free;
+        lastSuggested = String(free);
+    }
+
+    const taken = songsWithNumber(input.value);
+    let html = `Pierwszy wolny numer: <button type="button" data-num="${free}">${free}</button>`;
+    if (after !== free) html += ` Następny po najwyższym: <button type="button" data-num="${after}">${after}</button>`;
+    if (taken.length) html += ` <span class="warn">Numer ${esc(input.value.trim())} jest już zajęty: „${esc(taken[0].title)}”${taken.length > 1 ? ` i ${taken.length - 1} inne` : ''}.</span>`;
+    $('numberHint').innerHTML = html;
+}
+
+$('numberHint').addEventListener('click', e => {
+    const b = e.target.closest('[data-num]');
+    if (!b) return;
+    $('newNumber').value = b.dataset.num;
+    lastSuggested = b.dataset.num;
+    updateNumberSuggestion();
+    $('newTitle').focus();
+});
+$('newNumber').addEventListener('input', updateNumberSuggestion);
+
 $('addSongBtn').addEventListener('click', async () => {
     const title = $('newTitle').value.trim();
     const number = $('newNumber').value.trim();
     if (!title) return toast('Wpisz tytuł pieśni', true);
     const exists = Object.values(songs).some(s => songKey(s.title, s.number) === songKey(title, number));
     if (exists && !confirm('Taka pieśń (ten sam tytuł i numer) już jest w bazie. Dodać mimo to?')) return;
+    const taken = songsWithNumber(number);
+    if (!exists && taken.length && !confirm(`Numer ${number} ma już pieśń „${taken[0].title}”. Dodać mimo to?`)) return;
     if (await write(set(push(ref(db, 'piesni')), { title, number, category: $('newCategory').value }), `✔ Dodano: ${title}`)) {
-        $('newTitle').value = ''; $('newNumber').value = ''; $('newNumber').focus();
+        $('newTitle').value = '';
+        $('newNumber').value = '';
+        lastSuggested = '';
+        updateNumberSuggestion();
+        $('newTitle').focus();
     }
 });
 ['newTitle', 'newNumber'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') $('addSongBtn').click(); }));
