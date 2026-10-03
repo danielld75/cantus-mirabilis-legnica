@@ -106,6 +106,10 @@
         .admin { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; }
         .admin input, .admin select, .admin button, .admin textarea { padding: .6rem .8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #222; color: var(--text); font-family: inherit; }
         .admin textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 80px; margin-bottom: 10px; }
+        .admin textarea#evRepertoire {
+            min-height: 240px; font-size: 1.08rem; line-height: 1.55; padding: .8rem 1rem;
+            overflow-y: auto;
+        }
         .admin button { background: var(--gold); color: black; font-weight: bold; cursor: pointer; border: none; }
         .row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
         .format-hint { font-size: 0.8rem; opacity: 0.6; margin: -4px 0 12px; line-height: 1.5; }
@@ -275,6 +279,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
     // --- TYPY WYDARZEŃ ---
     // Kolejność = ważność: gdy w dniu jest kilka typów, kolor dnia bierze się z pierwszego.
     const TYPES = {
+        wyjazdLit:{ label: 'Wyjazdowy koncert i liturgia', letter: 'WLK', color: '#fdd835' },
         wyjazd:   { label: 'Wyjazdowy koncert', letter: 'WK', color: '#c062d8' },
         koncert:  { label: 'Koncert',           letter: 'K',  color: '#ef5350' },
         liturgia: { label: 'Liturgia',          letter: 'L',  color: '#66bb6a' },
@@ -562,9 +567,17 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
     function renderLegend() {
         document.getElementById('legend').innerHTML = Object.keys(TYPES)
             .map(t => `<span>${tagHTML(t)} ${TYPES[t].label}</span>`).join('');
-        document.getElementById('evType').innerHTML = ['proba', 'liturgia', 'koncert', 'wyjazd', 'kanal', 'inne']
+        document.getElementById('evType').innerHTML = ['proba', 'liturgia', 'koncert', 'wyjazd', 'wyjazdLit', 'kanal', 'inne']
             .map(t => `<option value="${t}">${TYPES[t].letter} – ${TYPES[t].label}</option>`).join('');
     }
+
+    // --- POLE REPERTUARU: rośnie razem z tekstem (działa też na telefonie, gdzie nie ma uchwytu do rozciągania) ---
+    const repArea = document.getElementById('evRepertoire');
+    function autoResize() {
+        repArea.style.height = 'auto';
+        repArea.style.height = Math.max(repArea.scrollHeight + 4, 240) + 'px';
+    }
+    repArea.addEventListener('input', autoResize);
 
     // --- FORMULARZ ---
     document.getElementById('addEventForm').onsubmit = (e) => {
@@ -596,6 +609,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
 
         saveToDB(extra);
         document.getElementById('addEventForm').reset();
+        autoResize();
         document.getElementById('addBtn').textContent = "Zapisz na serwerze";
     };
 
@@ -609,6 +623,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
         document.getElementById('evPlace').value = ev.place || '';
         document.getElementById('evType').value = TYPES[ev.type] ? ev.type : 'inne';
         document.getElementById('evRepertoire').value = ev.repertoire || '';
+        autoResize();
         editingContext = idx === -1 ? { date: key, isDefault: true } : { date: key, index: idx };
         document.getElementById('addBtn').textContent = "Zaktualizuj na serwerze";
         document.getElementById('adminSection').scrollIntoView({behavior: 'smooth'});
