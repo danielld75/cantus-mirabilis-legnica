@@ -575,8 +575,14 @@ async function addSong(id, btn) {
         if (plus) {
             btn.classList.add('added');
             plus.textContent = '✓';
-            setTimeout(() => { btn.classList.remove('added'); plus.textContent = '+'; }, 1000);
         }
+        // po chwili (żeby było widać ✓) czyścimy wyszukiwarkę i ustawiamy w niej kursor pod następną pieśń
+        setTimeout(() => {
+            $('songSearch').value = '';
+            editingSongId = null;
+            renderSongResults();
+            $('songSearch').focus();
+        }, 450);
     }
 }
 
