@@ -218,7 +218,7 @@
 <body>
 
 <header>
-    <a href="index.html" class="back">◀ Kalendarz</a>
+    <a href="index.html" class="back" id="backLink" hidden>◀ Kalendarz</a>
     <svg class="scene" id="scene" viewBox="0 0 800 270" aria-label="Schola dzieci i młodzieży śpiewa radośnie"></svg>
     <div class="title-block">
         <h1>Angelotti</h1>
@@ -768,6 +768,7 @@ const isAdminUser = u => !!u && (ADMIN_UID.startsWith('WKLEJ') || u.uid === ADMI
 
 onAuthStateChanged(auth, user => {
     isAdmin = isAdminUser(user);
+    $('backLink').hidden = !isAdmin;   // link do kalendarza tylko dla admina
     $('loginArea').hidden = !!user;
     $('adminArea').hidden = !isAdmin;
     $('noAccessArea').hidden = !user || isAdmin;
