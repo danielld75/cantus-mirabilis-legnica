@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Angelotti – schola</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --ink: #24305e;
+            --ink-soft: #5b6690;
+            --sun: #ffc23d;
+            --sun-deep: #f5a400;
+            --coral: #ff6b8b;
+            --mint: #1fbfa4;
+            --sky: #3d9cff;
+            --violet: #8b6cf6;
+            --card: #ffffff;
+            --line: #e3e9f7;
+            --ok: #18b37e;
+            --danger: #e5484d;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; color: var(--ink); font-family: 'Nunito', sans-serif; min-height: 100vh;
+            background:
+                radial-gradient(circle at 12% 8%, rgba(255,194,61,.28), transparent 32%),
+                radial-gradient(circle at 88% 22%, rgba(255,107,139,.18), transparent 30%),
+                radial-gradient(circle at 50% 100%, rgba(31,191,164,.16), transparent 45%),
+                linear-gradient(180deg, #e9f6ff 0%, #fffaf0 55%, #f3fff9 100%);
+            background-attachment: fixed;
+        }
+        h1, h2, h3, .fredoka { font-family: 'Fredoka', sans-serif; }
+        button, input, select { font-family: inherit; font-size: 1rem; }
+        :focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }
+        [hidden] { display: none !important; }
+
+        /* ===== NAGŁÓWEK ===== */
+        header { text-align: center; padding: 1.2rem 1rem 0; position: relative; }
+        .back {
+            position: absolute; left: 1rem; top: 1rem; z-index: 2; text-decoration: none; color: var(--ink);
+            background: rgba(255,255,255,.8); border: 2px solid var(--line); padding: .4rem .85rem; border-radius: 999px; font-weight: 700; font-size: .9rem;
+        }
+        .scene { display: block; width: 100%; max-width: 900px; margin: 0 auto; height: auto; }
+        .note-float { animation: bob 3.2s ease-in-out infinite; }
+        .note-float:nth-of-type(2n) { animation-duration: 4s; animation-delay: -1.3s; }
+        .note-float:nth-of-type(3n) { animation-duration: 3.6s; animation-delay: -2.1s; }
+        @keyframes bob { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-8px) rotate(-6deg); } }
+        .sun-rays { transform-origin: 700px 62px; animation: spin 40s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .title-block { margin-top: -.4rem; }
+        header h1 {
+            font-size: clamp(2.8rem, 9vw, 4.6rem); margin: 0; line-height: 1; font-weight: 700; letter-spacing: 1px;
+            background: linear-gradient(90deg, var(--coral), var(--sun-deep) 35%, var(--mint) 65%, var(--sky));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        header p { margin: .5rem 0 0; font-size: 1.1rem; color: var(--ink-soft); font-weight: 600; }
+
+        main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 4rem; display: grid; gap: 1.6rem; }
+
+        .card { background: var(--card); border-radius: 26px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(61,156,255,.10), 0 2px 0 rgba(36,48,94,.04); }
+        .card h2 { margin: 0 0 1rem; font-size: 1.6rem; font-weight: 600; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+        .sub { color: var(--ink-soft); font-size: .92rem; font-weight: 600; }
+
+        /* ===== NAWIGACJA MIESIĄCA ===== */
+        .month-nav { display: flex; align-items: center; justify-content: center; gap: .8rem; margin-bottom: 1.2rem; }
+        .month-nav .label { font-family: 'Fredoka', sans-serif; font-size: 1.35rem; font-weight: 600; min-width: 11rem; text-align: center; text-transform: capitalize; }
+        .round-btn {
+            width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer; font-size: 1.1rem; font-weight: 800;
+            background: var(--sun); color: var(--ink); box-shadow: 0 4px 0 var(--sun-deep);
+        }
+        .round-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--sun-deep); }
+
+        /* ===== LIDERZY ===== */
+        .leaders { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        .leader {
+            --c: var(--sky);
+            position: relative; border-radius: 22px; padding: 1.1rem 1rem 1rem; text-align: center; overflow: hidden;
+            background: color-mix(in srgb, var(--c) 12%, white); border: 3px solid color-mix(in srgb, var(--c) 45%, white);
+        }
+        .leader::after {
+            content: ''; position: absolute; width: 120px; height: 120px; right: -40px; top: -40px; border-radius: 50%;
+            background: color-mix(in srgb, var(--c) 18%, transparent);
+        }
+        .leader .period { font-weight: 800; font-size: .8rem; color: color-mix(in srgb, var(--c) 70%, var(--ink)); }
+        .leader .when { font-size: .85rem; color: var(--ink-soft); font-weight: 600; }
+        .crown { width: 48px; height: 38px; margin: .5rem auto .2rem; display: block; }
+        .leader .names { font-family: 'Fredoka', sans-serif; font-size: 1.25rem; font-weight: 600; line-height: 1.25; min-height: 1.6em; position: relative; z-index: 1; }
+        .leader .names.none { font-size: 1rem; color: var(--ink-soft); font-family: 'Nunito', sans-serif; }
+        .leader .pts {
+            display: inline-block; margin-top: .55rem; background: var(--c); color: #fff; font-weight: 800; border-radius: 999px; padding: .2rem .75rem; font-size: .9rem;
+        }
+
+        /* ===== RANKING ===== */
+        .tabs { display: flex; gap: .45rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+        .tab {
+            border: 2px solid var(--line); background: #fff; color: var(--ink); border-radius: 999px; padding: .45rem 1rem; cursor: pointer; font-weight: 700;
+        }
+        .tab[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+        .ranking { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+        .rank {
+            display: grid; grid-template-columns: 44px 44px 1fr auto; gap: .8rem; align-items: center;
+            padding: .6rem .9rem; border-radius: 18px; background: #f7f9ff; border: 2px solid transparent;
+        }
+        .rank.p1 { background: #fff6dc; border-color: #ffd76e; }
+        .rank.p2 { background: #f1f4fb; border-color: #d6dded; }
+        .rank.p3 { background: #fff0e6; border-color: #f7c6a3; }
+        .place {
+            width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+            font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.1rem; background: #fff; color: var(--ink-soft); border: 2px solid var(--line);
+        }
+        .p1 .place { background: linear-gradient(135deg, #ffe27a, #f5b400); color: #6b4a00; border: 0; box-shadow: 0 3px 0 #d39a00; }
+        .p2 .place { background: linear-gradient(135deg, #f4f6fb, #b9c3d6); color: #46506b; border: 0; box-shadow: 0 3px 0 #9ca7bd; }
+        .p3 .place { background: linear-gradient(135deg, #ffd2ae, #e1894a); color: #6d3510; border: 0; box-shadow: 0 3px 0 #c06d33; }
+        .avatar {
+            width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #fff;
+            font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 1.1rem; background: var(--c);
+        }
+        .rank .who { min-width: 0; }
+        .rank .name { font-weight: 800; font-size: 1.05rem; }
+        .meter { height: 10px; border-radius: 999px; background: #e7ecf8; margin-top: .35rem; overflow: hidden; }
+        .meter span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--mint), var(--sky)); transition: width .6s ease; }
+        .p1 .meter span { background: linear-gradient(90deg, var(--sun), var(--coral)); }
+        .score { text-align: right; }
+        .score b { font-family: 'Fredoka', sans-serif; font-size: 1.5rem; font-weight: 700; display: block; line-height: 1; }
+        .score small { color: var(--ink-soft); font-weight: 700; font-size: .78rem; }
+        .empty { color: var(--ink-soft); font-weight: 600; margin: 0; }
+
+        /* ===== PIEŚNI ===== */
+        .song-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; counter-reset: s; }
+        .song-list li {
+            counter-increment: s; display: flex; align-items: center; gap: .8rem; padding: .55rem .8rem; border-radius: 14px; background: #f3fbf9;
+        }
+        .song-list li::before { content: counter(s) '.'; color: var(--ink-soft); font-weight: 800; min-width: 1.4rem; text-align: right; font-size: .9rem; }
+        .song-list .num {
+            min-width: 3rem; text-align: center; font-family: 'Fredoka', sans-serif; font-weight: 600; color: #fff; background: var(--mint);
+            border-radius: 10px; padding: .15rem .5rem;
+        }
+        .song-list .num.none { background: #cfd8e8; }
+        .song-list .t { font-weight: 700; }
+        .share-bar { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1.1rem; padding-top: 1rem; border-top: 2px dashed var(--line); }
+        .share-btn {
+            display: inline-flex; align-items: center; gap: .5rem; border: 0; border-radius: 14px; padding: .7rem 1.1rem; cursor: pointer;
+            font-weight: 800; color: #fff; min-height: 48px;
+        }
+        .share-btn svg { width: 22px; height: 22px; }
+        .share-btn.wa { background: #25b864; box-shadow: 0 4px 0 #1a8b4b; }
+        .share-btn.ms { background: #3d8bff; box-shadow: 0 4px 0 #2a64c4; }
+        .share-btn.cp { background: #fff; color: var(--ink); border: 2px solid var(--line); box-shadow: 0 4px 0 var(--line); }
+        .share-btn:active { transform: translateY(3px); box-shadow: none; }
+
+        /* ===== ADMIN ===== */
+        footer { padding: 0 1rem 4rem; }
+        .admin { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 26px; padding: 1.5rem; border: 3px dashed #cfdaf1; }
+        .admin h2 { margin: 0 0 1rem; font-size: 1.5rem; font-weight: 600; }
+        .admin h3 { margin: 1.8rem 0 .8rem; font-size: 1.2rem; font-weight: 600; }
+        .row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: end; }
+        .row > * { flex: 1; min-width: 150px; }
+        .row > .btn { flex: 0 0 auto; min-width: 0; }
+        label.field { display: flex; flex-direction: column; gap: .3rem; font-size: .82rem; font-weight: 700; color: var(--ink-soft); }
+        input[type=text], input[type=email], input[type=password], input[type=date] {
+            border: 2px solid var(--line); border-radius: 12px; padding: .65rem .8rem; background: #fbfcff; color: var(--ink); width: 100%;
+        }
+        input:focus { border-color: var(--sky); outline: none; }
+        .btn { border: 0; border-radius: 12px; padding: .7rem 1.2rem; cursor: pointer; font-weight: 800; }
+        .btn-primary { background: var(--sky); color: #fff; box-shadow: 0 4px 0 #2a74c9; }
+        .btn-primary:active { transform: translateY(3px); box-shadow: none; }
+        .btn-ghost { background: #fff; color: var(--ink); border: 2px solid var(--line); }
+        .btn-danger { background: #fff; color: var(--danger); border: 2px solid #f6c9ca; }
+        .btn-sm { padding: .4rem .75rem; font-size: .85rem; border-radius: 10px; }
+        .hint { font-size: .85rem; color: var(--ink-soft); margin: .6rem 0 0; }
+
+        .members { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
+        .members li { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; padding: .5rem .7rem; border-radius: 14px; background: #f7f9ff; }
+        .members .avatar { width: 36px; height: 36px; font-size: .9rem; }
+        .members .grow { flex: 1; min-width: 140px; }
+        .members .meta { font-size: .8rem; color: var(--ink-soft); font-weight: 600; }
+
+        .days { display: grid; gap: .7rem; }
+        .day { border: 2px solid var(--line); border-radius: 18px; padding: .8rem 1rem; background: #fbfcff; }
+        .day.open { border-color: var(--sky); background: #f2f8ff; }
+        .day-head { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; }
+        .day-head .date { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 1.1rem; }
+        .day-head .count { background: var(--mint); color: #fff; font-weight: 800; border-radius: 999px; padding: .1rem .6rem; font-size: .82rem; }
+        .day-head .grow { flex: 1; }
+        .chips { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .8rem; }
+        .chip {
+            border: 2px solid var(--line); background: #fff; color: var(--ink); border-radius: 999px; padding: .5rem .9rem; cursor: pointer;
+            font-weight: 700; min-height: 44px; display: inline-flex; align-items: center; gap: .35rem;
+        }
+        .chip.on { background: var(--ok); border-color: var(--ok); color: #fff; }
+        .chip.on::before { content: '✓'; }
+
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translate(-50%, 20px); max-width: calc(100% - 40px);
+            background: var(--ink); color: #fff; padding: .75rem 1.2rem; border-radius: 999px; font-weight: 700;
+            opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 10;
+        }
+        .toast.visible { opacity: 1; transform: translate(-50%, 0); }
+        .toast.error { background: var(--danger); }
+
+        @media (max-width: 900px) { .leaders { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 560px) {
+            .back { position: static; display: inline-block; margin-bottom: .4rem; }
+            .rank { grid-template-columns: 38px 1fr auto; padding: .55rem .7rem; }
+            .rank .avatar { display: none; }
+            .place { width: 36px; height: 36px; }
+            .leader .names { font-size: 1.1rem; }
+            .card { padding: 1.2rem; border-radius: 22px; }
+        }
+        @media (prefers-reduced-motion: reduce) { .note-float, .sun-rays { animation: none; } .meter span { transition: none; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="back">◀ Kalendarz</a>
+    <svg class="scene" id="scene" viewBox="0 0 800 270" aria-label="Schola dzieci i młodzieży śpiewa radośnie"></svg>
+    <div class="title-block">
+        <h1>Angelotti</h1>
+        <p>Schola dziecięco-młodzieżowa. Śpiewamy w każdą niedzielę na Mszy Świętej!</p>
+    </div>
+</header>
+
+<main>
+    <!-- LIDERZY -->
+    <section class="card">
+        <div class="month-nav">
+            <button class="round-btn" id="prevMonth" aria-label="Poprzedni miesiąc">◀</button>
+            <span class="label" id="monthLabel"></span>
+            <button class="round-btn" id="nextMonth" aria-label="Następny miesiąc">▶</button>
+        </div>
+        <div class="leaders" id="leaders"></div>
+    </section>
+
+    <!-- RANKING -->
+    <section class="card">
+        <h2>🏆 Ranking obecności <span class="sub" id="rankSub"></span></h2>
+        <div class="tabs" role="group" aria-label="Okres rankingu" id="rankTabs">
+            <button class="tab" data-period="month" aria-pressed="false">Miesiąc</button>
+            <button class="tab" data-period="quarter" aria-pressed="false">Kwartał</button>
+            <button class="tab" data-period="half" aria-pressed="false">Półrocze</button>
+            <button class="tab" data-period="year" aria-pressed="true">Rok</button>
+            <button class="tab" data-period="all" aria-pressed="false">Od początku</button>
+        </div>
+        <ol class="ranking" id="ranking"></ol>
+        <p class="hint">Każda obecność na śpiewaniu to 1 punkt. Przy równej liczbie punktów kolejność jest alfabetyczna.</p>
+    </section>
+
+    <!-- PIEŚNI -->
+    <section class="card">
+        <h2>🎵 Śpiewamy</h2>
+        <div class="tabs" id="songTabs"></div>
+        <ol class="song-list" id="songList"></ol>
+        <div class="share-bar" id="shareBar" hidden>
+            <button class="share-btn wa" id="shareWa">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20 L5.3 16.2 A8 8 0 1 1 8 18.8 Z"/></svg>
+                WhatsApp
+            </button>
+            <button class="share-btn ms" id="shareMs">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 C6.8 3.5 3 7.2 3 11.8 C3 14.3 4.1 16.4 6 17.9 V21 L9 19.4 C9.9 19.7 10.9 19.9 12 19.9 C17.2 19.9 21 16.2 21 11.7 C21 7.2 17.2 3.5 12 3.5 Z"/><path d="M7.5 13.5 L10.5 10.5 L13 12.6 L16.5 9.5"/></svg>
+                Messenger
+            </button>
+            <button class="share-btn cp" id="shareCopy">📋 Kopiuj tekst</button>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="admin">
+        <h2>Panel administracyjny</h2>
+
+        <div id="loginArea">
+            <div class="row">
+                <input id="email" type="email" placeholder="E-mail admina">
+                <input id="password" type="password" placeholder="Hasło">
+                <button class="btn btn-primary" id="loginBtn">Zaloguj</button>
+            </div>
+        </div>
+
+        <div id="noAccessArea" hidden>
+            <p>To konto nie ma uprawnień do edycji scholi.</p>
+            <button class="btn btn-ghost" id="noAccessLogoutBtn">Wyloguj</button>
+        </div>
+
+        <div id="adminArea" hidden>
+            <h3 style="margin-top:0">📅 Dni śpiewania: <span id="adminMonthLabel" style="text-transform:capitalize"></span></h3>
+            <div class="row">
+                <label class="field">Data<input type="date" id="dayDate"></label>
+                <label class="field">Opis (opcjonalnie)<input type="text" id="dayNote" placeholder="np. Msza z udziałem dzieci, 10:00"></label>
+                <button class="btn btn-primary" id="addDayBtn">Dodaj dzień</button>
+            </div>
+            <div class="row" style="margin-top:.6rem">
+                <button class="btn btn-ghost btn-sm" id="addSundaysBtn" style="flex:0 0 auto">+ Wszystkie niedziele tego miesiąca</button>
+            </div>
+            <div class="days" id="daysList" style="margin-top:1rem"></div>
+            <p class="hint">Dotknij dnia, żeby zaznaczyć obecność. Każde dotknięcie imienia od razu zapisuje się na serwerze.</p>
+
+            <h3 id="memberFormTitle">🧒 Dodaj członka scholi</h3>
+            <div class="row">
+                <label class="field">Imię<input type="text" id="mFirst" autocomplete="off"></label>
+                <label class="field">Nazwisko<input type="text" id="mLast" autocomplete="off"></label>
+                <label class="field">Data urodzenia<input type="date" id="mBirth"></label>
+                <button class="btn btn-primary" id="saveMemberBtn">Dodaj</button>
+                <button class="btn btn-ghost" id="cancelMemberBtn" hidden>Anuluj</button>
+            </div>
+            <p class="hint">Publicznie na stronie widać tylko imię i pierwszą literę nazwiska. Pełne nazwisko i data urodzenia są widoczne wyłącznie dla Ciebie.</p>
+            <ul class="members" id="membersList" style="margin-top:1rem"></ul>
+
+            <h3>Konto</h3>
+            <button class="btn btn-ghost" id="logoutBtn">Wyloguj</button>
+        </div>
+    </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, update, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyArjPTjW2VSW5F1jS5WtbyvQpjJDraJh1U",
+    authDomain: "cantus-calendar.firebaseapp.com",
+    databaseURL: "https://cantus-calendar-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "cantus-calendar",
+    storageBucket: "cantus-calendar.firebasestorage.app",
+    messagingSenderId: "241605051345",
+    appId: "1:241605051345:web:d3a2fb69447798456296f0",
+    measurementId: "G-BRV1GCH9HS"
+};
+
+// UID admina – ten sam co w index.html. Dopóki stoi tu "WKLEJ...", każdy zalogowany jest adminem.
+const ADMIN_UID = 'WKLEJ_UID_DANIELA';
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const fs = getFirestore(app);
+const auth = getAuth(app);
+
+// Dane:
+//   Realtime Database (publiczne):  angelotti/members/{id} = { firstName, lastInitial }
+//                                   angelotti/days/{RRRR-MM-DD} = { note, present: { memberId: true } }
+//   Firestore (tylko admin):        angelotti_prywatne/{id} = { lastName, birthDate }
+//   Pieśni pobierane z:             setlisty/slots (podstrona Pieśni)
+// Pełne nazwiska i daty urodzenia dzieci nie trafiają do publicznej bazy.
+
+let members = {}, priv = {}, days = {}, songSlots = [];
+let isAdmin = false;
+let rankPeriod = 'year';
+let songTab = 0;
+let openDay = null;
+let editingMemberId = null;
+let unsubPriv = null;
+const viewMonth = new Date(); viewMonth.setDate(1);
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const itemsOf = x => !x?.items ? [] : Array.isArray(x.items) ? x.items.filter(Boolean) : Object.values(x.items);
+
+function plural(n, one, few, many) {
+    if (n === 1) return one;
+    const d = n % 10, t = n % 100;
+    return (d >= 2 && d <= 4 && (t < 12 || t > 14)) ? few : many;
+}
+const pkt = n => `${n} ${plural(n, 'punkt', 'punkty', 'punktów')}`;
+
+let toastTimer;
+function toast(msg, isError = false) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.toggle('error', isError);
+    t.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('visible'), 2600);
+}
+async function write(promise, okMsg) {
+    try { await promise; if (okMsg) toast(okMsg); return true; }
+    catch { toast('Brak uprawnień albo błąd zapisu', true); return false; }
+}
+
+// --- DATY ---
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const range = (y, m0, m1) => [ymd(new Date(y, m0, 1)), ymd(new Date(y, m1 + 1, 0))];
+const ROMAN = ['I', 'II', 'III', 'IV'];
+
+function periods(ref) {
+    const y = ref.getFullYear(), m = ref.getMonth(), q = Math.floor(m / 3), h = m < 6 ? 0 : 1;
+    return {
+        month:   { label: 'Lider miesiąca',  when: (t => t[0].toUpperCase() + t.slice(1))(ref.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' })), r: range(y, m, m), c: 'var(--coral)' },
+        quarter: { label: 'Lider kwartału',  when: `${ROMAN[q]} kwartał ${y}`, r: range(y, q * 3, q * 3 + 2), c: 'var(--sun-deep)' },
+        half:    { label: 'Lider półrocza',  when: `${ROMAN[h]} półrocze ${y}`, r: range(y, h * 6, h * 6 + 5), c: 'var(--mint)' },
+        year:    { label: 'Lider roku',      when: `Rok ${y}`, r: range(y, 0, 11), c: 'var(--violet)' },
+        all:     { label: 'Od początku',     when: 'Cała historia', r: ['0000-00-00', '9999-12-31'], c: 'var(--sky)' }
+    };
+}
+
+// --- IMIONA I KOLEJNOŚĆ ---
+const fullLast = id => (isAdmin && priv[id]?.lastName) || '';
+function displayName(id) {
+    const m = members[id] || {};
+    const last = fullLast(id);
+    return last ? `${m.firstName} ${last}` : `${m.firstName}${m.lastInitial ? ' ' + m.lastInitial + '.' : ''}`;
+}
+const coll = new Intl.Collator('pl', { sensitivity: 'base' });
+function byName(a, b) {
+    const A = members[a] || {}, B = members[b] || {};
+    return coll.compare(A.firstName || '', B.firstName || '')
+        || coll.compare(A.lastInitial || '', B.lastInitial || '')
+        || coll.compare(fullLast(a), fullLast(b));
+}
+const COLORS = ['#ff6b8b', '#f5a400', '#1fbfa4', '#3d9cff', '#8b6cf6', '#ff8a3d', '#16a3c9', '#e45bc4'];
+const colorFor = id => COLORS[[...id].reduce((s, c) => s + c.charCodeAt(0), 0) % COLORS.length];
+const avatar = id => `<span class="avatar" style="--c:${colorFor(id)}">${esc((members[id]?.firstName || '?')[0].toUpperCase())}</span>`;
+
+// --- PUNKTY ---
+function tally([from, to]) {
+    const pts = {};
+    Object.keys(members).forEach(id => pts[id] = 0);
+    let n = 0;
+    for (const [d, day] of Object.entries(days)) {
+        if (d < from || d > to) continue;
+        n++;
+        for (const id of Object.keys(day?.present || {})) if (members[id]) pts[id]++;
+    }
+    return { pts, n };
+}
+const sorted = pts => Object.keys(pts).sort((a, b) => (pts[b] - pts[a]) || byName(a, b));
+
+// --- RENDER ---
+function renderAll() {
+    renderLeaders();
+    renderRanking();
+    renderSongs();
+    if (isAdmin) { renderDays(); renderMembers(); }
+}
+
+$('prevMonth').addEventListener('click', () => { viewMonth.setMonth(viewMonth.getMonth() - 1); $('dayDate').value = defaultDayDate(); renderAll(); });
+$('nextMonth').addEventListener('click', () => { viewMonth.setMonth(viewMonth.getMonth() + 1); $('dayDate').value = defaultDayDate(); renderAll(); });
+
+const CROWN = c => `<svg class="crown" viewBox="0 0 48 38" aria-hidden="true">
+    <path d="M5 30 L3 9 L15 19 L24 4 L33 19 L45 9 L43 30 Z" fill="${c}" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>
+    <rect x="5" y="30" width="38" height="6" rx="3" fill="${c}"/>
+    <circle cx="24" cy="21" r="3.2" fill="#fff"/></svg>`;
+
+function renderLeaders() {
+    const P = periods(viewMonth);
+    $('monthLabel').textContent = P.month.when;
+    $('leaders').innerHTML = ['month', 'quarter', 'half', 'year'].map(k => {
+        const p = P[k];
+        const { pts } = tally(p.r);
+        const max = Math.max(0, ...Object.values(pts));
+        const leaders = max > 0 ? Object.keys(pts).filter(id => pts[id] === max).sort(byName) : [];
+        return `
+            <div class="leader" style="--c:${p.c}">
+                <div class="period">${p.label}</div>
+                <div class="when">${esc(p.when)}</div>
+                ${CROWN(leaders.length ? p.c : '#cfd8e8')}
+                <div class="names ${leaders.length ? '' : 'none'}">${leaders.length ? leaders.map(id => esc(displayName(id))).join('<br>') : 'Jeszcze nikt, czekamy na pierwsze śpiewanie!'}</div>
+                ${leaders.length ? `<span class="pts">${pkt(max)}</span>` : ''}
+            </div>`;
+    }).join('');
+}
+
+$('rankTabs').addEventListener('click', e => {
+    const b = e.target.closest('[data-period]');
+    if (!b) return;
+    rankPeriod = b.dataset.period;
+    document.querySelectorAll('#rankTabs .tab').forEach(t => t.setAttribute('aria-pressed', t === b));
+    renderRanking();
+});
+
+function renderRanking() {
+    const p = periods(viewMonth)[rankPeriod];
+    const { pts, n } = tally(p.r);
+    const ids = sorted(pts);
+    $('rankSub').textContent = `${p.when}, ${n} ${plural(n, 'śpiewanie', 'śpiewania', 'śpiewań')}`;
+    if (!ids.length) { $('ranking').innerHTML = `<li class="empty">Schola czeka na pierwszych członków.</li>`; return; }
+
+    const max = Math.max(1, pts[ids[0]]);
+    let place = 0, prev = null;
+    $('ranking').innerHTML = ids.map(id => {
+        if (pts[id] !== prev) { place++; prev = pts[id]; }
+        const cls = pts[id] > 0 && place <= 3 ? `p${place}` : '';
+        return `
+            <li class="rank ${cls}">
+                <span class="place">${place}</span>
+                ${avatar(id)}
+                <div class="who">
+                    <div class="name">${esc(displayName(id))}</div>
+                    <div class="meter"><span style="width:${(pts[id] / max * 100).toFixed(0)}%"></span></div>
+                </div>
+                <div class="score"><b>${pts[id]}</b><small>${plural(pts[id], 'punkt', 'punkty', 'punktów')}</small></div>
+            </li>`;
+    }).join('');
+}
+
+// --- PIEŚNI ---
+function renderSongs() {
+    const tabs = $('songTabs');
+    if (!songSlots.length) {
+        tabs.innerHTML = '';
+        $('songList').innerHTML = `<li class="empty" style="background:none">Lista pieśni pojawi się tu, gdy powstanie setlista na stronie Pieśni.</li>`;
+        $('shareBar').hidden = true;
+        return;
+    }
+    tabs.innerHTML = songSlots.length > 1
+        ? songSlots.map((s, i) => `<button class="tab" data-song-tab="${i}" aria-pressed="${i === songTab}">${esc(s.title || 'Bez tytułu')}</button>`).join('')
+        : `<span class="sub" style="font-size:1.05rem">${esc(songSlots[0].title || '')}</span>`;
+    $('songList').innerHTML = itemsOf(songSlots[songTab]).map(it => `
+        <li><span class="num ${it.number ? '' : 'none'}">${it.number ? esc(it.number) : '–'}</span><span class="t">${esc(it.title)}</span></li>`).join('');
+    $('shareBar').hidden = !isAdmin;
+}
+$('songTabs').addEventListener('click', e => {
+    const b = e.target.closest('[data-song-tab]');
+    if (!b) return;
+    songTab = Number(b.dataset.songTab);
+    renderSongs();
+});
+
+function songText() {
+    const s = songSlots[songTab];
+    if (!s) return '';
+    const lines = itemsOf(s).map((it, i) => `${i + 1}. ${it.number ? `[${it.number}] ` : ''}${it.title}`);
+    return `🎵 Angelotti – ${s.title || 'pieśni'}\n\n${lines.join('\n')}\n\nDo zobaczenia na śpiewaniu! 😊`;
+}
+
+$('shareWa').addEventListener('click', () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(songText())}`, '_blank', 'noopener');
+});
+
+// Messenger nie przyjmuje gotowego tekstu przez link, więc na telefonie otwieramy systemowe
+// okno „Udostępnij” (tam jest Messenger), a na komputerze kopiujemy tekst do schowka.
+$('shareMs').addEventListener('click', async () => {
+    const text = songText();
+    if (navigator.share) {
+        try { await navigator.share({ text }); return; } catch (e) { if (e.name === 'AbortError') return; }
+    }
+    await copyText(text, 'Skopiowano – wklej w Messengerze (Ctrl+V)');
+    window.open('https://www.messenger.com/', '_blank', 'noopener');
+});
+$('shareCopy').addEventListener('click', () => copyText(songText(), '✔ Skopiowano listę pieśni'));
+
+async function copyText(text, msg) {
+    try { await navigator.clipboard.writeText(text); toast(msg); }
+    catch {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); ta.remove(); toast(msg);
+    }
+}
+
+// --- ADMIN: DNI ŚPIEWANIA ---
+function defaultDayDate() {
+    // najbliższa niedziela w oglądanym miesiącu (albo dziś, jeśli to ten miesiąc i niedziela)
+    const today = new Date();
+    const sameMonth = today.getFullYear() === viewMonth.getFullYear() && today.getMonth() === viewMonth.getMonth();
+    const d = sameMonth ? new Date(today) : new Date(viewMonth);
+    while (d.getDay() !== 0) d.setDate(d.getDate() + 1);
+    return ymd(d);
+}
+
+$('addDayBtn').addEventListener('click', async () => {
+    const d = $('dayDate').value;
+    if (!d) return toast('Wybierz datę', true);
+    if (days[d]) { openDay = d; renderDays(); return toast('Ten dzień już jest na liście'); }
+    const note = $('dayNote').value.trim();
+    if (await write(update(ref(db, `angelotti/days/${d}`), { note, created: Date.now() }), '✔ Dodano dzień śpiewania')) {
+        $('dayNote').value = '';
+        openDay = d;
+        const dd = parse(d);
+        if (dd.getMonth() !== viewMonth.getMonth() || dd.getFullYear() !== viewMonth.getFullYear()) {
+            viewMonth.setFullYear(dd.getFullYear(), dd.getMonth(), 1);
+            renderAll();
+        }
+    }
+});
+
+$('addSundaysBtn').addEventListener('click', async () => {
+    const y = viewMonth.getFullYear(), m = viewMonth.getMonth();
+    const paths = {};
+    for (let d = new Date(y, m, 1); d.getMonth() === m; d.setDate(d.getDate() + 1)) {
+        const k = ymd(d);
+        if (d.getDay() === 0 && !days[k]) { paths[`${k}/note`] = ''; paths[`${k}/created`] = Date.now(); }
+    }
+    const n = Object.keys(paths).length / 2;
+    if (!n) return toast('Wszystkie niedziele są już dodane');
+    write(update(ref(db, 'angelotti/days'), paths), `✔ Dodano ${n} ${plural(n, 'niedzielę', 'niedziele', 'niedziel')}`);
+});
+
+function renderDays() {
+    const [from, to] = periods(viewMonth).month.r;
+    $('adminMonthLabel').textContent = periods(viewMonth).month.when;
+    const list = Object.keys(days).filter(d => d >= from && d <= to).sort();
+    const ids = Object.keys(members).sort(byName);
+    $('daysList').innerHTML = list.length ? list.map(d => {
+        const present = days[d]?.present || {};
+        const count = ids.filter(id => present[id]).length;
+        const label = parse(d).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' });
+        const open = openDay === d;
+        return `
+            <div class="day ${open ? 'open' : ''}">
+                <div class="day-head">
+                    <span class="date">${label}</span>
+                    <span class="count">${count} / ${ids.length}</span>
+                    <span class="grow sub">${esc(days[d]?.note || '')}</span>
+                    <button class="btn btn-ghost btn-sm" data-toggle-day="${d}">${open ? 'Zwiń' : 'Obecność'}</button>
+                    <button class="btn btn-danger btn-sm" data-del-day="${d}" aria-label="Usuń dzień">🗑</button>
+                </div>
+                ${open ? `
+                <div class="chips">
+                    ${ids.length ? ids.map(id => `<button class="chip ${present[id] ? 'on' : ''}" data-day="${d}" data-member="${id}">${esc(displayName(id))}</button>`).join('') : '<span class="sub">Najpierw dodaj członków scholi poniżej.</span>'}
+                </div>
+                ${ids.length ? `<div class="row" style="margin-top:.7rem">
+                    <button class="btn btn-ghost btn-sm" data-all-day="${d}" style="flex:0 0 auto">Zaznacz wszystkich</button>
+                    <button class="btn btn-ghost btn-sm" data-none-day="${d}" style="flex:0 0 auto">Odznacz wszystkich</button>
+                </div>` : ''}` : ''}
+            </div>`;
+    }).join('') : `<p class="empty">W tym miesiącu nie ma jeszcze dni śpiewania. Dodaj datę albo wszystkie niedziele.</p>`;
+}
+
+$('daysList').addEventListener('click', e => {
+    const t = e.target.closest('button');
+    if (!t || !isAdmin) return;
+    const { toggleDay, delDay, day, member, allDay, noneDay } = t.dataset;
+
+    if (toggleDay) { openDay = openDay === toggleDay ? null : toggleDay; return renderDays(); }
+    if (delDay) {
+        const n = Object.keys(days[delDay]?.present || {}).length;
+        if (confirm(`Usunąć dzień ${parse(delDay).toLocaleDateString('pl-PL')}?${n ? ` Zniknie też ${n} ${plural(n, 'obecność', 'obecności', 'obecności')}.` : ''}`)) {
+            write(set(ref(db, `angelotti/days/${delDay}`), null), '✔ Usunięto dzień');
+        }
+        return;
+    }
+    if (day && member) {
+        const on = !days[day]?.present?.[member];
+        t.classList.toggle('on', on);  // natychmiastowa reakcja, zanim przyjdzie odpowiedź z serwera
+        write(set(ref(db, `angelotti/days/${day}/present/${member}`), on ? true : null));
+        return;
+    }
+    if (allDay || noneDay) {
+        const d = allDay || noneDay;
+        const paths = {};
+        Object.keys(members).forEach(id => paths[id] = allDay ? true : null);
+        write(update(ref(db, `angelotti/days/${d}/present`), paths), allDay ? '✔ Zaznaczono wszystkich' : '✔ Odznaczono wszystkich');
+    }
+});
+
+// --- ADMIN: CZŁONKOWIE ---
+function age(birth) {
+    if (!birth) return '';
+    const b = parse(birth), t = new Date();
+    let a = t.getFullYear() - b.getFullYear();
+    if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--;
+    return `${a} ${plural(a, 'rok', 'lata', 'lat')}`;
+}
+
+function renderMembers() {
+    const ids = Object.keys(members).sort(byName);
+    const { pts } = tally(periods(viewMonth).all.r);
+    $('membersList').innerHTML = ids.length ? ids.map(id => {
+        const p = priv[id] || {};
+        return `
+            <li>
+                ${avatar(id)}
+                <div class="grow">
+                    <div style="font-weight:800">${esc(displayName(id))}</div>
+                    <div class="meta">${p.birthDate ? `ur. ${parse(p.birthDate).toLocaleDateString('pl-PL')} (${age(p.birthDate)})` : 'brak daty urodzenia'}, łącznie ${pkt(pts[id] || 0)}</div>
+                </div>
+                <button class="btn btn-ghost btn-sm" data-edit-member="${id}">Edytuj</button>
+                <button class="btn btn-danger btn-sm" data-del-member="${id}">Usuń</button>
+            </li>`;
+    }).join('') : `<li class="empty" style="background:none">Brak członków. Dodaj pierwszą osobę.</li>`;
+}
+
+function resetMemberForm() {
+    editingMemberId = null;
+    ['mFirst', 'mLast', 'mBirth'].forEach(id => $(id).value = '');
+    $('memberFormTitle').textContent = '🧒 Dodaj członka scholi';
+    $('saveMemberBtn').textContent = 'Dodaj';
+    $('cancelMemberBtn').hidden = true;
+}
+$('cancelMemberBtn').addEventListener('click', resetMemberForm);
+
+$('membersList').addEventListener('click', async e => {
+    const t = e.target.closest('button');
+    if (!t || !isAdmin) return;
+    const { editMember, delMember } = t.dataset;
+    if (editMember) {
+        editingMemberId = editMember;
+        $('mFirst').value = members[editMember]?.firstName || '';
+        $('mLast').value = priv[editMember]?.lastName || '';
+        $('mBirth').value = priv[editMember]?.birthDate || '';
+        $('memberFormTitle').textContent = '✏️ Edycja członka scholi';
+        $('saveMemberBtn').textContent = 'Zapisz zmiany';
+        $('cancelMemberBtn').hidden = false;
+        $('mFirst').focus();
+    }
+    if (delMember) {
+        if (!confirm(`Usunąć ${displayName(delMember)} ze scholi? Znikną też jego/jej punkty.`)) return;
+        const paths = { [`members/${delMember}`]: null };
+        Object.keys(days).forEach(d => { if (days[d]?.present?.[delMember]) paths[`days/${d}/present/${delMember}`] = null; });
+        try {
+            await deleteDoc(doc(fs, 'angelotti_prywatne', delMember));
+            await update(ref(db, 'angelotti'), paths);
+            if (editingMemberId === delMember) resetMemberForm();
+            toast('✔ Usunięto');
+        } catch { toast('Brak uprawnień albo błąd zapisu', true); }
+    }
+});
+
+$('saveMemberBtn').addEventListener('click', async () => {
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const firstName = cap($('mFirst').value.trim());
+    const lastName = cap($('mLast').value.trim());
+    const birthDate = $('mBirth').value;
+    if (!firstName || !lastName) return toast('Wpisz imię i nazwisko', true);
+
+    const id = editingMemberId || push(ref(db, 'angelotti/members')).key;
+    const wasEditing = !!editingMemberId;
+    try {
+        // najpierw dane prywatne (Firestore), potem publiczne (Realtime Database)
+        await setDoc(doc(fs, 'angelotti_prywatne', id), { lastName, birthDate });
+        await set(ref(db, `angelotti/members/${id}`), { firstName, lastInitial: lastName[0].toUpperCase() });
+        toast(wasEditing ? '✔ Zapisano zmiany' : `✔ Witamy w scholi, ${firstName}! 🎉`);
+        resetMemberForm();
+        $('mFirst').focus();
+    } catch {
+        toast('Nie udało się zapisać – sprawdź reguły Firestore dla angelotti_prywatne', true);
+    }
+});
+['mFirst', 'mLast', 'mBirth'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') $('saveMemberBtn').click(); }));
+
+// --- LOGOWANIE ---
+$('loginBtn').addEventListener('click', async () => {
+    try { await signInWithEmailAndPassword(auth, $('email').value, $('password').value); }
+    catch (e) { toast('Błąd logowania: ' + e.message, true); }
+});
+$('password').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
+$('logoutBtn').addEventListener('click', () => signOut(auth));
+$('noAccessLogoutBtn').addEventListener('click', () => signOut(auth));
+
+// --- FIREBASE (podłączone na końcu, gdy wszystkie funkcje są już gotowe) ---
+onValue(ref(db, 'angelotti'), snap => {
+    const v = snap.val() || {};
+    members = v.members || {};
+    days = v.days || {};
+    renderAll();
+});
+
+onValue(ref(db, 'setlisty/slots'), snap => {
+    const raw = snap.val() || {};
+    const list = Array.isArray(raw) ? raw : Object.values(raw);
+    songSlots = list.filter(s => s && itemsOf(s).length);
+    if (songTab >= songSlots.length) songTab = 0;
+    renderSongs();
+});
+
+const isAdminUser = u => !!u && (ADMIN_UID.startsWith('WKLEJ') || u.uid === ADMIN_UID);
+
+onAuthStateChanged(auth, user => {
+    isAdmin = isAdminUser(user);
+    $('loginArea').hidden = !!user;
+    $('adminArea').hidden = !isAdmin;
+    $('noAccessArea').hidden = !user || isAdmin;
+
+    if (unsubPriv) { unsubPriv(); unsubPriv = null; }
+    priv = {};
+    if (isAdmin) {
+        unsubPriv = onSnapshot(collection(fs, 'angelotti_prywatne'),
+            s => { priv = {}; s.docs.forEach(d => priv[d.id] = d.data()); renderAll(); },
+            () => toast('Brak dostępu do danych prywatnych – sprawdź reguły Firestore', true));
+        $('dayDate').value = defaultDayDate();
+    }
+    resetMemberForm();
+    renderAll();
+});
+
+// --- GRAFIKA: śpiewająca schola ---
+(function drawScene() {
+    const kids = [
+        { x: 175, s: .88, skin: '#f6d2b4', hair: '#6b3e1f', style: 'pony',  book: '#ff6b8b' },
+        { x: 285, s: 1.0, skin: '#e9b98f', hair: '#2b2018', style: 'short', book: '#3d9cff' },
+        { x: 400, s: .82, skin: '#f8dcc4', hair: '#e2a93b', style: 'curly', book: '#ffc23d' },
+        { x: 515, s: 1.04, skin: '#c98d62', hair: '#1f1712', style: 'bob',  book: '#1fbfa4' },
+        { x: 625, s: .9, skin: '#f3cba7', hair: '#a4471f', style: 'short', book: '#8b6cf6' }
+    ];
+    const hair = (k) => {
+        const x = k.x, c = k.hair;
+        const cap = `<path d="M${x - 25} 150 C${x - 27} 120 ${x + 27} 120 ${x + 25} 150 C${x + 18} 136 ${x - 18} 136 ${x - 25} 150Z" fill="${c}"/>`;
+        if (k.style === 'short') return cap + `<path d="M${x - 8} 128 q8 -6 18 2" stroke="${c}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+        if (k.style === 'pony')  return cap + `<ellipse cx="${x + 30}" cy="150" rx="8" ry="16" fill="${c}" transform="rotate(20 ${x + 30} 150)"/><circle cx="${x + 23}" cy="138" r="4" fill="#ff6b8b"/>`;
+        if (k.style === 'bob')   return `<path d="M${x - 27} 168 C${x - 34} 116 ${x + 34} 116 ${x + 27} 168 L${x + 20} 168 C${x + 22} 142 ${x - 22} 142 ${x - 20} 168Z" fill="${c}"/>`;
+        return [-18, -9, 0, 9, 18].map((dx, i) => `<circle cx="${x + dx}" cy="${131 + (i % 2) * 3}" r="9" fill="${c}"/>`).join('') + `<circle cx="${x - 23}" cy="144" r="7" fill="${c}"/><circle cx="${x + 23}" cy="144" r="7" fill="${c}"/>`;
+    };
+    const kid = k => `
+        <g transform="translate(${k.x} 262) scale(${k.s}) translate(${-k.x} -262)">
+            <path d="M${k.x - 38} 262 L${k.x - 24} 178 Q${k.x} 168 ${k.x + 24} 178 L${k.x + 38} 262Z" fill="#ffffff" stroke="#dfe6f5" stroke-width="2"/>
+            <path d="M${k.x - 14} 176 L${k.x} 196 L${k.x + 14} 176" fill="none" stroke="${k.book}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="${k.x}" cy="152" r="25" fill="${k.skin}"/>
+            ${hair(k)}
+            <path d="M${k.x - 13} 150 q4.5 -5 9 0 M${k.x + 4} 150 q4.5 -5 9 0" stroke="#3a2a2a" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+            <circle cx="${k.x - 15}" cy="160" r="4.5" fill="#ff8fa6" opacity=".55"/><circle cx="${k.x + 15}" cy="160" r="4.5" fill="#ff8fa6" opacity=".55"/>
+            <ellipse cx="${k.x}" cy="164" rx="5.5" ry="6.5" fill="#9a2f45"/>
+            <g transform="rotate(-8 ${k.x} 214)">
+                <rect x="${k.x - 22}" y="200" width="44" height="28" rx="4" fill="${k.book}"/>
+                <path d="M${k.x} 202 V226" stroke="#ffffff" stroke-width="2" opacity=".7"/>
+            </g>
+            <circle cx="${k.x - 22}" cy="216" r="6" fill="${k.skin}"/><circle cx="${k.x + 22}" cy="210" r="6" fill="${k.skin}"/>
+        </g>`;
+    const note = (x, y, c, two) => two
+        ? `<g class="note-float"><path d="M${x} ${y} V${y - 26} L${x + 18} ${y - 31} V${y - 5}" stroke="${c}" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="${x - 5}" cy="${y + 1}" rx="7" ry="5" fill="${c}" transform="rotate(-20 ${x - 5} ${y + 1})"/><ellipse cx="${x + 13}" cy="${y - 4}" rx="7" ry="5" fill="${c}" transform="rotate(-20 ${x + 13} ${y - 4})"/></g>`
+        : `<g class="note-float"><path d="M${x} ${y} V${y - 28} Q${x + 12} ${y - 22} ${x + 14} ${y - 12}" stroke="${c}" stroke-width="3.5" fill="none" stroke-linecap="round"/><ellipse cx="${x - 5}" cy="${y + 1}" rx="7" ry="5" fill="${c}" transform="rotate(-20 ${x - 5} ${y + 1})"/></g>`;
+
+    $('scene').innerHTML = `
+        <defs>
+            <linearGradient id="hill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#b8f0d8"/><stop offset="1" stop-color="#8fe0c0"/></linearGradient>
+        </defs>
+        <g class="sun-rays">${Array.from({ length: 12 }, (_, i) => `<path d="M700 62 L${700 + 62 * Math.cos(i * Math.PI / 6)} ${62 + 62 * Math.sin(i * Math.PI / 6)}" stroke="#ffd96b" stroke-width="7" stroke-linecap="round" opacity=".75"/>`).join('')}</g>
+        <circle cx="700" cy="62" r="34" fill="#ffc23d"/>
+        <path d="M110 250 A290 210 0 0 1 690 250" fill="none" stroke="#ff9fb3" stroke-width="14" opacity=".55"/>
+        <path d="M128 250 A272 194 0 0 1 672 250" fill="none" stroke="#ffd27a" stroke-width="14" opacity=".55"/>
+        <path d="M146 250 A254 178 0 0 1 654 250" fill="none" stroke="#9fe6c9" stroke-width="14" opacity=".55"/>
+        <path d="M164 250 A236 162 0 0 1 636 250" fill="none" stroke="#9fd0ff" stroke-width="14" opacity=".55"/>
+        <path d="M0 250 Q200 222 400 240 T800 236 V270 H0Z" fill="url(#hill)"/>
+        <g fill="#ffffff" opacity=".9">
+            <ellipse cx="90" cy="70" rx="38" ry="16"/><ellipse cx="118" cy="60" rx="26" ry="18"/><ellipse cx="66" cy="62" rx="20" ry="13"/>
+            <ellipse cx="560" cy="40" rx="30" ry="12"/><ellipse cx="582" cy="32" rx="20" ry="13"/>
+        </g>
+        ${note(118, 128, '#ff6b8b', false)}${note(236, 92, '#3d9cff', true)}${note(352, 66, '#f5a400', false)}
+        ${note(458, 84, '#1fbfa4', true)}${note(576, 104, '#8b6cf6', false)}${note(690, 160, '#ff8a3d', true)}
+        ${kids.map(kid).join('')}`;
+})();
+</script>
+</body>
+</html>
