@@ -4,35 +4,33 @@
     <meta charset="UTF-8">
     <title>Angelotti – schola</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --ink: #24305e;
-            --ink-soft: #5b6690;
-            --sun: #ffc23d;
-            --sun-deep: #f5a400;
-            --coral: #ff6b8b;
-            --mint: #1fbfa4;
-            --sky: #3d9cff;
-            --violet: #8b6cf6;
+            --ink: #1f2a44;
+            --ink-soft: #5a6478;
+            --sun: #e6c26e;
+            --sun-deep: #c09238;
+            --coral: #b9707f;
+            --mint: #5b9a8b;
+            --sky: #4f7cac;
+            --violet: #7a6ca3;
             --card: #ffffff;
-            --line: #e3e9f7;
-            --ok: #18b37e;
-            --danger: #e5484d;
+            --line: #e4e8ee;
+            --ok: #4f9a76;
+            --danger: #c4524f;
         }
 
         * { box-sizing: border-box; }
         body {
             margin: 0; color: var(--ink); font-family: 'Nunito', sans-serif; min-height: 100vh;
             background:
-                radial-gradient(circle at 12% 8%, rgba(255,194,61,.28), transparent 32%),
-                radial-gradient(circle at 88% 22%, rgba(255,107,139,.18), transparent 30%),
-                radial-gradient(circle at 50% 100%, rgba(31,191,164,.16), transparent 45%),
-                linear-gradient(180deg, #e9f6ff 0%, #fffaf0 55%, #f3fff9 100%);
+                radial-gradient(ellipse at 50% 0%, rgba(230,194,110,.18), transparent 55%),
+                linear-gradient(180deg, #eef3f8 0%, #f9f8f4 50%, #f4f6f5 100%);
             background-attachment: fixed;
         }
-        h1, h2, h3, .fredoka { font-family: 'Fredoka', sans-serif; }
+        h1, h2, h3, .fredoka { font-family: 'Lora', serif; }
         button, input, select { font-family: inherit; font-size: 1rem; }
         :focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }
         [hidden] { display: none !important; }
@@ -54,20 +52,19 @@
         .title-block { margin-top: -.4rem; }
         header h1 {
             font-size: clamp(2.8rem, 9vw, 4.6rem); margin: 0; line-height: 1; font-weight: 700; letter-spacing: 1px;
-            background: linear-gradient(90deg, var(--coral), var(--sun-deep) 35%, var(--mint) 65%, var(--sky));
-            -webkit-background-clip: text; background-clip: text; color: transparent;
+            color: var(--ink); font-weight: 600;
         }
         header p { margin: .5rem 0 0; font-size: 1.1rem; color: var(--ink-soft); font-weight: 600; }
 
         main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 4rem; display: grid; gap: 1.6rem; }
 
-        .card { background: var(--card); border-radius: 26px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(61,156,255,.10), 0 2px 0 rgba(36,48,94,.04); }
+        .card { background: var(--card); border-radius: 26px; padding: 1.5rem; box-shadow: 0 6px 22px rgba(31,42,68,.06); border: 1px solid #edf0f4; }
         .card h2 { margin: 0 0 1rem; font-size: 1.6rem; font-weight: 600; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
         .sub { color: var(--ink-soft); font-size: .92rem; font-weight: 600; }
 
         /* ===== NAWIGACJA MIESIĄCA ===== */
         .month-nav { display: flex; align-items: center; justify-content: center; gap: .8rem; margin-bottom: 1.2rem; }
-        .month-nav .label { font-family: 'Fredoka', sans-serif; font-size: 1.35rem; font-weight: 600; min-width: 11rem; text-align: center; text-transform: capitalize; }
+        .month-nav .label { font-family: 'Lora', serif; font-size: 1.35rem; font-weight: 600; min-width: 11rem; text-align: center; text-transform: capitalize; }
         .round-btn {
             width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer; font-size: 1.1rem; font-weight: 800;
             background: var(--sun); color: var(--ink); box-shadow: 0 4px 0 var(--sun-deep);
@@ -79,16 +76,12 @@
         .leader {
             --c: var(--sky);
             position: relative; border-radius: 22px; padding: 1.1rem 1rem 1rem; text-align: center; overflow: hidden;
-            background: color-mix(in srgb, var(--c) 12%, white); border: 3px solid color-mix(in srgb, var(--c) 45%, white);
-        }
-        .leader::after {
-            content: ''; position: absolute; width: 120px; height: 120px; right: -40px; top: -40px; border-radius: 50%;
-            background: color-mix(in srgb, var(--c) 18%, transparent);
+            background: #fcfcfb; border: 1px solid var(--line); border-top: 5px solid var(--c);
         }
         .leader .period { font-weight: 800; font-size: .8rem; color: color-mix(in srgb, var(--c) 70%, var(--ink)); }
         .leader .when { font-size: .85rem; color: var(--ink-soft); font-weight: 600; }
         .crown { width: 48px; height: 38px; margin: .5rem auto .2rem; display: block; }
-        .leader .names { font-family: 'Fredoka', sans-serif; font-size: 1.25rem; font-weight: 600; line-height: 1.25; min-height: 1.6em; position: relative; z-index: 1; }
+        .leader .names { font-family: 'Lora', serif; font-size: 1.25rem; font-weight: 600; line-height: 1.25; min-height: 1.6em; position: relative; z-index: 1; }
         .leader .names.none { font-size: 1rem; color: var(--ink-soft); font-family: 'Nunito', sans-serif; }
         .leader .pts {
             display: inline-block; margin-top: .55rem; background: var(--c); color: #fff; font-weight: 800; border-radius: 999px; padding: .2rem .75rem; font-size: .9rem;
@@ -104,40 +97,40 @@
         .ranking { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
         .rank {
             display: grid; grid-template-columns: 44px 44px 1fr auto; gap: .8rem; align-items: center;
-            padding: .6rem .9rem; border-radius: 18px; background: #f7f9ff; border: 2px solid transparent;
+            padding: .6rem .9rem; border-radius: 18px; background: #f8f9fb; border: 2px solid transparent;
         }
-        .rank.p1 { background: #fff6dc; border-color: #ffd76e; }
-        .rank.p2 { background: #f1f4fb; border-color: #d6dded; }
-        .rank.p3 { background: #fff0e6; border-color: #f7c6a3; }
+        .rank.p1 { background: #fbf7ec; border-color: #ead9ab; }
+        .rank.p2 { background: #f6f7f9; border-color: #dfe3ea; }
+        .rank.p3 { background: #faf3ee; border-color: #e8d2c2; }
         .place {
             width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
-            font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.1rem; background: #fff; color: var(--ink-soft); border: 2px solid var(--line);
+            font-family: 'Lora', serif; font-weight: 700; font-size: 1.1rem; background: #fff; color: var(--ink-soft); border: 2px solid var(--line);
         }
-        .p1 .place { background: linear-gradient(135deg, #ffe27a, #f5b400); color: #6b4a00; border: 0; box-shadow: 0 3px 0 #d39a00; }
-        .p2 .place { background: linear-gradient(135deg, #f4f6fb, #b9c3d6); color: #46506b; border: 0; box-shadow: 0 3px 0 #9ca7bd; }
-        .p3 .place { background: linear-gradient(135deg, #ffd2ae, #e1894a); color: #6d3510; border: 0; box-shadow: 0 3px 0 #c06d33; }
+        .p1 .place { background: linear-gradient(135deg, #f0dda4, #cfa64e); color: #5a4210; border: 0; box-shadow: 0 2px 0 #b38a36; }
+        .p2 .place { background: linear-gradient(135deg, #f1f3f6, #c3cad5); color: #46506b; border: 0; box-shadow: 0 2px 0 #a8b0bd; }
+        .p3 .place { background: linear-gradient(135deg, #efd3bf, #c79470); color: #5d3418; border: 0; box-shadow: 0 2px 0 #ad7c58; }
         .avatar {
             width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #fff;
-            font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 1.1rem; background: var(--c);
+            font-family: 'Lora', serif; font-weight: 600; font-size: 1.1rem; background: var(--c);
         }
         .rank .who { min-width: 0; }
         .rank .name { font-weight: 800; font-size: 1.05rem; }
-        .meter { height: 10px; border-radius: 999px; background: #e7ecf8; margin-top: .35rem; overflow: hidden; }
+        .meter { height: 8px; border-radius: 999px; background: #e8ecf1; margin-top: .35rem; overflow: hidden; }
         .meter span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--mint), var(--sky)); transition: width .6s ease; }
-        .p1 .meter span { background: linear-gradient(90deg, var(--sun), var(--coral)); }
+        .p1 .meter span { background: linear-gradient(90deg, var(--sun), var(--sun-deep)); }
         .score { text-align: right; }
-        .score b { font-family: 'Fredoka', sans-serif; font-size: 1.5rem; font-weight: 700; display: block; line-height: 1; }
+        .score b { font-family: 'Lora', serif; font-size: 1.5rem; font-weight: 700; display: block; line-height: 1; }
         .score small { color: var(--ink-soft); font-weight: 700; font-size: .78rem; }
         .empty { color: var(--ink-soft); font-weight: 600; margin: 0; }
 
         /* ===== PIEŚNI ===== */
         .song-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; counter-reset: s; }
         .song-list li {
-            counter-increment: s; display: flex; align-items: center; gap: .8rem; padding: .55rem .8rem; border-radius: 14px; background: #f3fbf9;
+            counter-increment: s; display: flex; align-items: center; gap: .8rem; padding: .55rem .8rem; border-radius: 14px; background: #f5f7f6;
         }
         .song-list li::before { content: counter(s) '.'; color: var(--ink-soft); font-weight: 800; min-width: 1.4rem; text-align: right; font-size: .9rem; }
         .song-list .num {
-            min-width: 3rem; text-align: center; font-family: 'Fredoka', sans-serif; font-weight: 600; color: #fff; background: var(--mint);
+            min-width: 3rem; text-align: center; font-family: 'Lora', serif; font-weight: 600; color: #fff; background: var(--mint);
             border-radius: 10px; padding: .15rem .5rem;
         }
         .song-list .num.none { background: #cfd8e8; }
@@ -148,14 +141,14 @@
             font-weight: 800; color: #fff; min-height: 48px;
         }
         .share-btn svg { width: 22px; height: 22px; }
-        .share-btn.wa { background: #25b864; box-shadow: 0 4px 0 #1a8b4b; }
-        .share-btn.ms { background: #3d8bff; box-shadow: 0 4px 0 #2a64c4; }
+        .share-btn.wa { background: #3f9467; box-shadow: 0 3px 0 #2f7150; }
+        .share-btn.ms { background: #4f7cac; box-shadow: 0 3px 0 #3b5f86; }
         .share-btn.cp { background: #fff; color: var(--ink); border: 2px solid var(--line); box-shadow: 0 4px 0 var(--line); }
         .share-btn:active { transform: translateY(3px); box-shadow: none; }
 
         /* ===== ADMIN ===== */
         footer { padding: 0 1rem 4rem; }
-        .admin { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 26px; padding: 1.5rem; border: 3px dashed #cfdaf1; }
+        .admin { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 26px; padding: 1.5rem; border: 2px dashed #d5dbe4; }
         .admin h2 { margin: 0 0 1rem; font-size: 1.5rem; font-weight: 600; }
         .admin h3 { margin: 1.8rem 0 .8rem; font-size: 1.2rem; font-weight: 600; }
         .row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: end; }
@@ -167,7 +160,7 @@
         }
         input:focus { border-color: var(--sky); outline: none; }
         .btn { border: 0; border-radius: 12px; padding: .7rem 1.2rem; cursor: pointer; font-weight: 800; }
-        .btn-primary { background: var(--sky); color: #fff; box-shadow: 0 4px 0 #2a74c9; }
+        .btn-primary { background: var(--sky); color: #fff; box-shadow: 0 3px 0 #3b5f86; }
         .btn-primary:active { transform: translateY(3px); box-shadow: none; }
         .btn-ghost { background: #fff; color: var(--ink); border: 2px solid var(--line); }
         .btn-danger { background: #fff; color: var(--danger); border: 2px solid #f6c9ca; }
@@ -175,16 +168,16 @@
         .hint { font-size: .85rem; color: var(--ink-soft); margin: .6rem 0 0; }
 
         .members { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
-        .members li { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; padding: .5rem .7rem; border-radius: 14px; background: #f7f9ff; }
+        .members li { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; padding: .5rem .7rem; border-radius: 14px; background: #f8f9fb; }
         .members .avatar { width: 36px; height: 36px; font-size: .9rem; }
         .members .grow { flex: 1; min-width: 140px; }
         .members .meta { font-size: .8rem; color: var(--ink-soft); font-weight: 600; }
 
         .days { display: grid; gap: .7rem; }
         .day { border: 2px solid var(--line); border-radius: 18px; padding: .8rem 1rem; background: #fbfcff; }
-        .day.open { border-color: var(--sky); background: #f2f8ff; }
+        .day.open { border-color: var(--sky); background: #f4f7fb; }
         .day-head { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; }
-        .day-head .date { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 1.1rem; }
+        .day-head .date { font-family: 'Lora', serif; font-weight: 600; font-size: 1.1rem; }
         .day-head .count { background: var(--mint); color: #fff; font-weight: 800; border-radius: 999px; padding: .1rem .6rem; font-size: .82rem; }
         .day-head .grow { flex: 1; }
         .chips { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .8rem; }
@@ -194,6 +187,9 @@
         }
         .chip.on { background: var(--ok); border-color: var(--ok); color: #fff; }
         .chip.on::before { content: '✓'; }
+
+        .gift { display: inline-block; width: 1.05em; height: 1.05em; vertical-align: -.12em; margin-left: .3em; }
+        .chip.on .gift path, .chip.on .gift rect { stroke: #fff; }
 
         .toast {
             position: fixed; bottom: 20px; left: 50%; transform: translate(-50%, 20px); max-width: calc(100% - 40px);
@@ -222,7 +218,7 @@
     <svg class="scene" id="scene" viewBox="0 0 800 270" aria-label="Schola dzieci i młodzieży śpiewa radośnie"></svg>
     <div class="title-block">
         <h1>Angelotti</h1>
-        <p>Schola dziecięco-młodzieżowa. Śpiewamy w każdą niedzielę na Mszy Świętej!</p>
+        <p>Schola dziecięco-młodzieżowa. Śpiewamy dla Boga, bo taki mamy plan życia!</p>
     </div>
 </header>
 
@@ -308,7 +304,7 @@
                 <button class="btn btn-primary" id="saveMemberBtn">Dodaj</button>
                 <button class="btn btn-ghost" id="cancelMemberBtn" hidden>Anuluj</button>
             </div>
-            <p class="hint">Publicznie na stronie widać tylko imię i pierwszą literę nazwiska. Pełne nazwisko i data urodzenia są widoczne wyłącznie dla Ciebie.</p>
+            <p class="hint">Publicznie na stronie widać tylko imię, pierwszą literę nazwiska i 🎁 w miesiącu urodzin. Pełne nazwisko i dokładna data urodzenia są widoczne wyłącznie dla Ciebie.</p>
             <ul class="members" id="membersList" style="margin-top:1rem"></ul>
 
             <h3>Konto</h3>
@@ -417,8 +413,16 @@ function byName(a, b) {
         || coll.compare(A.lastInitial || '', B.lastInitial || '')
         || coll.compare(fullLast(a), fullLast(b));
 }
-const COLORS = ['#ff6b8b', '#f5a400', '#1fbfa4', '#3d9cff', '#8b6cf6', '#ff8a3d', '#16a3c9', '#e45bc4'];
+const COLORS = ['#a8707c', '#b38b3e', '#5b9a8b', '#4f7cac', '#7a6ca3', '#b07656', '#4d8c99', '#8a6d8c'];
 const colorFor = id => COLORS[[...id].reduce((s, c) => s + c.charCodeAt(0), 0) % COLORS.length];
+// 🎁 przy imieniu przez cały miesiąc urodzin (liczony według dzisiejszej daty)
+const GIFT = `<svg class="gift" viewBox="0 0 24 24" fill="none" stroke="#b9707f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="3.5" y="9" width="17" height="11.5" rx="1.5" fill="#f4e3e6"/><rect x="2.5" y="6.5" width="19" height="3.5" rx="1" fill="#f4e3e6"/>
+    <path d="M12 6.5 V20.5"/><path d="M12 6.5 C10.5 3 6.5 3.5 7.5 5.5 C8.2 6.6 10.5 6.5 12 6.5 C13.5 6.5 15.8 6.6 16.5 5.5 C17.5 3.5 13.5 3 12 6.5Z"/></svg>`;
+const hasBirthdayNow = id => Number(members[id]?.birthMonth) === new Date().getMonth() + 1;
+const gift = id => hasBirthdayNow(id) ? `<span title="W tym miesiącu urodziny – wszystkiego najlepszego!" aria-label="urodziny w tym miesiącu">${GIFT}</span>` : '';
+const nameHTML = id => esc(displayName(id)) + gift(id);
+
 const avatar = id => `<span class="avatar" style="--c:${colorFor(id)}">${esc((members[id]?.firstName || '?')[0].toUpperCase())}</span>`;
 
 // --- PUNKTY ---
@@ -464,7 +468,7 @@ function renderLeaders() {
                 <div class="period">${p.label}</div>
                 <div class="when">${esc(p.when)}</div>
                 ${CROWN(leaders.length ? p.c : '#cfd8e8')}
-                <div class="names ${leaders.length ? '' : 'none'}">${leaders.length ? leaders.map(id => esc(displayName(id))).join('<br>') : 'Jeszcze nikt, czekamy na pierwsze śpiewanie!'}</div>
+                <div class="names ${leaders.length ? '' : 'none'}">${leaders.length ? leaders.map(id => nameHTML(id)).join('<br>') : 'Jeszcze nikt, czekamy na pierwsze śpiewanie!'}</div>
                 ${leaders.length ? `<span class="pts">${pkt(max)}</span>` : ''}
             </div>`;
     }).join('');
@@ -495,7 +499,7 @@ function renderRanking() {
                 <span class="place">${place}</span>
                 ${avatar(id)}
                 <div class="who">
-                    <div class="name">${esc(displayName(id))}</div>
+                    <div class="name">${nameHTML(id)}</div>
                     <div class="meter"><span style="width:${(pts[id] / max * 100).toFixed(0)}%"></span></div>
                 </div>
                 <div class="score"><b>${pts[id]}</b><small>${plural(pts[id], 'punkt', 'punkty', 'punktów')}</small></div>
@@ -617,7 +621,7 @@ function renderDays() {
                 </div>
                 ${open ? `
                 <div class="chips">
-                    ${ids.length ? ids.map(id => `<button class="chip ${present[id] ? 'on' : ''}" data-day="${d}" data-member="${id}">${esc(displayName(id))}</button>`).join('') : '<span class="sub">Najpierw dodaj członków scholi poniżej.</span>'}
+                    ${ids.length ? ids.map(id => `<button class="chip ${present[id] ? 'on' : ''}" data-day="${d}" data-member="${id}">${nameHTML(id)}</button>`).join('') : '<span class="sub">Najpierw dodaj członków scholi poniżej.</span>'}
                 </div>
                 ${ids.length ? `<div class="row" style="margin-top:.7rem">
                     <button class="btn btn-ghost btn-sm" data-all-day="${d}" style="flex:0 0 auto">Zaznacz wszystkich</button>
@@ -655,6 +659,17 @@ $('daysList').addEventListener('click', e => {
 });
 
 // --- ADMIN: CZŁONKOWIE ---
+// Osoby dodane przed wprowadzeniem 🎁 nie mają miesiąca urodzin w publicznych danych – uzupełniamy go automatycznie.
+function syncBirthMonths() {
+    if (!isAdmin) return;
+    const paths = {};
+    Object.keys(members).forEach(id => {
+        const bd = priv[id]?.birthDate;
+        const want = bd ? Number(bd.slice(5, 7)) : null;
+        if ((members[id].birthMonth ?? null) !== want) paths[`members/${id}/birthMonth`] = want;
+    });
+    if (Object.keys(paths).length) update(ref(db, 'angelotti'), paths).catch(() => {});
+}
 function age(birth) {
     if (!birth) return '';
     const b = parse(birth), t = new Date();
@@ -672,7 +687,7 @@ function renderMembers() {
             <li>
                 ${avatar(id)}
                 <div class="grow">
-                    <div style="font-weight:800">${esc(displayName(id))}</div>
+                    <div style="font-weight:800">${nameHTML(id)}</div>
                     <div class="meta">${p.birthDate ? `ur. ${parse(p.birthDate).toLocaleDateString('pl-PL')} (${age(p.birthDate)})` : 'brak daty urodzenia'}, łącznie ${pkt(pts[id] || 0)}</div>
                 </div>
                 <button class="btn btn-ghost btn-sm" data-edit-member="${id}">Edytuj</button>
@@ -729,7 +744,7 @@ $('saveMemberBtn').addEventListener('click', async () => {
     try {
         // najpierw dane prywatne (Firestore), potem publiczne (Realtime Database)
         await setDoc(doc(fs, 'angelotti_prywatne', id), { lastName, birthDate });
-        await set(ref(db, `angelotti/members/${id}`), { firstName, lastInitial: lastName[0].toUpperCase() });
+        await set(ref(db, `angelotti/members/${id}`), { firstName, lastInitial: lastName[0].toUpperCase(), birthMonth: birthDate ? Number(birthDate.slice(5, 7)) : null });
         toast(wasEditing ? '✔ Zapisano zmiany' : `✔ Witamy w scholi, ${firstName}! 🎉`);
         resetMemberForm();
         $('mFirst').focus();
@@ -777,7 +792,7 @@ onAuthStateChanged(auth, user => {
     priv = {};
     if (isAdmin) {
         unsubPriv = onSnapshot(collection(fs, 'angelotti_prywatne'),
-            s => { priv = {}; s.docs.forEach(d => priv[d.id] = d.data()); renderAll(); },
+            s => { priv = {}; s.docs.forEach(d => priv[d.id] = d.data()); syncBirthMonths(); renderAll(); },
             () => toast('Brak dostępu do danych prywatnych – sprawdź reguły Firestore', true));
         $('dayDate').value = defaultDayDate();
     }
@@ -788,17 +803,17 @@ onAuthStateChanged(auth, user => {
 // --- GRAFIKA: śpiewająca schola ---
 (function drawScene() {
     const kids = [
-        { x: 175, s: .88, skin: '#f6d2b4', hair: '#6b3e1f', style: 'pony',  book: '#ff6b8b' },
-        { x: 285, s: 1.0, skin: '#e9b98f', hair: '#2b2018', style: 'short', book: '#3d9cff' },
-        { x: 400, s: .82, skin: '#f8dcc4', hair: '#e2a93b', style: 'curly', book: '#ffc23d' },
-        { x: 515, s: 1.04, skin: '#c98d62', hair: '#1f1712', style: 'bob',  book: '#1fbfa4' },
-        { x: 625, s: .9, skin: '#f3cba7', hair: '#a4471f', style: 'short', book: '#8b6cf6' }
+        { x: 175, s: .88, skin: '#f6d2b4', hair: '#6b3e1f', style: 'pony',  book: '#b9707f' },
+        { x: 285, s: 1.0, skin: '#e9b98f', hair: '#2b2018', style: 'short', book: '#4f7cac' },
+        { x: 400, s: .82, skin: '#f8dcc4', hair: '#e2a93b', style: 'curly', book: '#c09238' },
+        { x: 515, s: 1.04, skin: '#c98d62', hair: '#1f1712', style: 'bob',  book: '#5b9a8b' },
+        { x: 625, s: .9, skin: '#f3cba7', hair: '#a4471f', style: 'short', book: '#7a6ca3' }
     ];
     const hair = (k) => {
         const x = k.x, c = k.hair;
         const cap = `<path d="M${x - 25} 150 C${x - 27} 120 ${x + 27} 120 ${x + 25} 150 C${x + 18} 136 ${x - 18} 136 ${x - 25} 150Z" fill="${c}"/>`;
         if (k.style === 'short') return cap + `<path d="M${x - 8} 128 q8 -6 18 2" stroke="${c}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
-        if (k.style === 'pony')  return cap + `<ellipse cx="${x + 30}" cy="150" rx="8" ry="16" fill="${c}" transform="rotate(20 ${x + 30} 150)"/><circle cx="${x + 23}" cy="138" r="4" fill="#ff6b8b"/>`;
+        if (k.style === 'pony')  return cap + `<ellipse cx="${x + 30}" cy="150" rx="8" ry="16" fill="${c}" transform="rotate(20 ${x + 30} 150)"/><circle cx="${x + 23}" cy="138" r="4" fill="#b9707f"/>`;
         if (k.style === 'bob')   return `<path d="M${x - 27} 168 C${x - 34} 116 ${x + 34} 116 ${x + 27} 168 L${x + 20} 168 C${x + 22} 142 ${x - 22} 142 ${x - 20} 168Z" fill="${c}"/>`;
         return [-18, -9, 0, 9, 18].map((dx, i) => `<circle cx="${x + dx}" cy="${131 + (i % 2) * 3}" r="9" fill="${c}"/>`).join('') + `<circle cx="${x - 23}" cy="144" r="7" fill="${c}"/><circle cx="${x + 23}" cy="144" r="7" fill="${c}"/>`;
     };
@@ -809,7 +824,7 @@ onAuthStateChanged(auth, user => {
             <circle cx="${k.x}" cy="152" r="25" fill="${k.skin}"/>
             ${hair(k)}
             <path d="M${k.x - 13} 150 q4.5 -5 9 0 M${k.x + 4} 150 q4.5 -5 9 0" stroke="#3a2a2a" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-            <circle cx="${k.x - 15}" cy="160" r="4.5" fill="#ff8fa6" opacity=".55"/><circle cx="${k.x + 15}" cy="160" r="4.5" fill="#ff8fa6" opacity=".55"/>
+            <circle cx="${k.x - 15}" cy="160" r="4.5" fill="#e8a5b0" opacity=".45"/><circle cx="${k.x + 15}" cy="160" r="4.5" fill="#e8a5b0" opacity=".45"/>
             <ellipse cx="${k.x}" cy="164" rx="5.5" ry="6.5" fill="#9a2f45"/>
             <g transform="rotate(-8 ${k.x} 214)">
                 <rect x="${k.x - 22}" y="200" width="44" height="28" rx="4" fill="${k.book}"/>
@@ -823,21 +838,20 @@ onAuthStateChanged(auth, user => {
 
     $('scene').innerHTML = `
         <defs>
-            <linearGradient id="hill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#b8f0d8"/><stop offset="1" stop-color="#8fe0c0"/></linearGradient>
+            <linearGradient id="hill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#dce8df"/><stop offset="1" stop-color="#c9dbcf"/></linearGradient>
+            <linearGradient id="win" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fdf6e3"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>
         </defs>
-        <g class="sun-rays">${Array.from({ length: 12 }, (_, i) => `<path d="M700 62 L${700 + 62 * Math.cos(i * Math.PI / 6)} ${62 + 62 * Math.sin(i * Math.PI / 6)}" stroke="#ffd96b" stroke-width="7" stroke-linecap="round" opacity=".75"/>`).join('')}</g>
-        <circle cx="700" cy="62" r="34" fill="#ffc23d"/>
-        <path d="M110 250 A290 210 0 0 1 690 250" fill="none" stroke="#ff9fb3" stroke-width="14" opacity=".55"/>
-        <path d="M128 250 A272 194 0 0 1 672 250" fill="none" stroke="#ffd27a" stroke-width="14" opacity=".55"/>
-        <path d="M146 250 A254 178 0 0 1 654 250" fill="none" stroke="#9fe6c9" stroke-width="14" opacity=".55"/>
-        <path d="M164 250 A236 162 0 0 1 636 250" fill="none" stroke="#9fd0ff" stroke-width="14" opacity=".55"/>
+        <g class="sun-rays">${Array.from({ length: 12 }, (_, i) => `<path d="M700 62 L${700 + 62 * Math.cos(i * Math.PI / 6)} ${62 + 62 * Math.sin(i * Math.PI / 6)}" stroke="#ecd59a" stroke-width="5" stroke-linecap="round" opacity=".7"/>`).join('')}</g>
+        <circle cx="700" cy="62" r="32" fill="#e6c26e"/>
+        <path d="M150 252 V150 A250 120 0 0 1 650 150 V252" fill="url(#win)" stroke="#e3d3a8" stroke-width="3"/>
+        <path d="M400 30 V252 M150 150 H650" stroke="#efe4c6" stroke-width="2" opacity=".8"/>
         <path d="M0 250 Q200 222 400 240 T800 236 V270 H0Z" fill="url(#hill)"/>
         <g fill="#ffffff" opacity=".9">
             <ellipse cx="90" cy="70" rx="38" ry="16"/><ellipse cx="118" cy="60" rx="26" ry="18"/><ellipse cx="66" cy="62" rx="20" ry="13"/>
             <ellipse cx="560" cy="40" rx="30" ry="12"/><ellipse cx="582" cy="32" rx="20" ry="13"/>
         </g>
-        ${note(118, 128, '#ff6b8b', false)}${note(236, 92, '#3d9cff', true)}${note(352, 66, '#f5a400', false)}
-        ${note(458, 84, '#1fbfa4', true)}${note(576, 104, '#8b6cf6', false)}${note(690, 160, '#ff8a3d', true)}
+        ${note(100, 132, '#b9707f', false)}${note(214, 98, '#4f7cac', true)}${note(560, 100, '#c09238', false)}
+        ${note(330, 70, '#5b9a8b', true)}${note(470, 64, '#7a6ca3', false)}${note(735, 205, '#b07656', true)}
         ${kids.map(kid).join('')}`;
 })();
 </script>
