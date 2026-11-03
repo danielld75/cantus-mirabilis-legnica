@@ -338,7 +338,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
     const tagHTML = t => `<span class="tag" style="--c:${typeOf(t).color}">${typeOf(t).letter}</span>`;
 
     // --- STAŁE PRÓBY: wtorki i środy ---
-    const DEFAULT_REHEARSAL = { weekdays: [2, 3], time: '19:30', title: 'Próba', place: '' }; // 2 = wtorek, 3 = środa
+    const DEFAULT_REHEARSAL = { weekdays: [2, 3], time: '19:30', title: 'Próba', place: 'Instytut' }; // 2 = wtorek, 3 = środa
 
     // --- ZMIENNE GLOBALNE ---
     let events = {};          // tylko klucze-daty
@@ -694,8 +694,13 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
 
     // --- DOMYŚLNA GODZINA I DATA Z KLIKNIĘTEGO DNIA ---
     const DEFAULT_TIME = '19:30';
+    const DEFAULT_TITLE = 'Próba';
+    const DEFAULT_PLACE = 'Instytut';
     function setFormDefaults() {
         document.getElementById('evTime').value = DEFAULT_TIME;
+        document.getElementById('evTitle').value = DEFAULT_TITLE;
+        document.getElementById('evPlace').value = DEFAULT_PLACE;
+        document.getElementById('evType').value = 'proba';
         if (selectedKey) document.getElementById('evDate').value = selectedKey;
     }
     function fillDateFromCalendar(key) {
