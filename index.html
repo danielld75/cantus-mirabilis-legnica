@@ -112,6 +112,24 @@
         }
         .admin button { background: var(--gold); color: black; font-weight: bold; cursor: pointer; border: none; }
         .row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        /* ===== WSTAWIANIE Z BAZY REPERTUARU ===== */
+        .rep-picker { border: 1px dashed rgba(201,162,77,.45); border-radius: 12px; padding: .9rem; margin-bottom: 12px; background: rgba(201,162,77,.04); }
+        .rep-picker-head { color: var(--gold); font-weight: 600; font-size: .9rem; margin-bottom: .6rem; }
+        .rep-picker .row { margin-bottom: .6rem; }
+        .rep-picker select { flex: 1; min-width: 200px; }
+        .rep-picker input[type=search] { width: 100%; box-sizing: border-box; }
+        .rep-results { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; gap: .3rem; max-height: 260px; overflow-y: auto; }
+        .admin .rep-item {
+            width: 100%; text-align: left; background: #1d1d1d; color: var(--text); font-weight: 400;
+            border: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; gap: .6rem; min-height: 44px;
+        }
+        .admin .rep-item:hover { border-color: rgba(201,162,77,.6); }
+        .rep-item .plus { color: var(--gold); font-weight: 700; font-size: 1.2rem; }
+        .rep-item .au { opacity: .6; font-size: .9em; }
+        .rep-empty { opacity: .6; font-size: .85rem; padding: .3rem 0; }
+        @keyframes flash { 0% { box-shadow: 0 0 0 3px rgba(201,162,77,.8); } 100% { box-shadow: 0 0 0 0 rgba(201,162,77,0); } }
+        .flash { animation: flash 1.2s ease-out; }
+
         .format-hint { font-size: 0.8rem; opacity: 0.6; margin: -4px 0 12px; line-height: 1.5; }
         .format-hint code { background: #222; padding: 1px 5px; border-radius: 4px; }
 
@@ -170,7 +188,7 @@
                 <path d="M36 44 V27 L43 25"/>
                 <ellipse cx="32.5" cy="44.5" rx="4" ry="3" transform="rotate(-20 32.5 44.5)" fill="currentColor"/>
             </svg>
-            <span><strong>Repertuar</strong><small>Utwory, nuty i nagrania do nauki</small></span>
+            <span><strong>Repertuar Cantusów</strong><small>Utwory, nuty i nagrania do nauki</small></span>
         </a>
 
         <!-- widoczne tylko dla zalogowanego admina -->
@@ -181,7 +199,7 @@
                 <ellipse cx="18" cy="46" rx="7" ry="5.2" transform="rotate(-20 18 46)" fill="currentColor"/>
                 <ellipse cx="46" cy="40" rx="7" ry="5.2" transform="rotate(-20 46 40)" fill="currentColor"/>
             </svg>
-            <span><strong>Pieśni</strong><small>Baza pieśni, numery i setlisty</small></span>
+            <span><strong>Pieśni Gospel</strong><small>Baza pieśni, numery i setlisty</small></span>
         </a>
         <a href="rozliczenialpgk.html" class="driversi-btn admin-link" hidden>
             <svg class="note-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -254,6 +272,15 @@
                         <input id="evTitle" placeholder="Tytuł wydarzenia" required style="flex:2;">
                         <input id="evPlace" placeholder="Miejsce" style="flex:1;">
                     </div>
+                    <div class="rep-picker">
+                        <div class="rep-picker-head">🎼 Wstaw z bazy Repertuaru Cantusów (tytuł i autor)</div>
+                        <div class="row">
+                            <select id="repSetlist" aria-label="Setlista z repertuaru"></select>
+                            <button type="button" id="repSetlistBtn">Wstaw setlistę</button>
+                        </div>
+                        <input type="search" id="repWorkSearch" placeholder="…albo wyszukaj pojedynczy utwór (min. 3 litery tytułu lub autora)" autocomplete="off">
+                        <ul class="rep-results" id="repWorkResults"></ul>
+                    </div>
                     <textarea id="evRepertoire" placeholder="Repertuar (każdy utwór w nowej linii, linia zaczęta spacją = dopisek bez kółka)"></textarea>
                     <p class="format-hint">
                         Formatowanie: <code>&lt;b&gt;</code> pogrubienie, <code>&lt;i&gt;</code> kursywa, <code>&lt;u&gt;</code> podkreślenie,
@@ -289,7 +316,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
 
     // UID admina (ten sam co w rozliczenialpgk.html). Dopóki stoi tu "WKLEJ...",
     // każdy zalogowany jest traktowany jak admin – wklej swój UID, żeby to zamknąć.
-    const ADMIN_UID = '90Zrjdu14WNKn2B5rYkwMQ6UGK92';
+    const ADMIN_UID = 'WKLEJ_UID_DANIELA';
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -321,6 +348,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
     let selectedKey = null;
     let isLogged = false;     // = zalogowany admin
     let editingContext = null;
+    let repData = {};         // dane z repertuar.html (utwory i setlisty)
 
     const holidays = {
         "2026-01-01": "Nowy Rok / Św. Bożej Rodzicielki",
@@ -435,6 +463,8 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
         Object.keys(all).filter(isDateKey).forEach(k => events[k] = all[k]);
         serverDateKeys = Object.keys(events);
         skipped = all.kalendarzUstawienia?.pominieteProby || {};
+        repData = all.repertuar || {};
+        renderRepPicker();
         renderCalendar();
         if (selectedKey) showEvents(selectedKey, false);
     });
@@ -528,7 +558,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
             if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) dayDiv.classList.add('today');
             if (key === selectedKey) dayDiv.classList.add('selected');
 
-            dayDiv.onclick = () => showEvents(key);
+            dayDiv.onclick = () => { showEvents(key); fillDateFromCalendar(key); };
             daysEl.appendChild(dayDiv);
         }
     };
@@ -591,6 +621,90 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
             .map(t => `<option value="${t}">${TYPES[t].letter} – ${TYPES[t].label}</option>`).join('');
     }
 
+    // --- WSTAWIANIE Z BAZY REPERTUARU (repertuar.html) ---
+    // Do pola trafia tylko „Tytuł – Autor”, każdy utwór w nowej linii.
+    const repList = x => !x ? [] : Array.isArray(x) ? x : Object.values(x);
+    const repItems = s => repList(s?.items).filter(Boolean);
+    const repNorm = s => String(s ?? '').toLowerCase().replace(/ł/g, 'l')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+    const repLine = it => {
+        const w = (repData.utwory || {})[it.workId] || it;      // aktualne dane utworu, jeśli istnieje
+        const title = (w.title || '').trim(), author = (w.author || '').trim();
+        return author ? `${title} – ${author}` : title;
+    };
+
+    function renderRepPicker() {
+        const sel = document.getElementById('repSetlist');
+        const prev = sel.value;
+        const slots = repList(repData.setlisty?.slots).map((s, i) => [s, i]).filter(([s]) => s && repItems(s).length);
+        const arch = Object.entries(repData.setlisty?.archive || {})
+            .filter(([, a]) => repItems(a).length)
+            .sort(([, a], [, b]) => (b.savedAt || 0) - (a.savedAt || 0));
+        const n = x => `${x} ${x === 1 ? 'utwór' : (x % 10 >= 2 && x % 10 <= 4 && (x % 100 < 12 || x % 100 > 14)) ? 'utwory' : 'utworów'}`;
+        sel.innerHTML = (slots.length || arch.length)
+            ? `<option value="">— wybierz setlistę —</option>`
+              + (slots.length ? `<optgroup label="Bieżące setlisty">${slots.map(([s, i]) => `<option value="slot:${i}">${escapeHTML(s.title || 'Bez tytułu')} (${n(repItems(s).length)})</option>`).join('')}</optgroup>` : '')
+              + (arch.length ? `<optgroup label="Archiwum">${arch.map(([id, a]) => `<option value="arch:${id}">${escapeHTML(a.title || 'Bez tytułu')} (${n(repItems(a).length)})</option>`).join('')}</optgroup>` : '')
+            : `<option value="">Brak setlist w Repertuarze Cantusów</option>`;
+        if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+        renderRepWorks();
+    }
+
+    function insertLines(lines) {
+        if (!lines.length) return;
+        const cur = repArea.value.replace(/\s+$/, '');
+        repArea.value = (cur ? cur + '\n' : '') + lines.join('\n') + '\n';
+        autoResize();
+        repArea.classList.remove('flash'); void repArea.offsetWidth; repArea.classList.add('flash');
+    }
+
+    document.getElementById('repSetlistBtn').addEventListener('click', () => {
+        const v = document.getElementById('repSetlist').value;
+        if (!v) return alert('Wybierz setlistę z listy.');
+        const [kind, id] = v.split(':');
+        const src = kind === 'slot' ? repList(repData.setlisty?.slots)[Number(id)] : repData.setlisty?.archive?.[id];
+        insertLines(repItems(src).map(repLine).filter(Boolean));
+        if (!document.getElementById('evTitle').value.trim() && src?.title) document.getElementById('evTitle').value = src.title;
+    });
+
+    function renderRepWorks() {
+        const input = document.getElementById('repWorkSearch');
+        const list = document.getElementById('repWorkResults');
+        const nq = repNorm(input.value);
+        if (nq.replace(/ /g, '').length < 3) { list.innerHTML = ''; return; }
+        const found = Object.entries(repData.utwory || {})
+            .filter(([, w]) => (' ' + repNorm(w.title)).includes(' ' + nq) || (' ' + repNorm(w.author)).includes(' ' + nq))
+            .sort(([, a], [, b]) => (a.title || '').localeCompare(b.title || '', 'pl'))
+            .slice(0, 40);
+        list.innerHTML = found.length
+            ? found.map(([id, w]) => `<li><button type="button" class="rep-item" data-work="${id}"><span class="plus">＋</span><span>${escapeHTML(w.title)}${w.author ? ` <span class="au">– ${escapeHTML(w.author)}</span>` : ''}</span></button></li>`).join('')
+            : `<li class="rep-empty">Brak utworów pasujących do „${escapeHTML(input.value.trim())}”.</li>`;
+    }
+    document.getElementById('repWorkSearch').addEventListener('input', renderRepWorks);
+    document.getElementById('repWorkSearch').addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
+    document.getElementById('repWorkResults').addEventListener('click', e => {
+        const b = e.target.closest('[data-work]');
+        if (!b) return;
+        insertLines([repLine({ workId: b.dataset.work })]);
+        const input = document.getElementById('repWorkSearch');
+        input.value = '';
+        renderRepWorks();
+        input.focus();
+    });
+
+    // --- DOMYŚLNA GODZINA I DATA Z KLIKNIĘTEGO DNIA ---
+    const DEFAULT_TIME = '19:30';
+    function setFormDefaults() {
+        document.getElementById('evTime').value = DEFAULT_TIME;
+        if (selectedKey) document.getElementById('evDate').value = selectedKey;
+    }
+    function fillDateFromCalendar(key) {
+        if (!isLogged || editingContext) return;   // podczas edycji nie nadpisujemy daty
+        const d = document.getElementById('evDate');
+        d.value = key;
+        d.classList.remove('flash'); void d.offsetWidth; d.classList.add('flash');
+    }
+
     // --- POLE REPERTUARU: rośnie razem z tekstem (działa też na telefonie, gdzie nie ma uchwytu do rozciągania) ---
     const repArea = document.getElementById('evRepertoire');
     function autoResize() {
@@ -629,6 +743,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
 
         saveToDB(extra);
         document.getElementById('addEventForm').reset();
+        setFormDefaults();
         autoResize();
         document.getElementById('addBtn').textContent = "Zapisz na serwerze";
     };
@@ -670,6 +785,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
     document.querySelectorAll('.fade').forEach(el => observer.observe(el));
 
     renderLegend();
+    setFormDefaults();
     renderCalendar();
 </script>
 
