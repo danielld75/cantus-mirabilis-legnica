@@ -199,6 +199,16 @@
             background: #222; color: var(--text); border: 1px solid rgba(255,255,255,.12); border-radius: 10px;
             padding: .7rem .85rem; width: 100%; min-height: 90px; resize: vertical; font-family: inherit; font-size: 1rem; line-height: 1.45;
         }
+        .author-hint { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; font-size: .85rem; color: var(--muted); margin-top: -.2rem; }
+        .author-hint:empty { display: none; }
+        .author-hint button {
+            background: var(--gold-soft); color: var(--gold); border: 1px solid rgba(201,162,77,.45); border-radius: 999px;
+            padding: .35rem .8rem; font-size: .85rem; cursor: pointer; min-height: 36px;
+        }
+        .author-hint button:hover { background: rgba(201,162,77,.25); }
+        .author-hint .ok { color: var(--ok); }
+        @keyframes fillflash { 0% { box-shadow: 0 0 0 3px rgba(201,162,77,.85); } 100% { box-shadow: 0 0 0 0 rgba(201,162,77,0); } }
+        .filled { animation: fillflash 1.3s ease-out; }
         .form-sep { grid-column: 1 / -1; font-size: .78rem; letter-spacing: .5px; color: var(--gold); margin-top: .5rem; padding-top: .7rem; border-top: 1px dashed var(--line); }
         .form-preview { display: flex; align-items: center; gap: .8rem; margin-top: .3rem; min-height: 26px; font-size: .85rem; color: var(--muted); }
 
@@ -299,7 +309,8 @@
             <h3 style="margin-top:0" id="formTitle">Dodaj utwór</h3>
             <div class="form-grid">
                 <label class="field">Tytuł<input id="wTitle" type="text" placeholder="np. Ave verum corpus"></label>
-                <label class="field">Autor<input id="wAuthor" type="text" placeholder="np. W. A. Mozart"></label>
+                <label class="field">Autor<input id="wAuthor" type="text" placeholder="np. W. A. Mozart" list="authorList" autocomplete="off"></label>
+                <datalist id="authorList"></datalist>
                 <label class="field">Stopień trudności
                     <select id="wDifficulty">
                         <option value="">— wybierz 1–6 —</option>
@@ -311,6 +322,7 @@
                 <label class="field wide">Link do folderu na Dysku Google<input id="wDrive" type="url" placeholder="https://drive.google.com/drive/folders/…"></label>
 
                 <div class="form-sep">DO RAPORTU (pola nieobowiązkowe)</div>
+                <div class="author-hint" id="authorHint" aria-live="polite"></div>
                 <label class="field">Data urodzenia autora<input id="wBirth" type="text" placeholder="np. 27.01.1756 albo 1756" autocomplete="off"></label>
                 <label class="field">Data śmierci autora<input id="wDeath" type="text" placeholder="puste = żyjący, „?” = nieznana" autocomplete="off"></label>
                 <label class="field">Czas trwania<input id="wDuration" type="text" placeholder="np. 4:30" autocomplete="off" inputmode="numeric"></label>
@@ -444,7 +456,7 @@ function driveBtn(url, big = false) {
 onValue(ref(db, `${BASE}/utwory`), snap => {
     works = snap.val() || {};
     if (selectedWorkId && !works[selectedWorkId]) selectedWorkId = null;
-    renderResults(); renderDetail(); renderSlots(); renderPreview(); renderSummary();
+    renderResults(); renderDetail(); renderSlots(); renderPreview(); renderSummary(); renderAuthorList();
 });
 
 onValue(ref(db, `${BASE}/setlisty`), snap => {
@@ -841,6 +853,8 @@ function resetForm() {
     $('formTitle').textContent = 'Dodaj utwór';
     $('saveWorkBtn').textContent = 'Dodaj utwór';
     $('cancelEditBtn').hidden = true;
+    autoFilled = null; lastAuthorChecked = null;
+    if ($('authorHint')) $('authorHint').innerHTML = '';
     updateFormPreview();
 }
 $('cancelEditBtn').addEventListener('click', resetForm);
@@ -861,6 +875,8 @@ function startEdit(id) {
     $('formTitle').textContent = 'Edycja utworu';
     $('saveWorkBtn').textContent = 'Zapisz zmiany';
     $('cancelEditBtn').hidden = false;
+    autoFilled = null; lastAuthorChecked = $('wAuthor').value.trim();
+    $('authorHint').innerHTML = '';
     updateFormPreview();
     $('adminArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
     $('wTitle').focus({ preventScroll: true });
@@ -890,6 +906,16 @@ $('saveWorkBtn').addEventListener('click', async () => {
     const id = editingWorkId || push(ref(db, `${BASE}/utwory`)).key;
     const wasEditing = !!editingWorkId;
     if (await write(set(ref(db, `${BASE}/utwory/${id}`), data), wasEditing ? '✔ Zapisano zmiany' : `✔ Dodano: ${title}`)) {
+        // inne utwory tego samego autora z innymi/brakującymi datami – proponujemy ujednolicenie
+        if (author && (authorBirth || authorDeath)) {
+            const others = Object.entries(works).filter(([wid, w]) => wid !== id && norm(w.author) === norm(author)
+                && ((w.authorBirth || '').trim() !== authorBirth || (w.authorDeath || '').trim() !== authorDeath));
+            if (others.length && confirm(`${author} ma jeszcze ${others.length} ${plural(others.length, 'utwór', 'utwory', 'utworów')} z innymi lub pustymi datami. Wpisać tam te same daty?`)) {
+                const paths = {};
+                others.forEach(([wid]) => { paths[`${wid}/authorBirth`] = authorBirth; paths[`${wid}/authorDeath`] = authorDeath; });
+                await write(update(ref(db, `${BASE}/utwory`), paths), '✔ Ujednolicono daty autora');
+            }
+        }
         resetForm();
         if (wasEditing) showWork(id); else $('wTitle').focus();
     }
@@ -902,16 +928,98 @@ const lifeText = w => {
     return [b && `<b>*</b> ${esc(b)}`, d && `<b>†</b> ${esc(d === '?' ? 'data nieznana' : d)}`].filter(Boolean).join('&nbsp;&nbsp;');
 };
 
-// Gdy wpiszesz autora, który ma już daty przy innym utworze – uzupełniamy je automatycznie.
-$('wAuthor').addEventListener('change', () => {
-    const a = norm($('wAuthor').value);
-    if (!a || $('wBirth').value.trim() || $('wDeath').value.trim()) return;
-    const other = Object.values(works).find(w => norm(w.author) === a && (w.authorBirth || w.authorDeath));
-    if (other) {
-        $('wBirth').value = other.authorBirth || '';
-        $('wDeath').value = other.authorDeath || '';
-        toast('Uzupełniono daty autora z innego utworu');
+// --- AUTOMATYCZNE DATY AUTORA ---
+// 1) Ten sam autor (imię i nazwisko, bez względu na wielkość liter i ogonki) – daty wpisują się same.
+// 2) Podobny zapis (to samo nazwisko i pierwsza litera imienia, np. „O. Gjeilo” i „Ola Gjeilo”) – podpowiedź do kliknięcia.
+// 3) Lista podpowiedzi przy polu „Autor” pomaga wpisać nazwisko zawsze tak samo.
+let autoFilled = null;   // { author, b, d } – co ostatnio wpisaliśmy automatycznie
+
+function authorsWithDates() {
+    const map = new Map();   // norm(autor) -> { name, b, d }
+    Object.values(works).forEach(w => {
+        const name = (w.author || '').trim();
+        if (!name) return;
+        const k = norm(name);
+        const cur = map.get(k) || { name, b: '', d: '' };
+        if (!cur.b && w.authorBirth) cur.b = w.authorBirth.trim();
+        if (!cur.d && w.authorDeath) cur.d = w.authorDeath.trim();
+        map.set(k, cur);
+    });
+    return map;
+}
+
+function renderAuthorList() {
+    const names = [...authorsWithDates().values()].map(a => a.name).sort((x, y) => x.localeCompare(y, 'pl'));
+    $('authorList').innerHTML = names.map(n => `<option value="${esc(n)}"></option>`).join('');
+}
+
+const flash = id => { const el = $(id); el.classList.remove('filled'); void el.offsetWidth; el.classList.add('filled'); };
+
+function fillDates(a) {
+    $('wBirth').value = a.b || '';
+    $('wDeath').value = a.d || '';
+    autoFilled = { author: norm(a.name), b: a.b || '', d: a.d || '' };
+    flash('wBirth'); flash('wDeath');
+}
+
+let lastAuthorChecked = null;
+function authorAutofill() {
+    const hint = $('authorHint');
+    const typed = $('wAuthor').value.trim();
+    if (typed === lastAuthorChecked) return;   // nic się nie zmieniło (np. samo wyjście z pola)
+    lastAuthorChecked = typed;
+    const k = norm(typed);
+    const all = authorsWithDates();
+
+    // jeśli wcześniej wpisaliśmy daty automatycznie, a autor się zmienił – cofamy je
+    if (autoFilled && autoFilled.author !== k && $('wBirth').value === autoFilled.b && $('wDeath').value === autoFilled.d) {
+        $('wBirth').value = ''; $('wDeath').value = '';
+        autoFilled = null;
     }
+    hint.innerHTML = '';
+    if (!k) return;
+
+    const lifeShort = a => [a.b && `*${a.b}`, a.d && `†${a.d === '?' ? '?' : a.d}`].filter(Boolean).join(' ');
+    const datesEmpty = !$('wBirth').value.trim() && !$('wDeath').value.trim();
+    const exact = all.get(k);
+
+    if (exact && (exact.b || exact.d)) {
+        if (datesEmpty) {
+            fillDates(exact);
+            hint.innerHTML = `<span class="ok">✔ Uzupełniono daty autora z innego utworu (${esc(lifeShort(exact))})</span>`;
+        } else if ($('wBirth').value.trim() !== exact.b || $('wDeath').value.trim() !== exact.d) {
+            hint.innerHTML = `Przy innych utworach tego autora są inne daty: <button type="button" data-fill="${esc(k)}">Wstaw ${esc(lifeShort(exact))}</button>`;
+        }
+        return;
+    }
+
+    // podobni autorzy: to samo nazwisko i ta sama pierwsza litera imienia
+    const parts = k.split(' ');
+    if (parts.length < 1 || parts[parts.length - 1].length < 3) return;
+    const last = parts[parts.length - 1], first = parts[0][0];
+    const similar = [...all.entries()].filter(([key, a]) => {
+        if (key === k || !(a.b || a.d)) return false;
+        const p = key.split(' ');
+        return p[p.length - 1] === last && (parts.length === 1 || p[0][0] === first);
+    }).slice(0, 3);
+    if (similar.length) {
+        hint.innerHTML = `Czy to ten sam autor? ` + similar.map(([key, a]) =>
+            `<button type="button" data-fill="${esc(key)}" data-name="1">${esc(a.name)} (${esc(lifeShort(a))})</button>`).join('');
+    }
+}
+
+$('wAuthor').addEventListener('input', authorAutofill);
+$('wAuthor').addEventListener('change', authorAutofill);
+// przycisk podpowiedzi nie zabiera fokusu z pola autora (inaczej podpowiedź znikałaby przed kliknięciem)
+$('authorHint').addEventListener('pointerdown', e => { if (e.target.closest('[data-fill]')) e.preventDefault(); });
+$('authorHint').addEventListener('click', e => {
+    const b = e.target.closest('[data-fill]');
+    if (!b) return;
+    const a = authorsWithDates().get(b.dataset.fill);
+    if (!a) return;
+    if (b.dataset.name) { $('wAuthor').value = a.name; lastAuthorChecked = a.name; }   // ujednolicamy zapis nazwiska
+    fillDates(a);
+    $('authorHint').innerHTML = `<span class="ok">✔ Uzupełniono daty autora</span>`;
 });
 
 // --- CZAS TRWANIA ---
