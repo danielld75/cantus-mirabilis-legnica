@@ -171,6 +171,19 @@
         .num-hint button:hover { background: rgba(201,162,77,.25); }
         .num-hint .warn { color: var(--trad); }
 
+        /* przycisk Dysku Google */
+        .drive-btn {
+            display: inline-flex; align-items: center; gap: .4rem; text-decoration: none; flex-shrink: 0;
+            min-height: 36px; padding: .3rem .65rem; border-radius: 9px;
+            background: #232a24; color: #dfe9e0; border: 1px solid rgba(143,214,148,.35); font-size: .8rem; font-weight: 600;
+        }
+        .drive-btn:hover { background: #2a352c; border-color: rgba(143,214,148,.7); }
+        .drive-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .has-drive { font-size: .9rem; opacity: .75; }
+        .slot-target { font-size: .72rem; color: var(--gold); margin: .25rem 0 0 2.3rem; opacity: .85; }
+        .slot .slot-target.ro { margin-left: 0; }
+        .edit-song .drive-input { grid-column: 1 / -1; }
+
         .toast {
             position: fixed; bottom: 20px; right: 20px; max-width: calc(100% - 40px); background: #171717;
             border: 1px solid rgba(201,162,77,.5); color: var(--gold); padding: .7rem 1rem; border-radius: 10px;
@@ -261,6 +274,9 @@
                     <option value="SCHOLA">SCHOLA</option>
                 </select>
                 <button class="btn btn-primary" id="addSongBtn">Dodaj</button>
+            </div>
+            <div class="row" style="margin-top:.6rem">
+                <input id="newDrive" type="url" placeholder="Link do folderu na Dysku Google z nutami .pdf i nagraniami .mp3 (opcjonalnie)">
             </div>
             <p class="hint num-hint" id="numberHint"></p>
 
@@ -359,6 +375,18 @@ async function write(promise, okMsg) {
 }
 
 const numBadge = n => `<span class="num ${n ? '' : 'none'}">${n ? esc(n) : '–'}</span>`;
+// --- DYSK GOOGLE ---
+const DRIVE_ICON = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M3 7.5 C3 6.4 3.9 5.5 5 5.5 H9.2 L11 7.5 H19 C20.1 7.5 21 8.4 21 9.5 V17.5 C21 18.6 20.1 19.5 19 19.5 H5 C3.9 19.5 3 18.6 3 17.5 Z" fill="#8fd694" fill-opacity=".18" stroke="#8fd694" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M13.6 10.5 V15.4" stroke="#f3e3b5" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M13.6 10.5 L16 11.2" stroke="#f3e3b5" stroke-width="1.6" stroke-linecap="round"/>
+    <ellipse cx="12.3" cy="15.6" rx="1.6" ry="1.2" fill="#f3e3b5"/></svg>`;
+const safeUrl = u => { const v = String(u ?? '').trim(); return /^https:\/\//i.test(v) ? v : ''; };
+const driveOf = it => safeUrl(songs[it?.songId]?.driveUrl ?? it?.driveUrl);   // aktualny link z bazy pieśni
+const driveBtn = url => url ? `<a class="drive-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="Nuty i nagrania na Dysku Google">${DRIVE_ICON}<span>Dysk</span></a>` : '';
+// która setlista trafia na którą stronę
+const SLOT_TARGETS = { 0: 'Angelotti', 1: 'Katedralna schola Gospel' };
+
 const catBadge = c => CATEGORIES.includes(c) ? `<span class="cat ${c}">${c}</span>` : '';
 
 // --- FIREBASE: odczyt na żywo ---
@@ -421,6 +449,7 @@ function renderSongResults() {
             return `<li><div class="edit-song">
                 <input type="text" id="editNumber" value="${esc(s.number)}" placeholder="Nr">
                 <input type="text" id="editTitle" value="${esc(s.title)}" placeholder="Tytuł">
+                <input type="url" id="editDrive" class="drive-input" value="${esc(s.driveUrl || '')}" placeholder="Link do Dysku Google (opcjonalnie)">
                 <div class="wide">
                     <select id="editCategory" style="width:auto">${CATEGORIES.map(c => `<option ${c === s.category ? 'selected' : ''}>${c}</option>`).join('')}</select>
                     <button class="btn btn-primary btn-sm" data-action="save-song" data-id="${s.id}">Zapisz</button>
@@ -429,11 +458,12 @@ function renderSongResults() {
                 </div>
             </div></li>`;
         }
-        const inner = `${numBadge(s.number)}<span class="t">${esc(s.title)}</span>${catBadge(s.category)}`;
+        const link = safeUrl(s.driveUrl);
+        const inner = `${numBadge(s.number)}<span class="t">${esc(s.title)}</span>${link && isAdmin ? '<span class="has-drive" title="Ma link do Dysku">📁</span>' : ''}${catBadge(s.category)}`;
         return isAdmin
             ? `<li><button class="result" data-action="add" data-id="${s.id}" aria-label="Dodaj do setlisty: ${esc(s.title)}">${inner}<span class="plus" aria-hidden="true">+</span></button>
                    <button class="icon-btn" data-action="edit-song" data-id="${s.id}" aria-label="Edytuj pieśń">✎</button></li>`
-            : `<li><div class="result">${inner}</div></li>`;
+            : `<li><div class="result">${inner}${driveBtn(link)}</div></li>`;
     }).join('');
 }
 
@@ -476,7 +506,7 @@ function renderPreview() {
     if (!a) return;
     $('previewTitle').textContent = a.title;
     $('previewMeta').textContent = a.savedAt ? 'Zapisano ' + new Date(a.savedAt).toLocaleDateString('pl-PL') : '';
-    $('previewItems').innerHTML = itemsOf(a).map(it => `<li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}</li>`).join('');
+    $('previewItems').innerHTML = itemsOf(a).map(it => `<li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}${driveBtn(driveOf(it))}</li>`).join('');
 }
 
 // --- SETLISTY ---
@@ -497,11 +527,12 @@ function renderSlots() {
 
     if (!isAdmin) {
         const filled = slots.map((s, i) => [s, i]).filter(([s]) => s && (s.title || itemsOf(s).length));
-        box.innerHTML = filled.length ? filled.map(([s]) => `
+        box.innerHTML = filled.length ? filled.map(([s, i]) => `
             <article class="slot">
                 <h3 class="slot-title-ro">${esc(s.title || 'Bez tytułu')}</h3>
+                ${SLOT_TARGETS[i] ? `<div class="slot-target ro">Śpiewa: ${SLOT_TARGETS[i]}</div>` : ''}
                 ${itemsOf(s).length
-                    ? `<ol class="items">${itemsOf(s).map(it => `<li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}</li>`).join('')}</ol>`
+                    ? `<ol class="items">${itemsOf(s).map(it => `<li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}${driveBtn(driveOf(it))}</li>`).join('')}</ol>`
                     : `<p class="slot-empty">Setlista jest jeszcze pusta.</p>`}
             </article>`).join('')
             : `<p class="empty" style="grid-column:1/-1">Nie ma teraz bieżących setlist. Starsze znajdziesz w archiwum.</p>`;
@@ -518,9 +549,10 @@ function renderSlots() {
                 <span class="slot-no">${i + 1}</span>
                 <input type="text" class="slot-title" data-slot-title="${i}" value="${esc(s?.title || '')}" placeholder="Nadaj tytuł setliście…">
             </div>
+            ${SLOT_TARGETS[i] ? `<div class="slot-target">➜ Wyświetlana na stronie: ${SLOT_TARGETS[i]}</div>` : ''}
             <div class="slot-state ${stCls}">${stTxt}</div>
             ${items.length ? `<ol class="items">${items.map((it, j) => `
-                <li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}
+                <li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}${driveBtn(driveOf(it))}
                     <span class="ctrl">
                         <button class="icon-btn" data-action="up" data-slot="${i}" data-idx="${j}" ${j === 0 ? 'disabled' : ''} aria-label="W górę">↑</button>
                         <button class="icon-btn" data-action="down" data-slot="${i}" data-idx="${j}" ${j === items.length - 1 ? 'disabled' : ''} aria-label="W dół">↓</button>
@@ -567,7 +599,7 @@ async function addSong(id, btn) {
     }
     const items = itemsOf(slot);
     if (items.some(it => it.songId === id) && !confirm(`„${s.title}” jest już na tej setliście. Dodać drugi raz?`)) return;
-    items.push({ songId: id, title: s.title || '', number: s.number || '', category: s.category || '' });
+    items.push({ songId: id, title: s.title || '', number: s.number || '', category: s.category || '', driveUrl: s.driveUrl || '' });
     if (await saveSlotItems(activeSlot, items)) {
         toast(`+ ${s.title}`);
         // krótkie zielone ✓ na przycisku, żeby było widać, że dotknięcie zadziałało
@@ -648,7 +680,9 @@ document.addEventListener('click', async e => {
         case 'save-song': {
             const title = $('editTitle').value.trim();
             if (!title) return toast('Tytuł nie może być pusty', true);
-            if (await write(set(ref(db, `piesni/${id}`), { title, number: $('editNumber').value.trim(), category: $('editCategory').value }), '✔ Zapisano pieśń')) editingSongId = null;
+            const driveUrl = $('editDrive').value.trim();
+            if (driveUrl && !safeUrl(driveUrl)) return toast('Link musi zaczynać się od https://', true);
+            if (await write(set(ref(db, `piesni/${id}`), { title, number: $('editNumber').value.trim(), category: $('editCategory').value, driveUrl }), '✔ Zapisano pieśń')) editingSongId = null;
             return renderSongResults();
         }
         case 'delete-song':
@@ -771,12 +805,15 @@ $('addSongBtn').addEventListener('click', async () => {
     const title = $('newTitle').value.trim();
     const number = $('newNumber').value.trim();
     if (!title) return toast('Wpisz tytuł pieśni', true);
+    const driveUrl = $('newDrive').value.trim();
+    if (driveUrl && !safeUrl(driveUrl)) return toast('Link musi zaczynać się od https://', true);
     const exists = Object.values(songs).some(s => songKey(s.title, s.number) === songKey(title, number));
     if (exists && !confirm('Taka pieśń (ten sam tytuł i numer) już jest w bazie. Dodać mimo to?')) return;
     const taken = songsWithNumber(number);
     if (!exists && taken.length && !confirm(`Numer ${number} ma już pieśń „${taken[0].title}”. Dodać mimo to?`)) return;
-    if (await write(set(push(ref(db, 'piesni')), { title, number, category: $('newCategory').value }), `✔ Dodano: ${title}`)) {
+    if (await write(set(push(ref(db, 'piesni')), { title, number, category: $('newCategory').value, driveUrl }), `✔ Dodano: ${title}`)) {
         $('newTitle').value = '';
+        $('newDrive').value = '';
         $('newNumber').value = '';
         lastSuggested = '';
         updateNumberSuggestion();
