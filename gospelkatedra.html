@@ -450,10 +450,11 @@ const DRIVE_ICON = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
     <ellipse cx="12.3" cy="15.6" rx="1.6" ry="1.2" fill="#c8862b"/></svg>`;
 const safeUrl = u => { const v = String(u ?? '').trim(); return /^https:\/\//i.test(v) ? v : ''; };
 const driveOf = it => safeUrl(songsDb[it?.songId]?.driveUrl ?? it?.driveUrl);
+const live = it => ({ ...it, ...(songsDb[it?.songId] || {}) });   // aktualne dane pieśni po edycji
 const driveBtn = url => url ? `<a class="drive-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="Nuty .pdf i nagrania .mp3 na Dysku Google">${DRIVE_ICON}<span>Materiały</span></a>` : '';
 
 function renderSongs() {
-    const items = itemsOf(songSlot);
+    const items = itemsOf(songSlot).map(live);
     $('songsTitle').textContent = songSlot?.title || '';
     $('songs').innerHTML = items.length
         ? items.map(it => `<li><span class="num ${it.number ? '' : 'none'}">${it.number ? esc(it.number) : '–'}</span><span class="t">${esc(it.title)}</span>${driveBtn(driveOf(it))}</li>`).join('')
@@ -462,7 +463,7 @@ function renderSongs() {
 }
 
 function songText() {
-    const lines = itemsOf(songSlot).map((it, i) => `${i + 1}. ${it.number ? `[${it.number}] ` : ''}${it.title}${driveOf(it) ? `\n    📁 ${driveOf(it)}` : ''}`);
+    const lines = itemsOf(songSlot).map(live).map((it, i) => `${i + 1}. ${it.number ? `[${it.number}] ` : ''}${it.title}${driveOf(it) ? `\n    📁 ${driveOf(it)}` : ''}`);
     return `🎶 Katedralna schola Gospel – ${songSlot?.title || 'pieśni'}\n\n${lines.join('\n')}\n\nDo zobaczenia w niedzielę o 20:00!`;
 }
 $('shareWa').addEventListener('click', () => window.open(`https://wa.me/?text=${encodeURIComponent(songText())}`, '_blank', 'noopener'));
