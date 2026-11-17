@@ -134,7 +134,13 @@
             border-radius: 10px; padding: .15rem .5rem;
         }
         .song-list .num.none { background: #cfd8e8; }
-        .song-list .t { font-weight: 700; }
+        .song-list .t { font-weight: 700; flex: 1; }
+        .drive-btn {
+            display: inline-flex; align-items: center; gap: .4rem; text-decoration: none; flex-shrink: 0; min-height: 40px;
+            padding: .35rem .75rem; border-radius: 12px; background: #fff; color: var(--ink); border: 2px solid #cfe3d9; font-weight: 800; font-size: .85rem;
+        }
+        .drive-btn:hover { border-color: var(--mint); background: #f2faf6; }
+        .drive-btn svg { width: 22px; height: 22px; }
         .share-bar { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1.1rem; padding-top: 1rem; border-top: 2px dashed var(--line); }
         .share-btn {
             display: inline-flex; align-items: center; gap: .5rem; border: 0; border-radius: 14px; padding: .7rem 1.1rem; cursor: pointer;
@@ -347,7 +353,8 @@ const auth = getAuth(app);
 //   Pieśni pobierane z:             setlisty/slots (podstrona Pieśni)
 // Pełne nazwiska i daty urodzenia dzieci nie trafiają do publicznej bazy.
 
-let members = {}, priv = {}, days = {}, songSlots = [];
+let members = {}, priv = {}, days = {}, songSlots = [], songsDb = {};
+const SONG_SLOT = 0;   // pierwsza setlista ze strony Pieśni
 let isAdmin = false;
 let rankPeriod = 'year';
 let songTab = 0;
@@ -508,11 +515,19 @@ function renderRanking() {
 }
 
 // --- PIEŚNI ---
+const DRIVE_ICON = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M3 7.5 C3 6.4 3.9 5.5 5 5.5 H9.2 L11 7.5 H19 C20.1 7.5 21 8.4 21 9.5 V17.5 C21 18.6 20.1 19.5 19 19.5 H5 C3.9 19.5 3 18.6 3 17.5 Z" fill="#5b9a8b" fill-opacity=".15" stroke="#5b9a8b" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="M13.6 10.5 V15.4 M13.6 10.5 L16 11.2" stroke="#c09238" stroke-width="1.7" stroke-linecap="round"/>
+    <ellipse cx="12.3" cy="15.6" rx="1.6" ry="1.2" fill="#c09238"/></svg>`;
+const safeUrl = u => { const v = String(u ?? '').trim(); return /^https:\/\//i.test(v) ? v : ''; };
+const driveOf = it => safeUrl(songsDb[it?.songId]?.driveUrl ?? it?.driveUrl);
+const driveBtn = url => url ? `<a class="drive-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="Nuty i nagrania na Dysku Google">${DRIVE_ICON}<span>Materiały</span></a>` : '';
+
 function renderSongs() {
     const tabs = $('songTabs');
     if (!songSlots.length) {
         tabs.innerHTML = '';
-        $('songList').innerHTML = `<li class="empty" style="background:none">Lista pieśni pojawi się tu, gdy powstanie setlista na stronie Pieśni.</li>`;
+        $('songList').innerHTML = `<li class="empty" style="background:none">Lista pieśni pojawi się tu, gdy na stronie Pieśni powstanie pierwsza setlista.</li>`;
         $('shareBar').hidden = true;
         return;
     }
@@ -520,7 +535,7 @@ function renderSongs() {
         ? songSlots.map((s, i) => `<button class="tab" data-song-tab="${i}" aria-pressed="${i === songTab}">${esc(s.title || 'Bez tytułu')}</button>`).join('')
         : `<span class="sub" style="font-size:1.05rem">${esc(songSlots[0].title || '')}</span>`;
     $('songList').innerHTML = itemsOf(songSlots[songTab]).map(it => `
-        <li><span class="num ${it.number ? '' : 'none'}">${it.number ? esc(it.number) : '–'}</span><span class="t">${esc(it.title)}</span></li>`).join('');
+        <li><span class="num ${it.number ? '' : 'none'}">${it.number ? esc(it.number) : '–'}</span><span class="t">${esc(it.title)}</span>${driveBtn(driveOf(it))}</li>`).join('');
     $('shareBar').hidden = !isAdmin;
 }
 $('songTabs').addEventListener('click', e => {
@@ -533,7 +548,7 @@ $('songTabs').addEventListener('click', e => {
 function songText() {
     const s = songSlots[songTab];
     if (!s) return '';
-    const lines = itemsOf(s).map((it, i) => `${i + 1}. ${it.number ? `[${it.number}] ` : ''}${it.title}`);
+    const lines = itemsOf(s).map((it, i) => `${i + 1}. ${it.number ? `[${it.number}] ` : ''}${it.title}${driveOf(it) ? `\n    📁 ${driveOf(it)}` : ''}`);
     return `🎵 Angelotti – ${s.title || 'pieśni'}\n\n${lines.join('\n')}\n\nDo zobaczenia na śpiewaniu! 😊`;
 }
 
@@ -773,11 +788,14 @@ onValue(ref(db, 'angelotti'), snap => {
 
 onValue(ref(db, 'setlisty/slots'), snap => {
     const raw = snap.val() || {};
-    const list = Array.isArray(raw) ? raw : Object.values(raw);
-    songSlots = list.filter(s => s && itemsOf(s).length);
-    if (songTab >= songSlots.length) songTab = 0;
+    const slot = raw[SONG_SLOT];   // tylko pierwsza setlista
+    songSlots = slot && itemsOf(slot).length ? [slot] : [];
+    songTab = 0;
     renderSongs();
 });
+
+// aktualne linki do Dysku z bazy pieśni
+onValue(ref(db, 'piesni'), snap => { songsDb = snap.val() || {}; renderSongs(); });
 
 const isAdminUser = u => !!u && (ADMIN_UID.startsWith('WKLEJ') || u.uid === ADMIN_UID);
 
