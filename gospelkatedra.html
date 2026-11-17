@@ -151,12 +151,31 @@
         @keyframes bob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(-4deg); } }
 
         /* pieśni */
-        .songs { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; counter-reset: s; }
-        .songs li { counter-increment: s; display: flex; align-items: center; gap: .9rem; padding: .7rem .9rem; border-radius: 14px; background: #faf8f5; border: 1px solid var(--line); }
+        /* nazwa setlisty – większa i wyrazistsza niż „Śpiewamy” */
+        .songs-head h2 { margin-bottom: .1rem; }
+        .setlist-title {
+            font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.1;
+            color: var(--plum); margin: 0 0 1.3rem; padding-bottom: .6rem; border-bottom: 2px solid var(--amber-soft);
+        }
+        .setlist-title:empty { display: none; }
+
+        /* tabela pieśni: kolumna linków równo pod sobą, tuż za najdłuższym tytułem (+ ok. 5 spacji) */
+        .songs {
+            list-style: none; margin: 0; padding: 0; counter-reset: s;
+            display: grid; grid-template-columns: auto auto max-content auto 1fr; row-gap: .5rem;
+        }
+        .songs li {
+            counter-increment: s; grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center;
+            column-gap: .9rem; padding: .7rem .9rem; border-radius: 14px; background: #faf8f5; border: 1px solid var(--line);
+        }
+        .songs li.empty { display: block; }
         .songs li::before { content: counter(s) '.'; color: var(--ink-soft); font-weight: 800; min-width: 1.5rem; text-align: right; }
         .songs .num { min-width: 3.1rem; text-align: center; font-weight: 800; color: #fff; background: var(--plum); border-radius: 10px; padding: .2rem .5rem; }
         .songs .num.none { background: #cfc8d3; }
-        .songs .t { flex: 1; font-weight: 700; font-size: 1.08rem; }
+        .songs .t { font-weight: 700; font-size: 1.08rem; }
+        .songs .link { margin-left: 1.3em; }   /* ≈ 5 spacji za najdłuższym tytułem */
+        .songs .deco { display: flex; align-items: flex-end; gap: .55rem; min-width: 0; overflow: hidden; height: 40px; padding-left: .6rem; }
+        .songs .deco svg { flex-shrink: 0; height: 34px; width: auto; opacity: .85; }
         .drive-btn {
             display: inline-flex; align-items: center; gap: .45rem; text-decoration: none; flex-shrink: 0; min-height: 44px;
             padding: .4rem .85rem; border-radius: 12px; background: #fff; color: var(--teal); border: 2px solid #cfe1e0; font-weight: 800; font-size: .9rem;
@@ -208,8 +227,12 @@
             .photos { grid-template-columns: 1fr; gap: 1.6rem; }
             .photo:nth-child(2) { margin-top: 0; }
             .back { position: static; display: inline-block; margin-bottom: 1rem; }
-            .songs li { flex-wrap: wrap; }
-            .songs .t { min-width: 60%; }
+            .songs { display: grid; grid-template-columns: 1fr; }
+            .songs li { display: flex; flex-wrap: wrap; gap: .6rem .9rem; }
+            .songs .t { min-width: 60%; flex: 1; }
+            .songs .link { margin-left: 0; }
+            .songs .link:empty { display: none; }
+            .songs .deco { display: none; }   /* na telefonie bez nutek */
         }
         @media (prefers-reduced-motion: reduce) {
             .photo img, .photo .glow, .photo .note, .person.bd .gifts svg { animation: none !important; }
@@ -256,7 +279,8 @@
     </section>
 
     <section class="card">
-        <h2>Śpiewamy <span class="sub" id="songsTitle"></span></h2>
+        <div class="songs-head"><h2>Śpiewamy</h2></div>
+        <div class="setlist-title" id="songsTitle"></div>
         <ol class="songs" id="songs"></ol>
         <div class="share-bar" id="shareBar" hidden>
             <button class="share-btn wa" id="shareWa">
@@ -453,11 +477,49 @@ const driveOf = it => safeUrl(songsDb[it?.songId]?.driveUrl ?? it?.driveUrl);
 const live = it => ({ ...it, ...(songsDb[it?.songId] || {}) });   // aktualne dane pieśni po edycji
 const driveBtn = url => url ? `<a class="drive-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="Nuty .pdf i nagrania .mp3 na Dysku Google">${DRIVE_ICON}<span>Materiały</span></a>` : '';
 
+// --- KOLOROWE NUTKI (dekoracja za przyciskiem, bez pięciolinii) ---
+const NOTE_COLORS = ['#5a2a4a', '#c8862b', '#2f6f73', '#b7607a', '#3d5a80', '#7a4f8f'];
+const NOTE_SHAPES = {
+    // ćwierćnuta
+    q: c => `<svg viewBox="0 0 18 40"><path d="M13 4 V31" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/><ellipse cx="8" cy="32" rx="6" ry="4.4" transform="rotate(-22 8 32)" fill="${c}"/></svg>`,
+    // półnuta
+    h: c => `<svg viewBox="0 0 18 40"><path d="M13 4 V31" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/><ellipse cx="8" cy="32" rx="5.4" ry="3.8" transform="rotate(-22 8 32)" fill="none" stroke="${c}" stroke-width="2.4"/></svg>`,
+    // ósemka
+    e: c => `<svg viewBox="0 0 24 40"><path d="M13 4 V31" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/><path d="M13 4 C14 11 22 12 21 21" stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round"/><ellipse cx="8" cy="32" rx="6" ry="4.4" transform="rotate(-22 8 32)" fill="${c}"/></svg>`,
+    // szesnastka
+    s: c => `<svg viewBox="0 0 24 40"><path d="M13 4 V31" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/><path d="M13 4 C14 10 22 11 21 18 M13 10 C14 16 22 17 21 24" stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round"/><ellipse cx="8" cy="32" rx="6" ry="4.4" transform="rotate(-22 8 32)" fill="${c}"/></svg>`,
+    // dwie ósemki z belką
+    b: c => `<svg viewBox="0 0 34 40"><path d="M11 9 V31 M28 5 V27" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/><path d="M11 9 L28 5 L28 9 L11 13 Z" fill="${c}"/><ellipse cx="6" cy="32" rx="6" ry="4.4" transform="rotate(-22 6 32)" fill="${c}"/><ellipse cx="23" cy="28" rx="6" ry="4.4" transform="rotate(-22 23 28)" fill="${c}"/></svg>`
+};
+// „losowe”, ale stałe dla danej pieśni (nie skaczą przy każdym odświeżeniu)
+function seeded(str) {
+    let h = 2166136261;
+    for (const ch of str) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+    return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 10000) / 10000; };
+}
+function notesFor(key) {
+    const r = seeded(key);
+    const kinds = Object.keys(NOTE_SHAPES);
+    const n = 4 + Math.floor(r() * 4);
+    let out = '';
+    for (let i = 0; i < n; i++) {
+        const svg = NOTE_SHAPES[kinds[Math.floor(r() * kinds.length)]](NOTE_COLORS[Math.floor(r() * NOTE_COLORS.length)]);
+        const lift = Math.round(r() * 8), rot = Math.round((r() - .5) * 16);
+        out += svg.replace('<svg ', `<svg style="transform: translateY(-${lift}px) rotate(${rot}deg)" aria-hidden="true" `);
+    }
+    return out;
+}
+
 function renderSongs() {
     const items = itemsOf(songSlot).map(live);
     $('songsTitle').textContent = songSlot?.title || '';
     $('songs').innerHTML = items.length
-        ? items.map(it => `<li><span class="num ${it.number ? '' : 'none'}">${it.number ? esc(it.number) : '–'}</span><span class="t">${esc(it.title)}</span>${driveBtn(driveOf(it))}</li>`).join('')
+        ? items.map((it, i) => `<li>
+            <span class="num ${it.number ? '' : 'none'}">${it.number ? esc(it.number) : '–'}</span>
+            <span class="t">${esc(it.title)}</span>
+            <span class="link">${driveBtn(driveOf(it))}</span>
+            <span class="deco">${notesFor((it.songId || it.title || '') + ':' + i)}</span>
+        </li>`).join('')
         : `<li class="empty" style="background:none;border:0">Lista pieśni pojawi się tu, gdy na stronie Pieśni powstanie druga setlista.</li>`;
     $('shareBar').hidden = !isAdmin || !items.length;
 }
