@@ -383,6 +383,10 @@ const DRIVE_ICON = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
     <ellipse cx="12.3" cy="15.6" rx="1.6" ry="1.2" fill="#f3e3b5"/></svg>`;
 const safeUrl = u => { const v = String(u ?? '').trim(); return /^https:\/\//i.test(v) ? v : ''; };
 const driveOf = it => safeUrl(songs[it?.songId]?.driveUrl ?? it?.driveUrl);   // aktualny link z bazy pieśni
+// Pozycja setlisty z AKTUALNYMI danymi pieśni (tytuł, numer, kategoria, link).
+// Kopia zapisana w setliście zostaje tylko na wypadek, gdyby pieśń usunięto z bazy.
+const live = it => ({ ...it, ...(songs[it?.songId] || {}) });
+const copyOf = it => ({ songId: it.songId || '', title: it.title || '', number: it.number || '', category: it.category || '', driveUrl: it.driveUrl || '' });
 const driveBtn = url => url ? `<a class="drive-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="Nuty i nagrania na Dysku Google">${DRIVE_ICON}<span>Dysk</span></a>` : '';
 // która setlista trafia na którą stronę
 const SLOT_TARGETS = { 0: 'Angelotti', 1: 'Katedralna schola Gospel' };
@@ -506,7 +510,7 @@ function renderPreview() {
     if (!a) return;
     $('previewTitle').textContent = a.title;
     $('previewMeta').textContent = a.savedAt ? 'Zapisano ' + new Date(a.savedAt).toLocaleDateString('pl-PL') : '';
-    $('previewItems').innerHTML = itemsOf(a).map(it => `<li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}${driveBtn(driveOf(it))}</li>`).join('');
+    $('previewItems').innerHTML = itemsOf(a).map(live).map(it => `<li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}${driveBtn(driveOf(it))}</li>`).join('');
 }
 
 // --- SETLISTY ---
@@ -514,7 +518,7 @@ function slotState(slot) {
     if (!slot) return ['', ''];
     const a = slot.archiveId && archive[slot.archiveId];
     if (!a) return itemsOf(slot).length || slot.title ? ['dirty', 'Niezapisana w archiwum'] : ['', ''];
-    const sig = x => JSON.stringify([x.title || '', itemsOf(x).map(i => [i.songId, i.title, i.number, i.category])]);
+    const sig = x => JSON.stringify([x.title || '', itemsOf(x).map(live).map(i => [i.songId, i.title, i.number, i.category, i.driveUrl || ''])]);
     return sig(a) === sig(slot) ? ['saved', 'Zapisana w archiwum'] : ['dirty', 'Niezapisane zmiany'];
 }
 
@@ -532,7 +536,7 @@ function renderSlots() {
                 <h3 class="slot-title-ro">${esc(s.title || 'Bez tytułu')}</h3>
                 ${SLOT_TARGETS[i] ? `<div class="slot-target ro">Śpiewa: ${SLOT_TARGETS[i]}</div>` : ''}
                 ${itemsOf(s).length
-                    ? `<ol class="items">${itemsOf(s).map(it => `<li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}${driveBtn(driveOf(it))}</li>`).join('')}</ol>`
+                    ? `<ol class="items">${itemsOf(s).map(live).map(it => `<li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}${driveBtn(driveOf(it))}</li>`).join('')}</ol>`
                     : `<p class="slot-empty">Setlista jest jeszcze pusta.</p>`}
             </article>`).join('')
             : `<p class="empty" style="grid-column:1/-1">Nie ma teraz bieżących setlist. Starsze znajdziesz w archiwum.</p>`;
@@ -551,7 +555,7 @@ function renderSlots() {
             </div>
             ${SLOT_TARGETS[i] ? `<div class="slot-target">➜ Wyświetlana na stronie: ${SLOT_TARGETS[i]}</div>` : ''}
             <div class="slot-state ${stCls}">${stTxt}</div>
-            ${items.length ? `<ol class="items">${items.map((it, j) => `
+            ${items.length ? `<ol class="items">${items.map(live).map((it, j) => `
                 <li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}${driveBtn(driveOf(it))}
                     <span class="ctrl">
                         <button class="icon-btn" data-action="up" data-slot="${i}" data-idx="${j}" ${j === 0 ? 'disabled' : ''} aria-label="W górę">↑</button>
@@ -620,7 +624,7 @@ async function addSong(id, btn) {
 
 async function saveToArchive(i, asNew) {
     const s = slots[i];
-    const items = itemsOf(s);
+    const items = itemsOf(s).map(live).map(copyOf);   // zapisujemy aktualne dane pieśni (po edycji)
     if (!s?.title?.trim()) return toast('Setlista musi mieć tytuł', true);
     if (!items.length) return toast('Setlista jest pusta', true);
 
@@ -628,6 +632,7 @@ async function saveToArchive(i, asNew) {
     const id = asNew || !s.archiveId ? push(ref(db, 'setlisty/archive')).key : s.archiveId;
     await write(update(ref(db, 'setlisty'), {
         [`archive/${id}`]: data,
+        [`slots/${i}/items`]: items,
         [`slots/${i}/archiveId`]: id
     }), asNew ? '✔ Zapisano w archiwum' : '✔ Zapisano zmiany');
 }
@@ -649,7 +654,7 @@ async function openArchive(id) {
             : `Otworzyć „${a.title}” w slocie ${activeSlot + 1} w miejsce „${target.title}”?`;
         if (!confirm(msg)) return;
     }
-    await write(set(ref(db, `setlisty/slots/${activeSlot}`), { title: a.title, items: itemsOf(a), archiveId: id }),
+    await write(set(ref(db, `setlisty/slots/${activeSlot}`), { title: a.title, items: itemsOf(a).map(live).map(copyOf), archiveId: id }),
         `✔ Otwarto w slocie ${activeSlot + 1}`);
 }
 
