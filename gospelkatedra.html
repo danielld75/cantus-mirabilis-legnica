@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Katedralna schola Gospel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --ink: #24223a;
+            --ink-soft: #5d5a72;
+            --plum: #5a2a4a;
+            --plum-deep: #2b1a33;
+            --amber: #c8862b;
+            --amber-soft: #f3e2c4;
+            --teal: #2f6f73;
+            --rose: #b7607a;
+            --card: #ffffff;
+            --line: #e6e1d9;
+            --ok: #3f8a64;
+            --danger: #c4524f;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; color: var(--ink); font-family: 'Source Sans 3', sans-serif; font-size: 17px; min-height: 100vh;
+            background: linear-gradient(180deg, #f6f2ec 0%, #f3f1ee 45%, #eef1f3 100%);
+        }
+        h1, h2, h3, .serif { font-family: 'DM Serif Display', serif; font-weight: 400; }
+        button, input { font-family: inherit; font-size: 1rem; }
+        :focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+        [hidden] { display: none !important; }
+
+        /* ===== HERO ===== */
+        .hero {
+            position: relative; overflow: hidden; color: #f8efe2; text-align: center;
+            padding: 3rem 1rem 4.5rem;
+            background:
+                radial-gradient(ellipse at 50% 115%, rgba(200,134,43,.45), transparent 60%),
+                radial-gradient(ellipse at 15% 0%, rgba(183,96,122,.25), transparent 45%),
+                linear-gradient(160deg, var(--plum-deep) 0%, #3a2140 55%, #4a2a45 100%);
+        }
+        .hero::after {   /* łuk gotyckiego okna w tle */
+            content: ''; position: absolute; left: 50%; bottom: -40px; width: min(760px, 92vw); height: 520px; transform: translateX(-50%);
+            border: 2px solid rgba(243,226,196,.10); border-bottom: 0; border-radius: 380px 380px 0 0; pointer-events: none;
+        }
+        .back {
+            position: absolute; left: 1rem; top: 1rem; z-index: 3; text-decoration: none; color: #f8efe2; font-weight: 700; font-size: .9rem;
+            border: 1px solid rgba(243,226,196,.35); padding: .4rem .85rem; border-radius: 999px; background: rgba(0,0,0,.15);
+        }
+        .eyebrow { letter-spacing: .32em; text-transform: uppercase; font-size: .8rem; font-weight: 700; color: var(--amber-soft); opacity: .85; }
+        .hero h1 { font-size: clamp(2.4rem, 7vw, 4.4rem); margin: .4rem 0 .3rem; line-height: 1.05; }
+        .hero h1 em { color: #f0b964; font-style: italic; }
+        .hero .when { font-size: 1.15rem; opacity: .9; }
+        .hero .when b { color: #f0b964; }
+
+        .photos {
+            position: relative; z-index: 2; max-width: 1080px; margin: 2.6rem auto 0;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 2.2rem; align-items: center; padding: 0 1rem;
+        }
+        .photo {
+            --tilt: -2.5deg;
+            position: relative; margin: 0; cursor: pointer; border-radius: 18px; padding: 10px; background: #fbf6ee;
+            box-shadow: 0 22px 50px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.08);
+            transform: rotate(var(--tilt)); transition: transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .5s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .photo:nth-child(2) { --tilt: 2.5deg; margin-top: 2.4rem; }
+        .photo .frame { position: relative; overflow: hidden; border-radius: 12px; aspect-ratio: 4 / 3; background: #222; }
+        .photo img { width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: 50% 80%; transition: filter .5s; filter: saturate(.92) brightness(.97); }
+        .photo figcaption { font-family: 'DM Serif Display', serif; font-style: italic; color: var(--plum); font-size: 1.05rem; padding: .55rem .3rem .15rem; }
+        .photo .glow {   /* ciepłe światło sceny */
+            position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .5s;
+            background: radial-gradient(ellipse at 50% 100%, rgba(255,196,110,.38), transparent 60%);
+            mix-blend-mode: screen;
+        }
+        .photo .note {
+            position: absolute; bottom: 12%; width: 30px; color: #ffe2a8; opacity: 0; pointer-events: none;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,.5));
+        }
+        .photo .note svg { width: 100%; height: auto; display: block; }
+        .photo .note:nth-of-type(1) { left: 14%; }
+        .photo .note:nth-of-type(2) { left: 32%; width: 22px; }
+        .photo .note:nth-of-type(3) { left: 50%; }
+        .photo .note:nth-of-type(4) { left: 66%; width: 24px; }
+        .photo .note:nth-of-type(5) { left: 82%; }
+
+        /* „ożywienie” zdjęcia: oddech jak przy śpiewie, kołysanie, światło i nuty */
+        .photo:hover, .photo:focus-visible, .photo.alive { transform: rotate(0deg) scale(1.035); box-shadow: 0 30px 70px rgba(0,0,0,.45), 0 0 0 2px rgba(240,185,100,.55); }
+        .photo:hover img, .photo:focus-visible img, .photo.alive img { animation: breathe 1.25s ease-in-out infinite; filter: saturate(1.08) brightness(1.04); }
+        .photo:hover .glow, .photo:focus-visible .glow, .photo.alive .glow { opacity: 1; animation: pulse 1.25s ease-in-out infinite; }
+        .photo:hover .note, .photo:focus-visible .note, .photo.alive .note { animation: rise 2.6s ease-out infinite; }
+        .photo .note:nth-of-type(2) { animation-delay: .5s !important; }
+        .photo .note:nth-of-type(3) { animation-delay: 1.1s !important; }
+        .photo .note:nth-of-type(4) { animation-delay: 1.6s !important; }
+        .photo .note:nth-of-type(5) { animation-delay: 2.1s !important; }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1.02) translateY(0) rotate(0deg); }
+            30% { transform: scale(1.055) translateY(-1.2%) rotate(-.35deg); }
+            65% { transform: scale(1.04) translateY(-.4%) rotate(.3deg); }
+        }
+        @keyframes pulse { 0%, 100% { opacity: .65; } 40% { opacity: 1; } }
+        @keyframes rise {
+            0% { opacity: 0; transform: translateY(0) rotate(0deg) scale(.7); }
+            15% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-180px) rotate(-18deg) scale(1.15); }
+        }
+        .touch-hint { position: relative; z-index: 2; margin-top: 1.4rem; font-size: .9rem; opacity: .7; }
+        @media (hover: hover) { .touch-hint { display: none; } }
+
+        /* ===== TREŚĆ ===== */
+        main { max-width: 1080px; margin: -1.8rem auto 0; padding: 0 1rem 4rem; display: grid; gap: 1.6rem; position: relative; z-index: 3; }
+        .card { background: var(--card); border-radius: 22px; padding: 1.6rem; border: 1px solid #ece7df; box-shadow: 0 8px 26px rgba(36,34,58,.07); }
+        .card h2 { margin: 0 0 1.1rem; font-size: 1.85rem; color: var(--plum); display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
+        .card h2 .sub { font-family: 'Source Sans 3', sans-serif; font-size: .95rem; color: var(--ink-soft); font-weight: 600; }
+        .empty { color: var(--ink-soft); font-weight: 600; margin: 0; }
+
+        /* solenizanci */
+        .bday {
+            display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; padding: 1.2rem 1.4rem; border-radius: 22px;
+            background: linear-gradient(120deg, #fff8ec, #fbeff2); border: 1px solid #efdcc6;
+        }
+        .bday .icons { display: flex; gap: .2rem; }
+        .bday .icons svg { width: 54px; height: 54px; }
+        .bday h3 { margin: 0; font-size: 1.45rem; color: var(--plum); }
+        .bday .names { font-size: 1.15rem; font-weight: 700; margin-top: .15rem; }
+
+        /* lista członków */
+        .people { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: .8rem; }
+        .person {
+            position: relative; display: flex; align-items: center; gap: .85rem; padding: .85rem 1rem; border-radius: 16px; background: #faf8f5; border: 1px solid var(--line);
+        }
+        .person.bd { background: linear-gradient(120deg, #fff7e8, #fdf0f3); border-color: #ecc98f; box-shadow: 0 6px 18px rgba(200,134,43,.15); }
+        .avatar {
+            width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; color: #fff;
+            font-family: 'DM Serif Display', serif; font-size: 1.35rem; background: var(--c);
+        }
+        .person .who { flex: 1; min-width: 0; }
+        .person .name { font-weight: 800; font-size: 1.12rem; line-height: 1.2; }
+        .person .meta { font-size: .85rem; color: var(--rose); font-weight: 700; margin-top: .15rem; }
+        /* prezent i kwiatek jak naklejka w rogu karty */
+        .person .gifts {
+            position: absolute; top: -16px; right: -8px; display: flex; gap: 0; padding: 2px 6px; border-radius: 999px;
+            background: #fff; border: 1px solid #ecc98f; box-shadow: 0 4px 12px rgba(200,134,43,.2);
+        }
+        .person .gifts svg { width: 40px; height: 40px; }
+        .people { padding-top: 10px; }
+        .person.bd .gifts svg { animation: bob 2.4s ease-in-out infinite; }
+        .person.bd .gifts svg + svg { animation-delay: -1.2s; }
+        @keyframes bob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(-4deg); } }
+
+        /* pieśni */
+        .songs { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; counter-reset: s; }
+        .songs li { counter-increment: s; display: flex; align-items: center; gap: .9rem; padding: .7rem .9rem; border-radius: 14px; background: #faf8f5; border: 1px solid var(--line); }
+        .songs li::before { content: counter(s) '.'; color: var(--ink-soft); font-weight: 800; min-width: 1.5rem; text-align: right; }
+        .songs .num { min-width: 3.1rem; text-align: center; font-weight: 800; color: #fff; background: var(--plum); border-radius: 10px; padding: .2rem .5rem; }
+        .songs .num.none { background: #cfc8d3; }
+        .songs .t { flex: 1; font-weight: 700; font-size: 1.08rem; }
+        .drive-btn {
+            display: inline-flex; align-items: center; gap: .45rem; text-decoration: none; flex-shrink: 0; min-height: 44px;
+            padding: .4rem .85rem; border-radius: 12px; background: #fff; color: var(--teal); border: 2px solid #cfe1e0; font-weight: 800; font-size: .9rem;
+        }
+        .drive-btn:hover { border-color: var(--teal); background: #f1f8f7; }
+        .drive-btn svg { width: 24px; height: 24px; }
+        .share-bar { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1.1rem; padding-top: 1rem; border-top: 1px dashed var(--line); }
+        .share-btn { display: inline-flex; align-items: center; gap: .5rem; border: 0; border-radius: 12px; padding: .7rem 1.1rem; cursor: pointer; font-weight: 800; color: #fff; min-height: 46px; }
+        .share-btn svg { width: 22px; height: 22px; }
+        .share-btn.wa { background: #3f9467; }
+        .share-btn.ms { background: #4f6fac; }
+        .share-btn.cp { background: #fff; color: var(--ink); border: 2px solid var(--line); }
+
+        /* ===== ADMIN ===== */
+        footer { padding: 0 1rem 4rem; }
+        .admin { max-width: 1080px; margin: 0 auto; background: #fff; border-radius: 22px; padding: 1.5rem; border: 2px dashed #ddd5ca; }
+        .admin h2 { margin: 0 0 1rem; font-size: 1.5rem; color: var(--plum); }
+        .admin h3 { margin: 1.6rem 0 .8rem; font-size: 1.2rem; color: var(--plum); }
+        .row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: end; }
+        .row > * { flex: 1; min-width: 150px; }
+        .row > .btn { flex: 0 0 auto; min-width: 0; }
+        label.field { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; font-weight: 700; color: var(--ink-soft); }
+        input[type=text], input[type=email], input[type=password], input[type=date] {
+            border: 2px solid var(--line); border-radius: 12px; padding: .65rem .8rem; background: #fcfbf9; color: var(--ink); width: 100%;
+        }
+        input:focus { border-color: var(--amber); outline: none; }
+        .btn { border: 0; border-radius: 12px; padding: .7rem 1.2rem; cursor: pointer; font-weight: 800; }
+        .btn-primary { background: var(--plum); color: #fff; }
+        .btn-primary:hover { background: #6b3459; }
+        .btn-ghost { background: #fff; color: var(--ink); border: 2px solid var(--line); }
+        .btn-danger { background: #fff; color: var(--danger); border: 2px solid #f0cfcf; }
+        .btn-sm { padding: .4rem .75rem; font-size: .85rem; border-radius: 10px; }
+        .hint { font-size: .88rem; color: var(--ink-soft); margin: .6rem 0 0; }
+        .members { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .45rem; }
+        .members li { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; padding: .5rem .7rem; border-radius: 14px; background: #faf8f5; }
+        .members .avatar { width: 38px; height: 38px; font-size: 1rem; }
+        .members .grow { flex: 1; min-width: 160px; }
+        .members .meta { font-size: .82rem; color: var(--ink-soft); font-weight: 600; }
+
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translate(-50%, 20px); max-width: calc(100% - 40px);
+            background: var(--plum-deep); color: #fff; padding: .75rem 1.2rem; border-radius: 999px; font-weight: 700;
+            opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 20;
+        }
+        .toast.visible { opacity: 1; transform: translate(-50%, 0); }
+        .toast.error { background: var(--danger); }
+
+        @media (max-width: 720px) {
+            .photos { grid-template-columns: 1fr; gap: 1.6rem; }
+            .photo:nth-child(2) { margin-top: 0; }
+            .back { position: static; display: inline-block; margin-bottom: 1rem; }
+            .songs li { flex-wrap: wrap; }
+            .songs .t { min-width: 60%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .photo img, .photo .glow, .photo .note, .person.bd .gifts svg { animation: none !important; }
+            .photo .note { display: none; }
+            .photo { transition: none; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="hero">
+    <a href="index.html" class="back" id="backLink" hidden>◀ Kalendarz</a>
+    <div class="eyebrow">Schola dorosłych</div>
+    <h1>Katedralna schola <em>Gospel</em></h1>
+    <div class="when">Śpiewamy w każdą niedzielę o <b>20:00</b></div>
+
+    <div class="photos">
+        <figure class="photo" tabindex="0" aria-label="Zdjęcie scholi – po najechaniu ożywa">
+            <div class="frame">
+                <img src="gospel-1.jpg" alt="Członkowie scholi Gospel wieczorem przed katedrą, z kwiatami" loading="eager">
+                <i class="glow"></i>
+                <span class="note"><svg viewBox="0 0 24 32" aria-hidden="true"><path d="M14 4 V23" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M14 4 Q22 7 21 15" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="6" ry="4.5" transform="rotate(-20 9.5 24)" fill="currentColor"/></svg></span><span class="note"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 7 V24 M26 4 V21 M10 7 L26 4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="6" cy="25" rx="5.5" ry="4.2" transform="rotate(-20 6 25)" fill="currentColor"/><ellipse cx="22" cy="22" rx="5.5" ry="4.2" transform="rotate(-20 22 22)" fill="currentColor"/></svg></span><span class="note"><svg viewBox="0 0 24 32" aria-hidden="true"><path d="M14 4 V23" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M14 4 Q22 7 21 15" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="6" ry="4.5" transform="rotate(-20 9.5 24)" fill="currentColor"/></svg></span><span class="note"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 7 V24 M26 4 V21 M10 7 L26 4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="6" cy="25" rx="5.5" ry="4.2" transform="rotate(-20 6 25)" fill="currentColor"/><ellipse cx="22" cy="22" rx="5.5" ry="4.2" transform="rotate(-20 22 22)" fill="currentColor"/></svg></span><span class="note"><svg viewBox="0 0 24 32" aria-hidden="true"><path d="M14 4 V23" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M14 4 Q22 7 21 15" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="6" ry="4.5" transform="rotate(-20 9.5 24)" fill="currentColor"/></svg></span>
+            </div>
+            <figcaption>Razem po koncercie</figcaption>
+        </figure>
+        <figure class="photo" tabindex="0" aria-label="Zdjęcie scholi z saksofonem – po najechaniu ożywa">
+            <div class="frame">
+                <img src="gospel-2.jpg" alt="Muzycy scholi Gospel w prezbiterium katedry, z saksofonem" loading="eager">
+                <i class="glow"></i>
+                <span class="note"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 7 V24 M26 4 V21 M10 7 L26 4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="6" cy="25" rx="5.5" ry="4.2" transform="rotate(-20 6 25)" fill="currentColor"/><ellipse cx="22" cy="22" rx="5.5" ry="4.2" transform="rotate(-20 22 22)" fill="currentColor"/></svg></span><span class="note"><svg viewBox="0 0 24 32" aria-hidden="true"><path d="M14 4 V23" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M14 4 Q22 7 21 15" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="6" ry="4.5" transform="rotate(-20 9.5 24)" fill="currentColor"/></svg></span><span class="note"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 7 V24 M26 4 V21 M10 7 L26 4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="6" cy="25" rx="5.5" ry="4.2" transform="rotate(-20 6 25)" fill="currentColor"/><ellipse cx="22" cy="22" rx="5.5" ry="4.2" transform="rotate(-20 22 22)" fill="currentColor"/></svg></span><span class="note"><svg viewBox="0 0 24 32" aria-hidden="true"><path d="M14 4 V23" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M14 4 Q22 7 21 15" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="6" ry="4.5" transform="rotate(-20 9.5 24)" fill="currentColor"/></svg></span><span class="note"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 7 V24 M26 4 V21 M10 7 L26 4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="6" cy="25" rx="5.5" ry="4.2" transform="rotate(-20 6 25)" fill="currentColor"/><ellipse cx="22" cy="22" rx="5.5" ry="4.2" transform="rotate(-20 22 22)" fill="currentColor"/></svg></span>
+            </div>
+            <figcaption>Przed niedzielnym śpiewaniem</figcaption>
+        </figure>
+    </div>
+    <div class="touch-hint">Dotknij zdjęcia, a zacznie śpiewać ♪</div>
+</header>
+
+<main>
+    <section class="bday" id="bdayBanner" hidden></section>
+
+    <section class="card">
+        <h2>Nasza schola <span class="sub" id="peopleCount"></span></h2>
+        <div class="people" id="people"></div>
+    </section>
+
+    <section class="card">
+        <h2>Śpiewamy <span class="sub" id="songsTitle"></span></h2>
+        <ol class="songs" id="songs"></ol>
+        <div class="share-bar" id="shareBar" hidden>
+            <button class="share-btn wa" id="shareWa">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20 L5.3 16.2 A8 8 0 1 1 8 18.8 Z"/></svg>
+                WhatsApp
+            </button>
+            <button class="share-btn ms" id="shareMs">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 C6.8 3.5 3 7.2 3 11.8 C3 14.3 4.1 16.4 6 17.9 V21 L9 19.4 C9.9 19.7 10.9 19.9 12 19.9 C17.2 19.9 21 16.2 21 11.7 C21 7.2 17.2 3.5 12 3.5 Z"/><path d="M7.5 13.5 L10.5 10.5 L13 12.6 L16.5 9.5"/></svg>
+                Messenger
+            </button>
+            <button class="share-btn cp" id="shareCopy">📋 Kopiuj tekst</button>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="admin">
+        <h2>Panel administracyjny</h2>
+
+        <div id="loginArea">
+            <div class="row">
+                <input id="email" type="email" placeholder="E-mail admina">
+                <input id="password" type="password" placeholder="Hasło">
+                <button class="btn btn-primary" id="loginBtn">Zaloguj</button>
+            </div>
+        </div>
+
+        <div id="noAccessArea" hidden>
+            <p>To konto nie ma uprawnień do edycji scholi.</p>
+            <button class="btn btn-ghost" id="noAccessLogoutBtn">Wyloguj</button>
+        </div>
+
+        <div id="adminArea" hidden>
+            <h3 style="margin-top:0" id="memberFormTitle">Dodaj członka scholi</h3>
+            <div class="row">
+                <label class="field">Imię<input type="text" id="mFirst" autocomplete="off"></label>
+                <label class="field">Nazwisko<input type="text" id="mLast" autocomplete="off"></label>
+                <label class="field">Data urodzenia<input type="date" id="mBirth"></label>
+                <button class="btn btn-primary" id="saveMemberBtn">Dodaj</button>
+                <button class="btn btn-ghost" id="cancelMemberBtn" hidden>Anuluj</button>
+            </div>
+            <p class="hint">Publicznie widać imię, pierwszą literę nazwiska i prezent z kwiatkiem w miesiącu urodzin. Pełne nazwisko i dokładna data urodzenia są widoczne tylko dla Ciebie.</p>
+            <ul class="members" id="membersList"></ul>
+
+            <h3>Pieśni</h3>
+            <p class="hint" style="margin-top:0">Lista „Śpiewamy” to <b>druga setlista</b> na stronie Pieśni Gospel. Linki do materiałów dodajesz tam przy każdej pieśni.</p>
+
+            <h3>Konto</h3>
+            <button class="btn btn-ghost" id="logoutBtn">Wyloguj</button>
+        </div>
+    </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, update, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyArjPTjW2VSW5F1jS5WtbyvQpjJDraJh1U",
+    authDomain: "cantus-calendar.firebaseapp.com",
+    databaseURL: "https://cantus-calendar-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "cantus-calendar",
+    storageBucket: "cantus-calendar.firebasestorage.app",
+    messagingSenderId: "241605051345",
+    appId: "1:241605051345:web:d3a2fb69447798456296f0",
+    measurementId: "G-BRV1GCH9HS"
+};
+
+// UID admina – ten sam co w index.html. Dopóki stoi tu "WKLEJ...", każdy zalogowany jest adminem.
+const ADMIN_UID = 'WKLEJ_UID_DANIELA';
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const fs = getFirestore(app);
+const auth = getAuth(app);
+
+// Dane:
+//   Realtime Database (publiczne):  gospel/members/{id} = { firstName, lastInitial, birthMonth }
+//   Firestore (tylko admin):        gospel_prywatne/{id} = { lastName, birthDate }
+//   Pieśni:                         setlisty/slots/1 (druga setlista ze strony Pieśni) + piesni/{id}.driveUrl
+const SONG_SLOT = 1;
+
+let members = {}, priv = {}, songSlot = null, songsDb = {};
+let isAdmin = false;
+let editingMemberId = null;
+let unsubPriv = null;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const itemsOf = x => !x?.items ? [] : Array.isArray(x.items) ? x.items.filter(Boolean) : Object.values(x.items);
+function plural(n, one, few, many) {
+    if (n === 1) return one;
+    const d = n % 10, t = n % 100;
+    return (d >= 2 && d <= 4 && (t < 12 || t > 14)) ? few : many;
+}
+
+let toastTimer;
+function toast(msg, isError = false) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.toggle('error', isError);
+    t.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('visible'), 2600);
+}
+
+// --- ŻYWE ZDJĘCIA: na telefonie dotknięcie włącza/wyłącza „śpiew” ---
+document.querySelectorAll('.photo').forEach(ph => {
+    ph.addEventListener('click', () => {
+        if (matchMedia('(hover: hover)').matches) return;
+        const on = !ph.classList.contains('alive');
+        document.querySelectorAll('.photo').forEach(p => p.classList.remove('alive'));
+        if (on) ph.classList.add('alive');
+    });
+});
+
+// --- IMIONA ---
+const pad = n => String(n).padStart(2, '0');
+const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const MONTH_LOC = ['styczniu', 'lutym', 'marcu', 'kwietniu', 'maju', 'czerwcu', 'lipcu', 'sierpniu', 'wrześniu', 'październiku', 'listopadzie', 'grudniu'];
+const fullLast = id => (isAdmin && priv[id]?.lastName) || '';
+function displayName(id) {
+    const m = members[id] || {};
+    const last = fullLast(id);
+    return last ? `${m.firstName} ${last}` : `${m.firstName}${m.lastInitial ? ' ' + m.lastInitial + '.' : ''}`;
+}
+const coll = new Intl.Collator('pl', { sensitivity: 'base' });
+const byName = (a, b) => coll.compare(members[a]?.firstName || '', members[b]?.firstName || '')
+    || coll.compare(members[a]?.lastInitial || '', members[b]?.lastInitial || '') || coll.compare(fullLast(a), fullLast(b));
+const COLORS = ['#5a2a4a', '#2f6f73', '#a86a22', '#7a4f8f', '#b7607a', '#3d5a80', '#6b7f3a', '#8a4b3a'];
+const colorFor = id => COLORS[[...id].reduce((s, c) => s + c.charCodeAt(0), 0) % COLORS.length];
+const initials = id => { const m = members[id] || {}; return ((m.firstName || '?')[0] + (m.lastInitial || '')).toUpperCase(); };
+const hasBirthdayNow = id => Number(members[id]?.birthMonth) === new Date().getMonth() + 1;
+
+// --- IKONY: prezent i kwiatek ---
+const GIFT = `<svg viewBox="0 0 48 48" aria-hidden="true">
+    <rect x="7" y="20" width="34" height="22" rx="3" fill="#c8862b"/>
+    <rect x="5" y="14" width="38" height="8" rx="2.5" fill="#dc9c45"/>
+    <rect x="21.5" y="14" width="5" height="28" fill="#5a2a4a"/>
+    <path d="M24 14 C20 6 11 6 13 11 C14.5 14 20 14 24 14 C28 14 33.5 14 35 11 C37 6 28 6 24 14Z" fill="none" stroke="#5a2a4a" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="7" y="22" width="34" height="2" fill="#000" opacity=".08"/></svg>`;
+const FLOWER = `<svg viewBox="0 0 48 48" aria-hidden="true">
+    <path d="M24 26 C24 33 23 39 21 45" stroke="#4f7a4a" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    <path d="M22.5 37 C17 36 13.5 32 13 28 C18 28 22 31 22.5 37Z" fill="#6b9a5e"/>
+    <g transform="translate(24 18)">
+        ${[0, 72, 144, 216, 288].map(r => `<ellipse cx="0" cy="-8.5" rx="6" ry="9" fill="#d98aa0" transform="rotate(${r})"/>`).join('')}
+        <circle r="5.2" fill="#f0b964"/><circle r="2.2" fill="#c8862b"/>
+    </g></svg>`;
+
+// --- RENDER ---
+function renderAll() { renderBirthdays(); renderPeople(); renderSongs(); if (isAdmin) renderMembers(); }
+
+function renderBirthdays() {
+    const ids = Object.keys(members).filter(hasBirthdayNow).sort(byName);
+    const box = $('bdayBanner');
+    box.hidden = !ids.length;
+    if (!ids.length) return;
+    box.innerHTML = `
+        <div class="icons">${GIFT}${FLOWER}</div>
+        <div>
+            <h3>W ${MONTH_LOC[new Date().getMonth()]} świętujemy urodziny!</h3>
+            <div class="names">${ids.map(id => esc(displayName(id))).join(', ')}: wszystkiego najlepszego i pięknego głosu! 🎶</div>
+        </div>`;
+}
+
+function renderPeople() {
+    const ids = Object.keys(members).sort(byName);
+    $('peopleCount').textContent = ids.length ? `${ids.length} ${plural(ids.length, 'osoba', 'osoby', 'osób')}` : '';
+    $('people').innerHTML = ids.length ? ids.map(id => {
+        const bd = hasBirthdayNow(id);
+        return `
+            <div class="person ${bd ? 'bd' : ''}">
+                <span class="avatar" style="--c:${colorFor(id)}">${esc(initials(id))}</span>
+                <div class="who">
+                    <div class="name">${esc(displayName(id))}</div>
+                    ${bd ? `<div class="meta">Urodziny w ${MONTH_LOC[new Date().getMonth()]}!</div>` : ''}
+                </div>
+                ${bd ? `<span class="gifts" title="Urodziny w tym miesiącu">${GIFT}${FLOWER}</span>` : ''}
+            </div>`;
+    }).join('') : `<p class="empty">Lista członków pojawi się wkrótce.</p>`;
+}
+
+// --- PIEŚNI ---
+const DRIVE_ICON = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M3 7.5 C3 6.4 3.9 5.5 5 5.5 H9.2 L11 7.5 H19 C20.1 7.5 21 8.4 21 9.5 V17.5 C21 18.6 20.1 19.5 19 19.5 H5 C3.9 19.5 3 18.6 3 17.5 Z" fill="#2f6f73" fill-opacity=".12" stroke="#2f6f73" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="M13.6 10.5 V15.4 M13.6 10.5 L16 11.2" stroke="#c8862b" stroke-width="1.7" stroke-linecap="round"/>
+    <ellipse cx="12.3" cy="15.6" rx="1.6" ry="1.2" fill="#c8862b"/></svg>`;
+const safeUrl = u => { const v = String(u ?? '').trim(); return /^https:\/\//i.test(v) ? v : ''; };
+const driveOf = it => safeUrl(songsDb[it?.songId]?.driveUrl ?? it?.driveUrl);
+const driveBtn = url => url ? `<a class="drive-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="Nuty .pdf i nagrania .mp3 na Dysku Google">${DRIVE_ICON}<span>Materiały</span></a>` : '';
+
+function renderSongs() {
+    const items = itemsOf(songSlot);
+    $('songsTitle').textContent = songSlot?.title || '';
+    $('songs').innerHTML = items.length
+        ? items.map(it => `<li><span class="num ${it.number ? '' : 'none'}">${it.number ? esc(it.number) : '–'}</span><span class="t">${esc(it.title)}</span>${driveBtn(driveOf(it))}</li>`).join('')
+        : `<li class="empty" style="background:none;border:0">Lista pieśni pojawi się tu, gdy na stronie Pieśni powstanie druga setlista.</li>`;
+    $('shareBar').hidden = !isAdmin || !items.length;
+}
+
+function songText() {
+    const lines = itemsOf(songSlot).map((it, i) => `${i + 1}. ${it.number ? `[${it.number}] ` : ''}${it.title}${driveOf(it) ? `\n    📁 ${driveOf(it)}` : ''}`);
+    return `🎶 Katedralna schola Gospel – ${songSlot?.title || 'pieśni'}\n\n${lines.join('\n')}\n\nDo zobaczenia w niedzielę o 20:00!`;
+}
+$('shareWa').addEventListener('click', () => window.open(`https://wa.me/?text=${encodeURIComponent(songText())}`, '_blank', 'noopener'));
+$('shareMs').addEventListener('click', async () => {
+    const text = songText();
+    if (navigator.share) { try { await navigator.share({ text }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+    await copyText(text, 'Skopiowano – wklej w Messengerze');
+    window.open('https://www.messenger.com/', '_blank', 'noopener');
+});
+$('shareCopy').addEventListener('click', () => copyText(songText(), '✔ Skopiowano listę pieśni'));
+async function copyText(text, msg) {
+    try { await navigator.clipboard.writeText(text); }
+    catch { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+    toast(msg);
+}
+
+// --- ADMIN: CZŁONKOWIE ---
+function age(birth) {
+    if (!birth) return '';
+    const b = parse(birth), t = new Date();
+    let a = t.getFullYear() - b.getFullYear();
+    if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--;
+    return `${a} ${plural(a, 'rok', 'lata', 'lat')}`;
+}
+
+function renderMembers() {
+    const ids = Object.keys(members).sort(byName);
+    $('membersList').innerHTML = ids.length ? ids.map(id => {
+        const p = priv[id] || {};
+        return `
+            <li>
+                <span class="avatar" style="--c:${colorFor(id)}">${esc(initials(id))}</span>
+                <div class="grow">
+                    <div style="font-weight:800">${esc(displayName(id))}</div>
+                    <div class="meta">${p.birthDate ? `ur. ${parse(p.birthDate).toLocaleDateString('pl-PL')} (${age(p.birthDate)})` : 'brak daty urodzenia'}</div>
+                </div>
+                <button class="btn btn-ghost btn-sm" data-edit-member="${id}">Edytuj</button>
+                <button class="btn btn-danger btn-sm" data-del-member="${id}">Usuń</button>
+            </li>`;
+    }).join('') : `<li class="empty" style="background:none">Brak członków. Dodaj pierwszą osobę.</li>`;
+}
+
+// Uzupełnia publiczny miesiąc urodzin (potrzebny do ikony prezentu) na podstawie danych prywatnych.
+function syncBirthMonths() {
+    if (!isAdmin) return;
+    const paths = {};
+    Object.keys(members).forEach(id => {
+        const bd = priv[id]?.birthDate;
+        const want = bd ? Number(bd.slice(5, 7)) : null;
+        if ((members[id].birthMonth ?? null) !== want) paths[`members/${id}/birthMonth`] = want;
+    });
+    if (Object.keys(paths).length) update(ref(db, 'gospel'), paths).catch(() => {});
+}
+
+function resetMemberForm() {
+    editingMemberId = null;
+    ['mFirst', 'mLast', 'mBirth'].forEach(id => $(id).value = '');
+    $('memberFormTitle').textContent = 'Dodaj członka scholi';
+    $('saveMemberBtn').textContent = 'Dodaj';
+    $('cancelMemberBtn').hidden = true;
+}
+$('cancelMemberBtn').addEventListener('click', resetMemberForm);
+
+$('membersList').addEventListener('click', async e => {
+    const t = e.target.closest('button');
+    if (!t || !isAdmin) return;
+    const { editMember, delMember } = t.dataset;
+    if (editMember) {
+        editingMemberId = editMember;
+        $('mFirst').value = members[editMember]?.firstName || '';
+        $('mLast').value = priv[editMember]?.lastName || '';
+        $('mBirth').value = priv[editMember]?.birthDate || '';
+        $('memberFormTitle').textContent = 'Edycja członka scholi';
+        $('saveMemberBtn').textContent = 'Zapisz zmiany';
+        $('cancelMemberBtn').hidden = false;
+        $('mFirst').focus();
+    }
+    if (delMember) {
+        if (!confirm(`Usunąć ${displayName(delMember)} ze scholi?`)) return;
+        try {
+            await deleteDoc(doc(fs, 'gospel_prywatne', delMember));
+            await set(ref(db, `gospel/members/${delMember}`), null);
+            if (editingMemberId === delMember) resetMemberForm();
+            toast('✔ Usunięto');
+        } catch { toast('Brak uprawnień albo błąd zapisu', true); }
+    }
+});
+
+$('saveMemberBtn').addEventListener('click', async () => {
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const firstName = cap($('mFirst').value.trim());
+    const lastName = cap($('mLast').value.trim());
+    const birthDate = $('mBirth').value;
+    if (!firstName || !lastName) return toast('Wpisz imię i nazwisko', true);
+
+    const id = editingMemberId || push(ref(db, 'gospel/members')).key;
+    const wasEditing = !!editingMemberId;
+    try {
+        await setDoc(doc(fs, 'gospel_prywatne', id), { lastName, birthDate });
+        await set(ref(db, `gospel/members/${id}`), {
+            firstName, lastInitial: lastName[0].toUpperCase(), birthMonth: birthDate ? Number(birthDate.slice(5, 7)) : null
+        });
+        toast(wasEditing ? '✔ Zapisano zmiany' : `✔ Witamy w scholi, ${firstName}!`);
+        resetMemberForm();
+        $('mFirst').focus();
+    } catch {
+        toast('Nie udało się zapisać – sprawdź reguły Firestore dla gospel_prywatne', true);
+    }
+});
+['mFirst', 'mLast', 'mBirth'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') $('saveMemberBtn').click(); }));
+
+// --- LOGOWANIE ---
+$('loginBtn').addEventListener('click', async () => {
+    try { await signInWithEmailAndPassword(auth, $('email').value, $('password').value); }
+    catch (e) { toast('Błąd logowania: ' + e.message, true); }
+});
+$('password').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
+$('logoutBtn').addEventListener('click', () => signOut(auth));
+$('noAccessLogoutBtn').addEventListener('click', () => signOut(auth));
+
+// --- FIREBASE (podłączone na końcu, gdy wszystkie funkcje są gotowe) ---
+onValue(ref(db, 'gospel/members'), snap => { members = snap.val() || {}; renderAll(); });
+onValue(ref(db, 'setlisty/slots'), snap => { const raw = snap.val() || {}; songSlot = raw[SONG_SLOT] || null; renderSongs(); });
+onValue(ref(db, 'piesni'), snap => { songsDb = snap.val() || {}; renderSongs(); });
+
+const isAdminUser = u => !!u && (ADMIN_UID.startsWith('WKLEJ') || u.uid === ADMIN_UID);
+onAuthStateChanged(auth, user => {
+    isAdmin = isAdminUser(user);
+    $('loginArea').hidden = !!user;
+    $('adminArea').hidden = !isAdmin;
+    $('noAccessArea').hidden = !user || isAdmin;
+    $('backLink').hidden = !isAdmin;
+
+    if (unsubPriv) { unsubPriv(); unsubPriv = null; }
+    priv = {};
+    if (isAdmin) {
+        unsubPriv = onSnapshot(collection(fs, 'gospel_prywatne'),
+            s => { priv = {}; s.docs.forEach(d => priv[d.id] = d.data()); syncBirthMonths(); renderAll(); },
+            () => toast('Brak dostępu do danych prywatnych – sprawdź reguły Firestore', true));
+    }
+    resetMemberForm();
+    renderAll();
+});
+</script>
+</body>
+</html>
