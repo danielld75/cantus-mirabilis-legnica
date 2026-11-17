@@ -41,7 +41,7 @@
         .pill { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: .35rem .9rem; font-size: .9rem; }
         .pill b { color: var(--gold); }
 
-        main { max-width: 1200px; margin: 0 auto; padding: 1rem 1rem 4rem; display: grid; grid-template-columns: minmax(320px, 1fr) 1.6fr; gap: 1.5rem; align-items: start; }
+        main { max-width: 1200px; margin: 0 auto; padding: 1rem 1rem 4rem; display: grid; grid-template-columns: minmax(340px, 1fr) 1.35fr; gap: 1.5rem; align-items: start; }
         .col { display: grid; gap: 1.5rem; min-width: 0; }
 
         .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 1.5rem; min-width: 0; }
@@ -136,12 +136,20 @@
         .detail-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.1rem; padding-top: 1rem; border-top: 1px dashed var(--line); }
 
         /* ===== SETLISTY ===== */
-        .slots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .slots { display: flex; flex-direction: column; gap: 1rem; }
+        .slot.active { order: -1; }   /* aktywna setlista na górze, obok wyszukiwarki (litera setlisty się nie zmienia) */
         .slot {
             background: var(--panel-2); border: 1px solid var(--line); border-top: 3px solid rgba(255,255,255,.12);
-            border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; min-height: 220px; min-width: 0;
+            border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; min-height: 160px; min-width: 0;
         }
-        .slot.admin { cursor: pointer; }
+        .frame-label {
+            align-self: flex-start; font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+            padding: .25rem .7rem; border-radius: 999px; margin-bottom: .6rem;
+            color: var(--muted); border: 1px solid var(--line); background: rgba(255,255,255,.03);
+        }
+        .frame-label b { font-size: .95rem; letter-spacing: 0; margin-left: .2rem; }
+        .slot.active .frame-label { color: #111; background: var(--gold); border-color: var(--gold); }
+        .slot.admin { cursor: pointer; max-width: none; margin: 0; }   /* nie dziedziczy wyglądu panelu .admin */
         .slot.active { border-top-color: var(--gold); box-shadow: 0 0 0 1px rgba(201,162,77,.35), 0 0 30px rgba(201,162,77,.08); }
         .slot-head { display: flex; align-items: center; gap: .6rem; }
         .slot-no {
@@ -152,7 +160,7 @@
         .slot-title { font-family: 'Playfair Display', serif; font-size: 1.15rem !important; background: transparent !important; border-color: transparent !important; padding: .3rem .4rem !important; }
         .slot-title:hover, .slot-title:focus { border-color: rgba(255,255,255,.15) !important; background: #222 !important; }
         h3.slot-title-ro { font-family: 'Playfair Display', serif; font-weight: 500; font-size: 1.2rem; margin: 0; color: var(--gold); }
-        .slot-state { font-size: .72rem; color: var(--muted); margin: .3rem 0 0 2.3rem; min-height: 1em; }
+        .slot-state { font-size: .72rem; color: var(--muted); margin: .3rem 0 0 .45rem; min-height: 1em; }
         .slot-state.saved { color: var(--ok); }
         .slot-state.dirty { color: var(--trad); }
         .slot.active .slot-state::before { content: 'Aktywna – tu dodajesz utwory. '; color: var(--gold); }
@@ -167,6 +175,10 @@
         .items .t { font-weight: 600; font-size: .95rem; }
         .items .sub { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; font-size: .8rem; color: var(--muted); }
         .items .ctrl { grid-column: 2 / -1; display: flex; gap: .3rem; justify-content: flex-end; }
+        @media (min-width: 601px) {   /* szerokie ramki: strzałki i ✕ w tej samej linii co utwór */
+            .items li { grid-template-columns: 1.3rem 1fr auto auto; }
+            .items .ctrl { grid-column: auto; }
+        }
         .items .ctrl button { min-height: 32px; }
         .slot-empty { color: var(--muted); font-size: .88rem; font-style: italic; margin: 1rem 0 0; }
         .slot-actions { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .9rem; padding-top: .8rem; border-top: 1px dashed var(--line); }
@@ -222,7 +234,7 @@
 
         @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
         @media (max-width: 600px) {
-            .slots, .detail-grid, .form-grid { grid-template-columns: 1fr; }
+            .detail-grid, .form-grid { grid-template-columns: 1fr; }
             header h1 { font-size: 2.3rem; }
             .back { position: static; display: inline-block; margin-bottom: 1rem; }
             .detail h2 { font-size: 1.5rem !important; }
@@ -513,7 +525,7 @@ function renderResults() {
         .slice(0, 60);
 
     hint.textContent = found.length
-        ? (isAdmin ? `Dotknij utworu, żeby zobaczyć szczegóły. ＋ dodaje go do setlisty nr ${activeSlot + 1}.` : 'Dotknij utworu, żeby zobaczyć szczegóły.')
+        ? (isAdmin ? `Dotknij utworu, żeby zobaczyć szczegóły. ＋ dodaje go do setlisty ${L(activeSlot)}.` : 'Dotknij utworu, żeby zobaczyć szczegóły.')
         : '';
     if (!found.length) {
         list.innerHTML = `<li class="empty">Brak utworów, w których ${searchMode === 'title' ? 'tytule' : 'nazwisku autora'} jest „${esc(q.trim())}”.</li>`;
@@ -565,7 +577,7 @@ function renderDetail() {
         ${safeUrl(w.driveUrl) ? driveBtn(w.driveUrl, true) : '<p class="hint" style="margin:0">Nie ma jeszcze linku do nut i nagrań.</p>'}
         ${isAdmin ? `
         <div class="detail-actions">
-            <button class="btn btn-primary btn-sm" data-action="add" data-id="${selectedWorkId}">＋ Dodaj do setlisty nr ${activeSlot + 1}</button>
+            <button class="btn btn-primary btn-sm" data-action="add" data-id="${selectedWorkId}">＋ Dodaj do setlisty ${L(activeSlot)}</button>
             <button class="btn btn-ghost btn-sm" data-action="edit-work" data-id="${selectedWorkId}">Edytuj</button>
             <button class="btn btn-danger btn-sm" data-action="delete-work" data-id="${selectedWorkId}" style="margin-left:auto">Usuń utwór</button>
         </div>` : ''}`;
@@ -643,9 +655,10 @@ function renderSlots() {
     const focusedVal = focused !== undefined ? document.activeElement.value : null;
 
     if (!isAdmin) {
-        const filled = slots.filter(s => s && (s.title || itemsOf(s).length));
-        box.innerHTML = filled.length ? filled.map(s => `
+        const filled = slots.map((s, i) => [s, i]).filter(([s]) => s && (s.title || itemsOf(s).length));
+        box.innerHTML = filled.length ? filled.map(([s, i]) => `
             <article class="slot">
+                ${frameLabel(i)}
                 <h3 class="slot-title-ro">${esc(s.title || 'Bez tytułu')}</h3>
                 ${itemsOf(s).length
                     ? `<ol class="items">${itemsOf(s).map(it => itemHTML(it)).join('')}</ol>`
@@ -661,8 +674,8 @@ function renderSlots() {
         const linked = s?.archiveId && archive[s.archiveId];
         return `
         <article class="slot admin ${i === activeSlot ? 'active' : ''}" data-slot="${i}">
+            ${frameLabel(i)}
             <div class="slot-head">
-                <span class="slot-no">${i + 1}</span>
                 <input type="text" class="slot-title" data-slot-title="${i}" value="${esc(s?.title || '')}" placeholder="Nadaj tytuł setliście…">
             </div>
             <div class="slot-state ${stCls}">${stTxt}</div>
@@ -691,10 +704,19 @@ function renderSlots() {
     }
 }
 
-function setActive(i) {
+// Setlisty oznaczone wielkimi literami: A, B, C, D
+const SLOT_LETTERS = ['A', 'B', 'C', 'D'];
+const L = i => SLOT_LETTERS[i] || String(i + 1);
+const frameLabel = i => `<span class="frame-label">Setlista<b>${L(i)}</b></span>`;
+
+function setActive(i, scroll = true) {
     if (activeSlot === i) return;
     activeSlot = i;
     renderSlots(); renderResults(); renderDetail();
+    if (scroll) {
+        const top = $('slots').getBoundingClientRect().top;
+        if (top < 0 || top > window.innerHeight * .6) $('slots').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 const saveSlotItems = (i, items) => write(set(ref(db, `${BASE}/setlisty/slots/${i}/items`), items));
@@ -704,7 +726,7 @@ async function addWork(id, btn) {
     const slot = slots[activeSlot];
     if (!w) return;
     if (!slot?.title?.trim()) {
-        toast(`Najpierw nadaj tytuł setliście nr ${activeSlot + 1}`, true);
+        toast(`Najpierw nadaj tytuł setliście ${L(activeSlot)}`, true);
         $('slots').querySelector(`[data-slot-title="${activeSlot}"]`)?.focus();
         return;
     }
@@ -742,18 +764,18 @@ async function openArchive(id) {
     if (!isAdmin) { previewId = id; renderPreview(); $('previewCard').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
 
     const already = slots.findIndex(s => s?.archiveId === id);
-    if (already !== -1) { setActive(already); return toast(`Ta setlista jest już otwarta w slocie ${already + 1}`); }
+    if (already !== -1) { setActive(already); return toast(`Ta setlista jest już otwarta jako setlista ${L(already)}`); }
 
     const target = slots[activeSlot];
     if (target && (target.title || itemsOf(target).length)) {
         const [st] = slotState(target);
         const msg = st === 'dirty'
-            ? `Setlista w slocie ${activeSlot + 1} ma niezapisane zmiany. Zastąpić ją setlistą „${a.title}”?`
-            : `Otworzyć „${a.title}” w slocie ${activeSlot + 1} w miejsce „${target.title}”?`;
+            ? `Setlista ${L(activeSlot)} ma niezapisane zmiany. Zastąpić ją setlistą „${a.title}”?`
+            : `Otworzyć „${a.title}” jako setlistę ${L(activeSlot)} w miejsce „${target.title}”?`;
         if (!confirm(msg)) return;
     }
     await write(set(ref(db, `${BASE}/setlisty/slots/${activeSlot}`), { title: a.title, items: itemsOf(a), archiveId: id }),
-        `✔ Otwarto w slocie ${activeSlot + 1}`);
+        `✔ Otwarto jako setlistę ${L(activeSlot)}`);
 }
 
 // --- KLIKNIĘCIA ---
@@ -828,7 +850,7 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('focusin', e => {
     const i = e.target.dataset?.slotTitle;
-    if (i !== undefined && isAdmin && Number(i) !== activeSlot) setActive(Number(i));
+    if (i !== undefined && isAdmin && Number(i) !== activeSlot) setActive(Number(i), false);
 });
 
 // --- FORMULARZ UTWORU (admin) ---
