@@ -41,7 +41,7 @@
         .pill { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: .35rem .9rem; font-size: .9rem; }
         .pill b { color: var(--gold); }
 
-        main { max-width: 1200px; margin: 0 auto; padding: 1rem 1rem 4rem; display: grid; grid-template-columns: minmax(300px, 1fr) 1.7fr; gap: 1.5rem; align-items: start; }
+        main { max-width: 1200px; margin: 0 auto; padding: 1rem 1rem 4rem; display: grid; grid-template-columns: minmax(340px, 1fr) 1.35fr; gap: 1.5rem; align-items: start; }
         .col { display: grid; gap: 1.5rem; }
 
         .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 1.5rem; }
@@ -58,15 +58,16 @@
 
         /* ===== WYNIKI WYSZUKIWANIA ===== */
         .results { list-style: none; margin: .9rem 0 0; padding: 0; display: grid; gap: .35rem; max-height: 420px; overflow-y: auto; }
-        .results li { display: flex; align-items: stretch; gap: .35rem; }
+        .results li { display: flex; align-items: stretch; gap: .35rem; min-width: 0; }
         .result {
             flex: 1; display: flex; align-items: center; gap: .7rem; text-align: left; color: var(--text);
             background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: .5rem .5rem .5rem .75rem;
-            min-height: 54px;
+            min-height: 54px; min-width: 0;
         }
         button.result { cursor: pointer; -webkit-tap-highlight-color: transparent; }
         button.result:hover { border-color: rgba(201,162,77,.6); background: #242424; }
-        .result .t { flex: 1; }
+        .result .t { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+        .result .num, .result .cat { flex-shrink: 0; }
 
         /* duży okrągły przycisk „dodaj do setlisty” – łatwy do trafienia palcem */
         .plus {
@@ -82,7 +83,7 @@
         button.result.added .plus { background: var(--ok); box-shadow: 0 0 0 4px rgba(127,209,127,.2); font-size: 1.3rem; }
 
         /* przycisk edycji obok wyniku też większy */
-        .results li > .icon-btn { min-width: 46px; font-size: 1.1rem; }
+        .results li > .icon-btn { min-width: 46px; flex-shrink: 0; font-size: 1.1rem; color: var(--gold); border-color: rgba(201,162,77,.4); }
         .empty { color: var(--muted); font-size: .9rem; margin: .8rem 0 0; }
 
         .num {
@@ -110,12 +111,19 @@
         .arch .meta { font-size: .78rem; color: var(--muted); }
 
         /* ===== SETLISTY ===== */
-        .slots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .slots { display: flex; flex-direction: column; gap: 1rem; }
+        .slot.active { order: -1; }   /* aktywna ramka na górze, obok wyszukiwarki (numer ramki się nie zmienia) */
         .slot {
             background: var(--panel-2); border: 1px solid var(--line); border-top: 3px solid rgba(255,255,255,.12);
-            border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; min-height: 220px;
+            border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; min-height: 160px;
         }
-        .slot.admin { cursor: pointer; }
+        .frame-label {
+            align-self: flex-start; font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+            padding: .25rem .7rem; border-radius: 999px; margin-bottom: .6rem;
+            color: var(--muted); border: 1px solid var(--line); background: rgba(255,255,255,.03);
+        }
+        .slot.active .frame-label { color: #111; background: var(--gold); border-color: var(--gold); }
+        .slot.admin { cursor: pointer; max-width: none; margin: 0; }   /* nie dziedziczy wyglądu panelu .admin */
         .slot.active { border-top-color: var(--gold); box-shadow: 0 0 0 1px rgba(201,162,77,.35), 0 0 30px rgba(201,162,77,.08); }
         .slot-head { display: flex; align-items: center; gap: .6rem; }
         .slot-no {
@@ -126,7 +134,7 @@
         .slot-title { font-family: 'Playfair Display', serif; font-size: 1.15rem !important; background: transparent !important; border-color: transparent !important; padding: .3rem .4rem !important; }
         .slot-title:hover, .slot-title:focus { border-color: rgba(255,255,255,.15) !important; background: #222 !important; }
         h3.slot-title-ro { font-family: 'Playfair Display', serif; font-weight: 500; font-size: 1.2rem; margin: 0; color: var(--gold); }
-        .slot-state { font-size: .72rem; color: var(--muted); margin: .3rem 0 0 2.3rem; min-height: 1em; }
+        .slot-state { font-size: .72rem; color: var(--muted); margin: .3rem 0 0 .45rem; min-height: 1em; }
         .slot-state.saved { color: var(--ok); }
         .slot-state.dirty { color: var(--trad); }
         .slot.active .slot-state::before { content: 'Aktywna – tu dodajesz pieśni. '; color: var(--gold); }
@@ -194,7 +202,7 @@
 
         @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
         @media (max-width: 600px) {
-            .slots { grid-template-columns: 1fr; }
+
             .items li { flex-wrap: wrap; }
             .items .ctrl { gap: .35rem; }
             .items .ctrl button { min-width: 40px; min-height: 36px; font-size: 1rem; }
@@ -389,7 +397,10 @@ const live = it => ({ ...it, ...(songs[it?.songId] || {}) });
 const copyOf = it => ({ songId: it.songId || '', title: it.title || '', number: it.number || '', category: it.category || '', driveUrl: it.driveUrl || '' });
 const driveBtn = url => url ? `<a class="drive-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="Nuty i nagrania na Dysku Google">${DRIVE_ICON}<span>Dysk</span></a>` : '';
 // która setlista trafia na którą stronę
-const SLOT_TARGETS = { 0: 'Angelotti', 1: 'Katedralna schola Gospel' };
+// Nazwy RAMEK (nie tytuły setlist). Ramka 1 zasila stronę Angelotti, ramka 2 – Katedralną scholę Gospel.
+const FRAME_NAMES = ['Angelotti', 'Gospel', 'Setlista 3', 'Setlista 4'];
+const FRAME_HINT = ['Wyświetlana na stronie Angelotti', 'Wyświetlana na stronie Katedralnej scholi Gospel', '', ''];
+const frameLabel = i => `<span class="frame-label" title="${FRAME_HINT[i] || ''}">${FRAME_NAMES[i] || 'Setlista ' + (i + 1)}</span>`;
 
 const catBadge = c => CATEGORIES.includes(c) ? `<span class="cat ${c}">${c}</span>` : '';
 
@@ -445,7 +456,7 @@ function renderSongResults() {
         hint.textContent = q.trim() ? `Wpisz jeszcze ${MIN_CHARS - norm(q).replace(/ /g,'').length} ${plural(MIN_CHARS - norm(q).replace(/ /g,'').length,'literę','litery','liter')}…` : (isAdmin ? 'Kliknij pieśń, żeby dodać ją do aktywnej setlisty.' : '');
         return;
     }
-    hint.textContent = isAdmin && found.length ? `Kliknij, żeby dodać do setlisty nr ${activeSlot + 1}.` : '';
+    hint.textContent = isAdmin && found.length ? `Kliknij, żeby dodać do ramki „${FRAME_NAMES[activeSlot]}”.` : '';
     if (!found.length) { list.innerHTML = `<li class="empty">Brak pieśni zaczynających się na „${esc(q.trim())}”.</li>`; return; }
 
     list.innerHTML = found.map(s => {
@@ -533,8 +544,8 @@ function renderSlots() {
         const filled = slots.map((s, i) => [s, i]).filter(([s]) => s && (s.title || itemsOf(s).length));
         box.innerHTML = filled.length ? filled.map(([s, i]) => `
             <article class="slot">
+                ${frameLabel(i)}
                 <h3 class="slot-title-ro">${esc(s.title || 'Bez tytułu')}</h3>
-                ${SLOT_TARGETS[i] ? `<div class="slot-target ro">Śpiewa: ${SLOT_TARGETS[i]}</div>` : ''}
                 ${itemsOf(s).length
                     ? `<ol class="items">${itemsOf(s).map(live).map(it => `<li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}${driveBtn(driveOf(it))}</li>`).join('')}</ol>`
                     : `<p class="slot-empty">Setlista jest jeszcze pusta.</p>`}
@@ -549,11 +560,10 @@ function renderSlots() {
         const linked = s?.archiveId && archive[s.archiveId];
         return `
         <article class="slot admin ${i === activeSlot ? 'active' : ''}" data-slot="${i}">
+            ${frameLabel(i)}
             <div class="slot-head">
-                <span class="slot-no">${i + 1}</span>
                 <input type="text" class="slot-title" data-slot-title="${i}" value="${esc(s?.title || '')}" placeholder="Nadaj tytuł setliście…">
             </div>
-            ${SLOT_TARGETS[i] ? `<div class="slot-target">➜ Wyświetlana na stronie: ${SLOT_TARGETS[i]}</div>` : ''}
             <div class="slot-state ${stCls}">${stTxt}</div>
             ${items.length ? `<ol class="items">${items.map(live).map((it, j) => `
                 <li>${numBadge(it.number)}<span class="t">${esc(it.title)}</span>${catBadge(it.category)}${driveBtn(driveOf(it))}
@@ -581,11 +591,15 @@ function renderSlots() {
     }
 }
 
-function setActive(i) {
+function setActive(i, scroll = true) {
     if (activeSlot === i) return;
     activeSlot = i;
     renderSlots();
     renderSongResults();
+    if (scroll) {
+        const top = $('slots').getBoundingClientRect().top;
+        if (top < 0 || top > window.innerHeight * .6) $('slots').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 async function saveSlotItems(i, items) {
@@ -597,7 +611,7 @@ async function addSong(id, btn) {
     const slot = slots[activeSlot];
     if (!s) return;
     if (!slot?.title?.trim()) {
-        toast(`Najpierw nadaj tytuł setliście nr ${activeSlot + 1}`, true);
+        toast(`Najpierw nadaj tytuł setliście w ramce „${FRAME_NAMES[activeSlot]}”`, true);
         $('slots').querySelector(`[data-slot-title="${activeSlot}"]`)?.focus();
         return;
     }
@@ -644,18 +658,18 @@ async function openArchive(id) {
     if (!isAdmin) { previewId = id; renderPreview(); $('previewCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
 
     const already = slots.findIndex(s => s?.archiveId === id);
-    if (already !== -1) { setActive(already); return toast(`Ta setlista jest już otwarta w slocie ${already + 1}`); }
+    if (already !== -1) { setActive(already); return toast(`Ta setlista jest już otwarta w ramce „${FRAME_NAMES[already]}”`); }
 
     const target = slots[activeSlot];
     if (target && (target.title || itemsOf(target).length)) {
         const [st] = slotState(target);
         const msg = st === 'dirty'
-            ? `Setlista w slocie ${activeSlot + 1} ma niezapisane zmiany. Zastąpić ją setlistą „${a.title}”?`
-            : `Otworzyć „${a.title}” w slocie ${activeSlot + 1} w miejsce „${target.title}”?`;
+            ? `Setlista w ramce „${FRAME_NAMES[activeSlot]}” ma niezapisane zmiany. Zastąpić ją setlistą „${a.title}”?`
+            : `Otworzyć „${a.title}” w ramce „${FRAME_NAMES[activeSlot]}” w miejsce „${target.title}”?`;
         if (!confirm(msg)) return;
     }
     await write(set(ref(db, `setlisty/slots/${activeSlot}`), { title: a.title, items: itemsOf(a).map(live).map(copyOf), archiveId: id }),
-        `✔ Otwarto w slocie ${activeSlot + 1}`);
+        `✔ Otwarto w ramce „${FRAME_NAMES[activeSlot]}”`);
 }
 
 // --- OBSŁUGA KLIKNIĘĆ ---
