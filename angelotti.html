@@ -521,6 +521,7 @@ const DRIVE_ICON = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
     <ellipse cx="12.3" cy="15.6" rx="1.6" ry="1.2" fill="#c09238"/></svg>`;
 const safeUrl = u => { const v = String(u ?? '').trim(); return /^https:\/\//i.test(v) ? v : ''; };
 const driveOf = it => safeUrl(songsDb[it?.songId]?.driveUrl ?? it?.driveUrl);
+const live = it => ({ ...it, ...(songsDb[it?.songId] || {}) });   // aktualne dane pieśni po edycji
 const driveBtn = url => url ? `<a class="drive-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="Nuty i nagrania na Dysku Google">${DRIVE_ICON}<span>Materiały</span></a>` : '';
 
 function renderSongs() {
@@ -534,7 +535,7 @@ function renderSongs() {
     tabs.innerHTML = songSlots.length > 1
         ? songSlots.map((s, i) => `<button class="tab" data-song-tab="${i}" aria-pressed="${i === songTab}">${esc(s.title || 'Bez tytułu')}</button>`).join('')
         : `<span class="sub" style="font-size:1.05rem">${esc(songSlots[0].title || '')}</span>`;
-    $('songList').innerHTML = itemsOf(songSlots[songTab]).map(it => `
+    $('songList').innerHTML = itemsOf(songSlots[songTab]).map(live).map(it => `
         <li><span class="num ${it.number ? '' : 'none'}">${it.number ? esc(it.number) : '–'}</span><span class="t">${esc(it.title)}</span>${driveBtn(driveOf(it))}</li>`).join('');
     $('shareBar').hidden = !isAdmin;
 }
@@ -548,7 +549,7 @@ $('songTabs').addEventListener('click', e => {
 function songText() {
     const s = songSlots[songTab];
     if (!s) return '';
-    const lines = itemsOf(s).map((it, i) => `${i + 1}. ${it.number ? `[${it.number}] ` : ''}${it.title}${driveOf(it) ? `\n    📁 ${driveOf(it)}` : ''}`);
+    const lines = itemsOf(s).map(live).map((it, i) => `${i + 1}. ${it.number ? `[${it.number}] ` : ''}${it.title}${driveOf(it) ? `\n    📁 ${driveOf(it)}` : ''}`);
     return `🎵 Angelotti – ${s.title || 'pieśni'}\n\n${lines.join('\n')}\n\nDo zobaczenia na śpiewaniu! 😊`;
 }
 
