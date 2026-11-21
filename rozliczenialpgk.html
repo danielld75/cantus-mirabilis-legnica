@@ -144,6 +144,44 @@
         .rates-list li button { all: unset; cursor: pointer; font-weight: 600; color: var(--gold); }
         .rates-list li .r { text-align: right; }
 
+        /* ===== MOJE DODATKOWE PRZYCHODY (tylko admin) ===== */
+        .priv { border-top: 3px solid var(--sage); }
+        .priv h2 { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; }
+        .lock { font-family: 'Inter', sans-serif; font-size: .72rem; font-weight: 600; color: var(--sage); border: 1px solid rgba(143,193,181,.45);
+            border-radius: 999px; padding: .2rem .65rem; letter-spacing: .3px; }
+        .priv-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.5rem; align-items: start; }
+        .priv-form .counts td:first-child { min-width: 11rem; text-align: left; }
+        .priv-form .counts td:last-child { text-align: right; }
+        .day-hint { font-size: .82rem; color: var(--muted); margin-top: .35rem; min-height: 1.1em; }
+        .day-hint b { color: var(--sage); font-weight: 600; }
+        .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
+        .tile { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: .75rem .9rem; }
+        .tile .lbl { font-size: .76rem; color: var(--muted); }
+        .tile .val { font-family: 'Playfair Display', serif; font-size: 1.35rem; margin-top: .15rem; }
+        .tile .sub { font-size: .76rem; color: var(--muted); margin-top: .1rem; }
+        .tile.minus .val { color: var(--danger); }
+        .tile.net .val { color: var(--gold); }
+        .tile.jan .val { color: var(--sage); }
+        .tile.gos .val { color: #d9a3c8; }
+        .totals { display: grid; gap: .6rem; margin-top: .9rem; }
+        .total-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
+            padding: .85rem 1.1rem; border-radius: 12px; background: rgba(201,162,77,.07); border: 1px solid rgba(201,162,77,.3); }
+        .total-row .lbl { font-size: .92rem; }
+        .total-row .lbl small { display: block; color: var(--muted); font-size: .76rem; }
+        .total-row .val { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--gold); }
+        .total-row.big { background: rgba(201,162,77,.13); border-color: rgba(201,162,77,.6); }
+        .total-row.big .val { font-size: 2rem; }
+        .priv-entries { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .4rem; }
+        .priv-entries li { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; background: var(--panel-2); border: 1px solid var(--line);
+            border-left: 4px solid var(--sage); border-radius: 0 10px 10px 0; padding: .55rem .8rem; font-size: .9rem; }
+        .priv-entries .d { min-width: 8.5rem; }
+        .priv-entries .d small { display: block; color: var(--muted); font-size: .74rem; }
+        .priv-entries .body { flex: 1; display: flex; gap: .35rem; flex-wrap: wrap; }
+        .priv-rates { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px dashed var(--line); }
+        .priv-rates h3 { font-size: 1rem; margin: 0 0 .6rem; color: var(--sage); font-weight: 600; }
+        @media (max-width: 900px) { .priv-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 560px) { .tiles { grid-template-columns: 1fr 1fr; } .priv-form .counts td:first-child { min-width: 0; } }
+
         .toast {
             position: fixed; bottom: 20px; right: 20px; max-width: calc(100% - 40px); background: #171717;
             border: 1px solid rgba(201,162,77,.5); color: var(--gold); padding: .7rem 1rem; border-radius: 10px;
@@ -324,6 +362,54 @@
         <div class="people" id="people"></div>
     </section>
 
+    <!-- MOJE DODATKOWE PRZYCHODY – tylko administrator -->
+    <section class="card full priv" id="privCard" hidden>
+        <h2><span id="privTitle">Moje dodatkowe przychody</span> <span class="lock">🔒 widoczne tylko dla Ciebie</span></h2>
+        <div class="priv-grid">
+            <div class="priv-form">
+                <label class="field">Data<input type="date" id="pDate"></label>
+                <div class="day-hint" id="pDayHint"></div>
+                <table class="counts">
+                    <tbody>
+                        <tr><td>Św. Jan – dzień powszedni</td>
+                            <td><div class="stepper"><button type="button" data-pstep="-1" data-for="pJanP">−</button><input type="number" id="pJanP" min="0" value="0" inputmode="numeric" aria-label="Św. Jan dzień powszedni"><button type="button" data-pstep="1" data-for="pJanP">+</button></div></td></tr>
+                        <tr><td>Św. Jan – niedziela / święto</td>
+                            <td><div class="stepper"><button type="button" data-pstep="-1" data-for="pJanS">−</button><input type="number" id="pJanS" min="0" value="0" inputmode="numeric" aria-label="Św. Jan niedziela lub święto"><button type="button" data-pstep="1" data-for="pJanS">+</button></div></td></tr>
+                        <tr><td>Gospel</td>
+                            <td><div class="stepper"><button type="button" data-pstep="-1" data-for="pGos">−</button><input type="number" id="pGos" min="0" value="0" inputmode="numeric" aria-label="Gospel"><button type="button" data-pstep="1" data-for="pGos">+</button></div></td></tr>
+                    </tbody>
+                </table>
+                <label class="field" style="margin-top:.6rem">Uwagi (opcjonalnie)<input type="text" id="pNote" placeholder="np. ślub, pogrzeb, koncert"></label>
+                <div class="preview" id="pPreview"></div>
+                <div class="row">
+                    <button class="btn btn-primary" id="pSaveBtn" style="flex:1">Zapisz</button>
+                    <button class="btn btn-ghost" id="pCancelBtn" hidden>Anuluj edycję</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="tiles" id="pTiles"></div>
+                <div class="totals" id="pTotals"></div>
+            </div>
+        </div>
+
+        <ul class="priv-entries" id="pEntries"></ul>
+
+        <div class="priv-rates">
+            <h3>Moje stawki</h3>
+            <ul class="rates-list" id="pRatesList"></ul>
+            <div class="row">
+                <label class="field" style="flex:0 0 90px; min-width:0">Rok<input type="number" id="pRateYear" min="2020" max="2100"></label>
+                <label class="field">Św. Jan – powszedni (zł)<input type="number" id="pRateJanP" min="0" step="0.01"></label>
+                <label class="field">Św. Jan – niedz./święto (zł)<input type="number" id="pRateJanS" min="0" step="0.01"></label>
+                <label class="field">Gospel (zł)<input type="number" id="pRateGos" min="0" step="0.01"></label>
+                <label class="field">Podatek od LPGK (%)<input type="number" id="pRateTax" min="0" max="100" step="0.1"></label>
+            </div>
+            <button class="btn btn-primary" id="pSaveRatesBtn" style="margin-top:.8rem; width:100%">Zapisz moje stawki</button>
+            <p class="hint">Bez zapisanych stawek liczą się domyślne: św. Jan 50 zł / 75 zł, Gospel 75 zł, podatek 12%. Kliknij rok na liście, żeby go edytować.</p>
+        </div>
+    </section>
+
     <!-- WPISY -->
     <section class="card full">
         <h2 id="entriesTitle">Wpisy</h2>
@@ -381,7 +467,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
 //  (Authentication → Users: kolumna „User UID”)
 // ================================================================
 const ADMIN = { uid: '90Zrjdu14WNKn2B5rYkwMQ6UGK92', name: 'Daniel Dziuda' };
-const PAWEL = { uid: '3SLK05mHoDPrGERzOWb1sX3MQBw1',   name: 'Paweł Woźniak', login: 'pawelwozniak', email: 'paworg@interia.pl' };
+const PAWEL = { uid: '3SLK05mHoDPrGERzOWb1sX3MQBw1',   name: 'Paweł Woźniak', login: 'pawelwozniak', email: 'WKLEJ_EMAIL_PAWLA' };
 const PEOPLE = [ADMIN, PAWEL];
 
 const firebaseConfig = {
@@ -536,6 +622,19 @@ onAuthStateChanged(auth, user => {
     unsubs.push(onSnapshot(collection(fs, 'rozliczenia_stawki'),
         snap => { rates = {}; snap.docs.forEach(d => rates[d.id] = d.data()); renderAll(); updatePreview(); },
         () => toast('Brak dostępu do stawek – sprawdź reguły Firestore', true)));
+
+    // Dodatkowe przychody – pobierane WYŁĄCZNIE dla administratora (reguły Firestore i tak blokują resztę).
+    privEntries = []; privRates = {};
+    $('privCard').hidden = !isAdmin();
+    if (isAdmin()) {
+        resetPrivForm();
+        unsubs.push(onSnapshot(collection(fs, 'rozliczenia_prywatne'),
+            snap => { privEntries = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderPrivate(); },
+            () => toast('Brak dostępu do prywatnych wpisów – dopisz regułę Firestore', true)));
+        unsubs.push(onSnapshot(collection(fs, 'rozliczenia_prywatne_stawki'),
+            snap => { privRates = {}; snap.docs.forEach(d => privRates[d.id] = d.data()); renderPrivate(); updatePrivPreview(); },
+            () => toast('Brak dostępu do prywatnych stawek – dopisz regułę Firestore', true)));
+    }
 });
 
 // --- FORMULARZ ---
@@ -651,7 +750,168 @@ function renderAll() {
     renderMonth();
     renderEntries();
     renderRates();
+    if (isAdmin()) renderPrivate();
 }
+
+// ================================================================
+//  MOJE DODATKOWE PRZYCHODY (tylko administrator)
+//  Firestore: rozliczenia_prywatne/{RRRR-MM-DD} = { date, janP, janS, gospel, note }
+//             rozliczenia_prywatne_stawki/{rok} = { janP, janS, gospel, tax }
+// ================================================================
+let privEntries = [];
+let privRates = {};
+let privEditing = null;
+const PRIV_DEFAULT = { janP: 50, janS: 75, gospel: 75, tax: 12 };
+
+function privRateFor(dateStr) {
+    const y = Number(dateStr.slice(0, 4));
+    const years = Object.keys(privRates).map(Number).filter(r => r <= y).sort((a, b) => b - a);
+    return years.length ? { year: years[0], ...PRIV_DEFAULT, ...privRates[years[0]] } : { year: null, ...PRIV_DEFAULT };
+}
+const privAmount = e => {
+    const r = privRateFor(e.date);
+    return { jan: int(e.janP) * money(r.janP) + int(e.janS) * money(r.janS), gospel: int(e.gospel) * money(r.gospel) };
+};
+
+$('privCard').addEventListener('click', e => {
+    const b = e.target.closest('[data-pstep]');
+    if (!b) return;
+    const input = $(b.dataset.for);
+    input.value = Math.max(0, int(input.value) + Number(b.dataset.pstep));
+    updatePrivPreview();
+});
+$('privCard').addEventListener('input', e => { if (e.target.closest('.priv-form')) updatePrivPreview(); });
+
+function updatePrivPreview() {
+    const d = $('pDate').value;
+    const box = $('pPreview');
+    if (!d) { $('pDayHint').textContent = ''; box.textContent = 'Wybierz datę.'; return; }
+    const dow = parse(d).getDay();
+    $('pDayHint').innerHTML = `${fmtWeekday(d)}${dow === 0 ? ' – <b>niedziela: stawka niedzielna / świąteczna</b>' : ''}`;
+    const a = privAmount({ date: d, janP: $('pJanP').value, janS: $('pJanS').value, gospel: $('pGos').value });
+    box.innerHTML = `Św. Jan: <b>${pln(a.jan)}</b> &nbsp;·&nbsp; Gospel: <b>${pln(a.gospel)}</b>`;
+}
+
+function resetPrivForm() {
+    privEditing = null;
+    $('pDate').value = ymd(new Date());
+    ['pJanP', 'pJanS', 'pGos'].forEach(id => $(id).value = 0);
+    $('pNote').value = '';
+    $('pSaveBtn').textContent = 'Zapisz';
+    $('pCancelBtn').hidden = true;
+    updatePrivPreview();
+}
+$('pCancelBtn').addEventListener('click', resetPrivForm);
+
+$('pSaveBtn').addEventListener('click', async () => {
+    if (!isAdmin()) return;
+    const date = $('pDate').value;
+    const data = { date, janP: int($('pJanP').value), janS: int($('pJanS').value), gospel: int($('pGos').value), note: $('pNote').value.trim(), updatedAt: Date.now() };
+    if (!date) return toast('Wybierz datę', true);
+    if (!data.janP && !data.janS && !data.gospel) return toast('Wpisz przynajmniej jedno granie', true);
+    if (date !== privEditing && privEntries.some(e => e.id === date) && !confirm(`Masz już wpis na ${fmtLong(date)}. Zastąpić go?`)) return;
+    try {
+        await setDoc(doc(fs, 'rozliczenia_prywatne', date), data);
+        if (privEditing && privEditing !== date) await deleteDoc(doc(fs, 'rozliczenia_prywatne', privEditing));
+        toast(privEditing ? '✔ Zapisano zmiany' : '✔ Dodano');
+        viewMonth = parse(date); viewMonth.setDate(1);
+        resetPrivForm();
+        renderAll();
+    } catch { toast('Nie udało się zapisać – dopisz regułę Firestore dla rozliczenia_prywatne', true); }
+});
+
+$('pEntries').addEventListener('click', async e => {
+    const ed = e.target.closest('[data-pedit]'), del = e.target.closest('[data-pdel]');
+    if (ed) {
+        const x = privEntries.find(v => v.id === ed.dataset.pedit);
+        if (!x) return;
+        privEditing = x.id;
+        $('pDate').value = x.date; $('pJanP').value = int(x.janP); $('pJanS').value = int(x.janS); $('pGos').value = int(x.gospel); $('pNote').value = x.note || '';
+        $('pSaveBtn').textContent = 'Zapisz zmiany'; $('pCancelBtn').hidden = false;
+        updatePrivPreview();
+        $('privCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    if (del && confirm(`Usunąć wpis z ${fmtLong(del.dataset.pdel)}?`)) {
+        try { await deleteDoc(doc(fs, 'rozliczenia_prywatne', del.dataset.pdel)); toast('✔ Usunięto'); if (privEditing === del.dataset.pdel) resetPrivForm(); }
+        catch { toast('Nie udało się usunąć', true); }
+    }
+});
+
+function renderPrivate() {
+    if (!isAdmin()) return;
+    const [from, to] = monthBounds(viewMonth);
+    const monthName = viewMonth.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' });
+    $('privTitle').textContent = `Moje dodatkowe przychody: ${monthName}`;
+
+    // cmentarz LPGK – moja kwota z tego miesiąca, minus podatek
+    const lpgk = summarize(from, to, [ADMIN])[0];
+    const taxPct = money(privRateFor(from).tax);
+    const tax = Math.round(lpgk.amount * taxPct) / 100;
+    const lpgkNet = lpgk.amount - tax;
+
+    const list = privEntries.filter(e => e.date >= from && e.date <= to).sort((a, b) => a.date.localeCompare(b.date));
+    const sum = list.reduce((s, e) => {
+        const a = privAmount(e);
+        s.jan += a.jan; s.gospel += a.gospel; s.janP += int(e.janP); s.janS += int(e.janS); s.g += int(e.gospel);
+        return s;
+    }, { jan: 0, gospel: 0, janP: 0, janS: 0, g: 0 });
+
+    $('pTiles').innerHTML = `
+        <div class="tile"><div class="lbl">Cmentarz LPGK (brutto)</div><div class="val">${pln(lpgk.amount)}</div><div class="sub">${lpgk.missing ? 'część wpisów bez stawek' : 'Twoje usługi w tym miesiącu'}</div></div>
+        <div class="tile minus"><div class="lbl">Podatek ${String(taxPct).replace('.', ',')}%</div><div class="val">−${pln(tax)}</div><div class="sub">od kwoty z cmentarza</div></div>
+        <div class="tile net"><div class="lbl">Cmentarz LPGK (netto)</div><div class="val">${pln(lpgkNet)}</div><div class="sub">po odjęciu podatku</div></div>
+        <div class="tile jan"><div class="lbl">Św. Jan</div><div class="val">${pln(sum.jan)}</div><div class="sub">${sum.janP} × powszedni, ${sum.janS} × niedz./święto</div></div>
+        <div class="tile gos"><div class="lbl">Gospel</div><div class="val">${pln(sum.gospel)}</div><div class="sub">${sum.g} ${plural(sum.g, 'granie', 'grania', 'grań')}</div></div>
+        <div class="tile"><div class="lbl">Granie łącznie</div><div class="val">${sum.janP + sum.janS + sum.g}</div><div class="sub">św. Jan + Gospel</div></div>`;
+
+    $('pTotals').innerHTML = `
+        <div class="total-row"><div class="lbl">Cmentarz + św. Jan<small>cmentarz netto (po podatku) + św. Jan</small></div><div class="val">${pln(lpgkNet + sum.jan)}</div></div>
+        <div class="total-row big"><div class="lbl">Cmentarz + św. Jan + Gospel<small>wszystko razem w miesiącu</small></div><div class="val">${pln(lpgkNet + sum.jan + sum.gospel)}</div></div>`;
+
+    $('pEntries').innerHTML = list.length ? list.map(e => {
+        const a = privAmount(e);
+        const bits = [];
+        if (int(e.janP)) bits.push(`<span class="chip">Św. Jan powszedni: <b>${int(e.janP)}</b></span>`);
+        if (int(e.janS)) bits.push(`<span class="chip">Św. Jan niedz./święto: <b>${int(e.janS)}</b></span>`);
+        if (int(e.gospel)) bits.push(`<span class="chip">Gospel: <b>${int(e.gospel)}</b></span>`);
+        if (e.note) bits.push(`<span class="chip">${esc(e.note)}</span>`);
+        return `<li>
+            <span class="d">${fmtDay(e.date)}<small>${fmtWeekday(e.date)}</small></span>
+            <span class="body">${bits.join('')}</span>
+            <span class="money">${pln(a.jan + a.gospel)}</span>
+            <span class="actions"><button class="icon-btn" data-pedit="${e.id}">Edytuj</button><button class="icon-btn danger" data-pdel="${e.id}">Usuń</button></span>
+        </li>`;
+    }).join('') : `<li class="empty" style="border:0;background:none">W tym miesiącu nie ma jeszcze wpisów św. Jan ani Gospel.</li>`;
+
+    renderPrivRates();
+}
+
+function renderPrivRates() {
+    const years = Object.keys(privRates).sort((a, b) => b - a);
+    $('pRatesList').innerHTML = `<li class="head" style="grid-template-columns:60px repeat(4,1fr)"><span>Rok</span><span class="r">Jan powsz.</span><span class="r">Jan niedz.</span><span class="r">Gospel</span><span class="r">Podatek</span></li>` +
+        (years.length ? years.map(y => { const r = { ...PRIV_DEFAULT, ...privRates[y] }; return `<li style="grid-template-columns:60px repeat(4,1fr)">
+            <button data-pyear="${y}">${y}</button>
+            <span class="r">${pln(money(r.janP))}</span><span class="r">${pln(money(r.janS))}</span><span class="r">${pln(money(r.gospel))}</span><span class="r">${String(money(r.tax)).replace('.', ',')}%</span>
+        </li>`; }).join('')
+        : `<li style="grid-template-columns:60px repeat(4,1fr)"><span style="color:var(--muted)">domyślne</span><span class="r">${pln(50)}</span><span class="r">${pln(75)}</span><span class="r">${pln(75)}</span><span class="r">12%</span></li>`);
+    if (!$('pRateYear').value) loadPrivRateYear(String(new Date().getFullYear()));
+}
+function loadPrivRateYear(y) {
+    const r = { ...PRIV_DEFAULT, ...(privRates[y] || {}) };
+    $('pRateYear').value = y; $('pRateJanP').value = r.janP; $('pRateJanS').value = r.janS; $('pRateGos').value = r.gospel; $('pRateTax').value = r.tax;
+}
+$('pRatesList').addEventListener('click', e => { const b = e.target.closest('[data-pyear]'); if (b) loadPrivRateYear(b.dataset.pyear); });
+$('pRateYear').addEventListener('change', () => loadPrivRateYear($('pRateYear').value));
+$('pSaveRatesBtn').addEventListener('click', async () => {
+    if (!isAdmin()) return;
+    const y = String(int($('pRateYear').value));
+    if (y < 2000) return toast('Wpisz poprawny rok', true);
+    const tax = money($('pRateTax').value);
+    if (tax > 100) return toast('Podatek nie może przekraczać 100%', true);
+    const data = { janP: money($('pRateJanP').value), janS: money($('pRateJanS').value), gospel: money($('pRateGos').value), tax, updatedAt: Date.now() };
+    try { await setDoc(doc(fs, 'rozliczenia_prywatne_stawki', y), data); toast(`✔ Zapisano moje stawki na ${y}`); }
+    catch { toast('Nie udało się zapisać – dopisz regułę Firestore dla rozliczenia_prywatne_stawki', true); }
+});
 
 $('prevMonth').addEventListener('click', () => { viewMonth.setMonth(viewMonth.getMonth() - 1); renderAll(); });
 $('nextMonth').addEventListener('click', () => { viewMonth.setMonth(viewMonth.getMonth() + 1); renderAll(); });
